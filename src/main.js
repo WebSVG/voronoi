@@ -10,20 +10,35 @@ function remove_seeds(){
             el.parentElement.removeChild(el)
         }
     })
+    svg_seeds = []
 }
 
-function add_seeds(svg_div,r_seeds){
+function add_seeds(svg_div,nb){
     const w = svg_div.width.baseVal.value
     //issue not full height
     const h = svg_div.height.baseVal.value
     console.log(`seeding in w:${w} ; h:${h}`)
-    const seeds = get_seeds(r_seeds.value,w,h)
+    const seeds = get_seeds(nb,w,h)
     seeds.forEach((s)=>{
         let c = circle(svg_div,s.x,s.y,`c_${s.id}`)
         svg_seeds.push(c)
         //console.log(`${c.id} / ${c.parentElement.id}`)
     })
 }
+
+function adjust_seeds(svg_div,r_seeds){
+    if(r_seeds.value < svg_seeds.length){
+        console.log("remove")
+        const nb_pop = svg_seeds.length - r_seeds.value
+        for(let i=0;i<nb_pop;i++){
+            let last = svg_seeds.pop()
+            svg_div.removeChild(last)
+        }
+    }else if(r_seeds.value > svg_seeds.length){
+        add_seeds(svg_div,r_seeds.value - svg_seeds.length)
+    }
+}
+
 
 function main(){
     let svg_div = html(b,"svg",
@@ -39,12 +54,11 @@ function main(){
  
     seeds_btn.addEventListener("click",(e)=>{
         remove_seeds()
-        add_seeds(svg_div,r_seeds)
+        add_seeds(svg_div,r_seeds.value)
     })
     r_seeds.addEventListener("input",(e)=>{
         seeds_btn.innerHTML = `${r_seeds.value} seeds`
-        remove_seeds()
-        add_seeds(svg_div,r_seeds)
+        adjust_seeds(svg_div,r_seeds)
     })
 }
 
