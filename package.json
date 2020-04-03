@@ -1,0 +1,26 @@
+{
+  "name": "voro-gen",
+  "version": "1.0.0",
+  "description": "voronoi generator",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/WebSVG/voronoi.git"
+  },
+  "keywords": [
+    "voronoi",
+    "svg"
+  ],
+  "author": "wassfila",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/WebSVG/voronoi/issues"
+  },
+  "homepage": "https://github.com/WebSVG/voronoi#readme",
+  "dependencies": {
+    "bootstrap": "^4.4.1"
+  }
+}
