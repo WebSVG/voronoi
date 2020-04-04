@@ -39,11 +39,11 @@ function button_input(parent,id,Text,input){
     )
 }
 
-function input_text(parent,id,input){
+function input_text(parent,id,placeholder,width="w-25"){
     let input_txt = html(parent,"input",
-    /*html*/`   <input id=${id} type="text" placeholder="seeds number" aria-label="Example text with button addon" aria-describedby="button-addon1">`
+    /*html*/`   <input id=${id} type="text" class="form-group ${width}" placeholder="${placeholder}" aria-label="Example text with button addon" aria-describedby="button-addon1">`
     )
-    input_txt.value = input
+    //input_txt.value = input
     return input_txt
 }
 
@@ -63,9 +63,10 @@ function cols(parent,nb_cols){
     return cols
 }
 
+//classes : ml-1
 function toggle(parent,on="On",off="Off"){
     return html(parent,"input",
-    /*html*/`<input type="checkbox" class="ml-1" checked data-toggle="toggle" data-on=${on} data-off=${off}>`)
+    /*html*/`<input type="checkbox" class="ml-1" data-height="20" checked data-toggle="toggle" data-on="${on}" data-off="${off}" >`)
 }
 
 function br(parent){

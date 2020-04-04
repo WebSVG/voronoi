@@ -14,5 +14,7 @@ bootstrap :
 * https://gitbrent.github.io/bootstrap4-toggle/
 * issue with bootstrap toggle adding event listeners with js not possible
 
-voronoi javascript : https://github.com/gorhill/Javascript-Voronoi
-voronoi SVG vectorisation : https://github.com/stg/SVoronoiG
+* voronoi javascript : https://github.com/gorhill/Javascript-Voronoi
+  * rhill-voronoi-core.js from commit 3fe2165
+  * live demo : http://www.raymondhill.net/voronoi/rhill-voronoi.html
+* voronoi SVG vectorisation : https://github.com/stg/SVoronoiG

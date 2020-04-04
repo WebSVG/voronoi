@@ -1,4 +1,5 @@
 import {html,circle,} from "./utils.js"
+import * as vor_core from "../libs/rhill-voronoi-core.js"
 
 function get_seeds(nb,w,h){
     let res = []
@@ -73,7 +74,7 @@ class Voronoi{
         this.walls_dist = false;
         this.sampling = false;
     }
-    remove_seeds(){
+    clear_seeds(){
         this.seeds = []
         this.svg_seeds.forEach((el)=>{
             if(el.parentElement != null){//not understood why needed
@@ -126,7 +127,10 @@ class Voronoi{
         }
     }
 
-    adjust_seeds(nb){
+    adjust_nb_seeds(nb,clear=false){
+        if(clear){
+            this.clear_seeds()
+        }
         const nb_samples = this.sampling?nb*this.nb_samples:nb
         const walls_msg = this.sampling?this.walls_dist:"irrelevant"
         console.log(`generating ${nb} seeds ; sampling=${this.sampling} ; walls=${walls_msg} : ${nb_samples} samples`)
@@ -146,6 +150,14 @@ class Voronoi{
             }
         }
         console.timeEnd("adjust_seeds")
+        //here compute voronoi
+        console.time("voronoi")
+        let voronoi = new vor_core.Voronoi()
+        const w = this.svg.width.baseVal.value
+        const h = this.svg.height.baseVal.value
+        let res = voronoi.compute(this.seeds,{xl:0, xr:w, yt:0, yb:h})
+        console.timeEnd("voronoi")
+        console.log(`stats : ${res.cells.length} cells , ${res.vertices.length} vertices , ${res.edges.length} edges`)
     }
 }
 
