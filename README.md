@@ -8,6 +8,12 @@ https://websvg.github.io/voronoi/
 # License
 MIT
 
+# Dependencies
+ 
+## File saver
+ npm install file-saver --save
+ file-saver@2.0.2 
+
 # References
 bootstrap :
 * https://getbootstrap.com/docs/4.4/getting-started/introduction/

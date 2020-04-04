@@ -22,6 +22,17 @@ function circle(parent,x,y,id){
     );
 }
 
+function draw_path(parent,edges){
+    let d = ""
+    edges.forEach((e)=>{
+        d = d + `M ${e.va.x} ${e.va.y} L ${e.vb.x} ${e.vb.y} `
+    })
+    return html(parent,"path",
+    /*html*/`<path d="${d}" stroke="black" stroke-width="2" />`
+    )
+
+}
+
 function button(parent,id,Text){
     return html(parent,"button",
     /*html*/`<button id=${id} type="button" class="btn btn-primary" style="margin:10px">${Text}</button>`
@@ -73,15 +84,44 @@ function br(parent){
     parent.appendChild(document.createElement("br"))
 }
 
+function hr(parent){
+    parent.appendChild(document.createElement("hr"))
+}
+
+class Evt{
+    constructor(){
+
+    }
+
+    click(element,func){
+        element.addEventListener("click",func)
+    }
+}
+
+function click(element,func){
+    element.addEventListener("click",func)
+}
+
+function save_svg(svg,fileName){
+    let s = new XMLSerializer();
+    const svg_str = s.serializeToString(svg);
+    var blob = new Blob([svg_str], {type: 'image/svg+xml'});
+    saveAs(blob, fileName);
+}
+
 export{
     attributes,
     html,
     circle,
+    draw_path,
     button,
     button_input,
     input_range,
     input_text,
     toggle,
     cols,
-    br
+    br,hr,
+    Evt,
+    click,
+    save_svg
 }

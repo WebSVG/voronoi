@@ -1,5 +1,6 @@
-import {input_range,input_text,button,br,cols,toggle,html} from "./utils.js"
+import {input_range,input_text,button,hr,cols,toggle,html,click, save_svg} from "./utils.js"
 import {Voronoi} from "./index.js"
+
 
 const b = document.body
 const default_nb_seeds = 50;
@@ -15,11 +16,13 @@ function main(){
     let in_sampling = input_text(seeds_cols[0],"in_nb_samples",`${nb_samples} samples`);
     let toggle_walls = toggle(seeds_cols[0],"walls away","walls stick")
     //br(seeds_cols[0])
-    let seeds_btn = button(seeds_cols[1],"btn_seed",`generate seeds`,`${default_nb_seeds}`);
+    let seeds_btn = button(seeds_cols[1],"btn_seed",`generate seeds`);
     let seeds_intxt = input_text(seeds_cols[1],"in_nb_seed",`${default_nb_seeds} seeds`);
     let rg_seeds = input_range(seeds_cols[2],default_nb_seeds * 2)
     let seeds_max = input_text(seeds_cols[2],"in_max_seed",`max seeds ${default_nb_seeds*2}`,"w-100");
- 
+    hr(b)
+    let save_btn = button(b,"btn_save",`export SVG`);
+    click(save_btn,()=>{save_svg(vor.svg,"voronoi_svg_export.svg")})
 
     vor.sampling = true
     //not working because of bootstrap
@@ -28,7 +31,7 @@ function main(){
     //not working because of bootstrap
     toggle_walls.addEventListener("change",()=>{vor.walls_dist = toggle_walls.checked})
 
-    seeds_btn.addEventListener("click",(e)=>{
+    click(seeds_btn,(e)=>{
         vor.sampling = toggle_alg.checked;
         vor.walls_dist = toggle_walls.checked
         vor.adjust_nb_seeds(rg_seeds.value,true)

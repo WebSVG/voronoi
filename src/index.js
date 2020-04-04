@@ -1,4 +1,4 @@
-import {html,circle,} from "./utils.js"
+import {html,circle,draw_path} from "./utils.js"
 import * as vor_core from "../libs/rhill-voronoi-core.js"
 
 function get_seeds(nb,w,h){
@@ -73,6 +73,7 @@ class Voronoi{
         this.nb_samples = 10;
         this.walls_dist = false;
         this.sampling = false;
+        this.path = null;
     }
     clear_seeds(){
         this.seeds = []
@@ -157,6 +158,12 @@ class Voronoi{
         const h = this.svg.height.baseVal.value
         let res = voronoi.compute(this.seeds,{xl:0, xr:w, yt:0, yb:h})
         console.timeEnd("voronoi")
+        console.time("draw path")
+        if(this.path != null){
+            this.svg.removeChild(this.path)
+        }
+        this.path = draw_path(this.svg,res.edges)
+        console.timeEnd("draw path")
         console.log(`stats : ${res.cells.length} cells , ${res.vertices.length} vertices , ${res.edges.length} edges`)
     }
 }
