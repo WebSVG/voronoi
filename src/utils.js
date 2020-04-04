@@ -49,7 +49,7 @@ function input_text(parent,id,input){
 
 function input_range(parent,max){
     return html(parent,"input",
-    /*html*/`<input type="range" class="custom-range" id="customRange1" max=${max}>`)
+    /*html*/`<input type="range" class="custom-range" id="customRange1" max=${max} >`)
 }
 
 function cols(parent,nb_cols){
@@ -61,6 +61,11 @@ function cols(parent,nb_cols){
         cols.push(html(row,"div",/*html*/`<div class="col"></div>`))
     }
     return cols
+}
+
+function toggle(parent,on="On",off="Off"){
+    return html(parent,"input",
+    /*html*/`<input type="checkbox" class="ml-1" checked data-toggle="toggle" data-on=${on} data-off=${off}>`)
 }
 
 function br(parent){
@@ -75,6 +80,7 @@ export{
     button_input,
     input_range,
     input_text,
+    toggle,
     cols,
     br
 }
