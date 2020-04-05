@@ -1,4 +1,4 @@
-import {defined,html,circle,draw_path,save_json} from "./utils.js"
+import {defined,html,circle,circle_move,draw_path,save_json} from "./utils.js"
 import * as vor_core from "../libs/rhill-voronoi-core.js"
 
 function get_seeds(nb,w,h){
@@ -60,12 +60,25 @@ function get_best_sample(seeds,samples,w,h,walls=false){
     //console.log(`biggest_min = ${biggest_min}`)
     return samples[best_index]
 }
+
+function get_closest_index(seeds,coord){
+    let index_of_closest = 0
+    let closest_dist = Number.MAX_VALUE
+    for(let i=0;i<seeds.length;i++){
+        const d = distance(coord,seeds[i])
+        if(d < closest_dist){
+            index_of_closest = i
+            closest_dist = d
+        }
+    }
+    return index_of_closest
+}
 class Voronoi{
     constructor(parent){
         this.seeds = []
         this.svg_seeds = []
         this.svg = html(parent,"svg",
-        /*html*/`<svg id="main_svg" xmlns="http://www.w3.org/2000/svg" width="100%" height=80%></svg>`
+        /*html*/`<svg id="main_svg" xmlns="http://www.w3.org/2000/svg" width="100%" height=75%></svg>`
         );
         html(this.svg,"rect",
         /*html*/`<rect width="100%" height="100%" style="fill:rgb(255,250,245)"></rect>`
@@ -75,6 +88,8 @@ class Voronoi{
         this.sampling = false;
         this.path = null;
         this.seeds_visible = true;
+        this.mouse_action = "nothing"
+        this.init_events()
     }
     
     clear_seeds(clear_array=true,clear_svg_array=true){
@@ -174,7 +189,6 @@ class Voronoi{
             this.view_seeds()
         }
         console.timeEnd("adjust_seeds")
-        //here compute voronoi
         this.compute_voronoi()
     }
 
@@ -185,6 +199,38 @@ class Voronoi{
             const s = seeds[i]
             this.svg_seeds.push( circle(this.svg,s.x,s.y,`c_${s.id}`) )
         }
+        this.compute_voronoi()
+    }
+
+    add_seed(coord){
+        const new_id = this.seeds[this.seeds.length-1].id + 1
+        let s = {x:coord.x, y:coord.y, id:new_id}
+        this.seeds.push(s)
+        this.svg_seeds.push(circle(this.svg,s.x,s.y,`c_${s.id}`))
+        this.compute_voronoi()
+    }
+
+    remove_seed(coord){
+        const closest = get_closest_index(this.seeds,coord)
+        const seed_id = this.seeds[closest].id
+        this.seeds.splice(closest,1)
+        const svg_seed_list = $(`#c_${seed_id}`)
+        if(svg_seed_list.length != 1){
+            console.log(`'#c_${seed_id}' returned ${svg_seed_list.length} entries`)
+        }
+        const svg_seed = svg_seed_list[0]
+        svg_seed.parentElement.removeChild(svg_seed)
+        this.compute_voronoi()
+    }
+
+    move_seed(coord){
+        const closest_index = get_closest_index(this.seeds,coord)
+        let closest_seed = this.seeds[closest_index]
+        closest_seed.x = coord.x
+        closest_seed.y = coord.y
+        const seed_id = this.seeds[closest_index].id
+        const svg_seed = $(`#c_${seed_id}`)[0]
+        circle_move(svg_seed,coord)
         this.compute_voronoi()
     }
 
@@ -241,6 +287,27 @@ class Voronoi{
         reader.readAsText(file);
     }
 
+    init_events(){
+        $(this.svg).click((e)=>{
+            if(this.mouse_action == "add"){
+                this.add_seed({x:e.clientX, y:e.clientY})
+            }else if(this.mouse_action == "remove"){
+                this.remove_seed({x:e.clientX, y:e.clientY})
+            }
+        })
+        $(this.svg).mousemove((e)=>{
+            if(this.mouse_action == "move"){
+                if(e.buttons == 1){
+                    this.move_seed({x:e.clientX, y:e.clientY})
+                }
+            }
+        })
+        $(this.svg).mousedown((e)=>{
+            if(this.mouse_action == "move"){
+                this.move_seed({x:e.clientX, y:e.clientY})
+            }
+        })
+    }
 }
 
 

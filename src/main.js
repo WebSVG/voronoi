@@ -1,4 +1,4 @@
-import {input_range,input_text,button,hr,cols,toggle,html,save_svg} from "./utils.js"
+import {input_range,input_text,button,hr,cols,toggle,html,save_svg,radio_group} from "./utils.js"
 import {Voronoi} from "./index.js"
 
 const b = document.body
@@ -8,7 +8,7 @@ const nb_samples = 10
 
 function main(){
 
-    let seeds_cols = cols(b,3)
+    let seeds_cols = cols(b,4)
     //html(seeds_cols[0],"a",/*html*/`<h4 style="margin:10px">Distance</h4>`)
     let toggle_alg = toggle(seeds_cols[0],"Sampling","Single")
     let in_sampling = input_text(seeds_cols[0],"in_nb_samples",`${nb_samples} samples`);
@@ -20,6 +20,12 @@ function main(){
 
     let rg_nb_seeds = input_range(seeds_cols[2],default_nb_seeds * 2)
     let in_max_seeds = input_text(seeds_cols[2],"in_max_seed",`max seeds ${default_nb_seeds*2}`,"w-100");
+
+    vor.mouse_action = "move"
+    radio_group(seeds_cols[3],["add","move","remove"],1,(e)=>{
+        vor.mouse_action = e.target.getAttribute("data-action")
+    })
+
     hr(b)
     let btn_save_svg = button(b,"btn_save",`export SVG`);
     let toggle_export_seeds = toggle(b,"seeds","no seeds")
@@ -27,6 +33,7 @@ function main(){
 
     let btn_save_data = button(b,"btn_save",`export seeds coordinates`);
     html(b,"h4",/*html*/`<a style="margin:10px">Drag and drop 'seeds.json' to import</a>`)
+
 
     $(btn_save_svg).click(()=>{
         vor.view_seeds(toggle_export_seeds.checked)

@@ -20,10 +20,14 @@ function html(parent,tagName,svg_text){
 }
 
 function circle(parent,x,y,id){
-
     return html(parent,"circle",
     /*html*/`<circle id=${id} cx=${x} cy=${y} r="3" stroke="black" stroke-width="3" fill="red" />`
     );
+}
+
+function circle_move(element,coord){
+    element.setAttributeNS(null,"cx",coord.x)
+    element.setAttributeNS(null,"cy",coord.y)
 }
 
 function draw_path(parent,edges){
@@ -92,6 +96,19 @@ function hr(parent){
     parent.appendChild(document.createElement("hr"))
 }
 
+function radio_group(parent,labels_list,nb_checked,callback){
+    for(let i=0;i<labels_list.length;i++){
+        const label = labels_list[i]
+        let element = html(parent,"div",
+        /*html*/`<div class="custom-control custom-radio">
+                    <input type="radio" data-action="${label}" class="custom-control-input" id="rg_${label}" name="rg_radios" ${(i==nb_checked)?"checked":""} >
+                    <label class="custom-control-label" for="rg_${label}">${label}</label>
+                </div>`
+        )
+        $(element).change(callback)
+    }
+}
+
 //mini jQuery like events wrapper
 class Events{
     constructor(){
@@ -121,6 +138,7 @@ export{
     attributes,
     html,
     circle,
+    circle_move,
     draw_path,
     button,
     button_input,
@@ -132,5 +150,6 @@ export{
     Events,
     save_svg,
     save_json,
-    defined
+    defined,
+    radio_group
 }
