@@ -41,6 +41,69 @@ function draw_path(parent,edges){
 
 }
 
+function rand_col() {
+    const letters = '0123456789ABCDEF';
+    let color = '#';
+    for (let i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+}
+/**
+ * returns the first counter clockwise point, depending if the site is the leftSite of the edge or its rightSite
+ * @param {Half Edge} he 
+ */
+function first_ccw(he){
+    return (defined(he.edge.lSite) && (he.site.id == he.edge.lSite.id))?he.edge.va:he.edge.vb
+}
+
+function center(he){
+    return ({x:(he.edge.va.x+he.edge.vb.x)/2,y:(he.edge.va.y+he.edge.vb.y)/2})
+}
+
+function draw_cells(parent,cells,col=false){
+    let res = []
+    for(let i=0;i<cells.length;i++){
+        const c = cells[i]
+        const p = first_ccw(c.halfedges[0])
+        let d = `M ${p.x} ${p.y} `
+        for(let j=1;j<c.halfedges.length;j++){
+            const p = first_ccw(c.halfedges[j])
+            d = d + `L ${p.x} ${p.y} `
+        }
+        d = d + "z"
+        const color = (col)?rand_col():"#221155"
+        let cell_svg = html(parent,"path",
+        /*html*/`<path d="${d}" stroke="black" stroke-width="0" fill="${color}" fill-opacity="0.2"/>`
+        )
+        res.push(cell_svg)
+    }
+    return res
+}
+
+function draw_cells_bezier(parent,cells,col=false){
+    let res = []
+    for(let i=0;i<cells.length;i++){
+        const c = cells[i]
+        const Q0 = first_ccw(c.halfedges[0])
+        const center0 = center(c.halfedges[0])
+        let d = `M ${center0.x} ${center0.y} `
+        for(let j=1;j<c.halfedges.length;j++){
+            const Q = first_ccw(c.halfedges[j])
+            const cent = center(c.halfedges[j])
+            d = d + `Q ${Q.x} ${Q.y} ${cent.x} ${cent.y} `
+        }
+        //d = d + "z"
+        d = d + `Q ${Q0.x} ${Q0.y} ${center0.x} ${center0.y} `
+        const color = (col)?rand_col():"#221155"
+        let cell_svg = html(parent,"path",
+        /*html*/`<path d="${d}" stroke="black" stroke-width="0" fill="${color}" fill-opacity="0.2"/>`
+        )
+        res.push(cell_svg)
+    }
+    return res
+}
+
 function button(parent,id,Text){
     return html(parent,"button",
     /*html*/`<button id=${id} type="button" class="btn btn-primary" style="margin:10px">${Text}</button>`
@@ -140,6 +203,7 @@ export{
     circle,
     circle_move,
     draw_path,
+    draw_cells,
     button,
     button_input,
     input_range,
@@ -151,5 +215,6 @@ export{
     save_svg,
     save_json,
     defined,
-    radio_group
+    radio_group,
+    draw_cells_bezier
 }

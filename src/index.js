@@ -1,4 +1,4 @@
-import {defined,html,circle,circle_move,draw_path,save_json} from "./utils.js"
+import {defined,html,circle,circle_move,draw_path,draw_cells,save_json,draw_cells_bezier} from "./utils.js"
 import * as vor_core from "../libs/rhill-voronoi-core.js"
 
 function get_seeds(nb,w,h){
@@ -87,6 +87,7 @@ class Voronoi{
         this.walls_dist = false;
         this.sampling = false;
         this.path = null;
+        this.cells = null;
         this.seeds_visible = true;
         this.mouse_action = "nothing"
         this.init_events()
@@ -149,6 +150,27 @@ class Voronoi{
         }
     }
 
+    draw_path(res){
+        console.time("draw path")
+        if(this.path != null){
+            this.svg.removeChild(this.path)
+        }
+        this.path = draw_path(this.svg,res.edges)
+        console.timeEnd("draw path")
+    }
+
+    draw_cells(res){
+        console.time("draw cells")
+        if(this.cells != null){
+            this.cells.forEach((c)=>{
+                c.parentElement.removeChild(c)
+            })
+        }
+        //todo select color checkbox true false
+        this.cells = draw_cells_bezier(this.svg,res.cells)
+        console.timeEnd("draw cells")
+    }
+
     compute_voronoi(){
         console.time("voronoi")
         let voronoi = new vor_core.Voronoi()
@@ -156,13 +178,9 @@ class Voronoi{
         const h = this.svg.height.baseVal.value
         let res = voronoi.compute(this.seeds,{xl:0, xr:w, yt:0, yb:h})
         console.timeEnd("voronoi")
-        console.time("draw path")
-        if(this.path != null){
-            this.svg.removeChild(this.path)
-        }
-        this.path = draw_path(this.svg,res.edges)
-        console.timeEnd("draw path")
-        console.log(`stats : ${res.cells.length} cells , ${res.vertices.length} vertices , ${res.edges.length} edges`)
+        //console.log(`stats : ${res.cells.length} cells , ${res.vertices.length} vertices , ${res.edges.length} edges`)
+        this.draw_path(res)
+        this.draw_cells(res)
     }
 
     run(nb,clear=false){

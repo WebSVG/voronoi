@@ -3,7 +3,7 @@ import {Voronoi} from "./index.js"
 
 const b = document.body
 let vor = new Voronoi(b)
-const default_nb_seeds = 50;
+const default_nb_seeds = 30;
 const nb_samples = 10
 
 function main(){
@@ -17,6 +17,7 @@ function main(){
     let btn_seeds = button(seeds_cols[1],"btn_seed",`generate seeds`);
     let in_nb_seeds = input_text(seeds_cols[1],"in_nb_seed",`${default_nb_seeds} seeds`);
     let toggle_seeds = toggle(seeds_cols[1],"visible","hidden")
+    //html(seeds_cols[1],"a",/*html*/`<a style="margin:10px">runtime ms</a>`)
 
     let rg_nb_seeds = input_range(seeds_cols[2],default_nb_seeds * 2)
     let in_max_seeds = input_text(seeds_cols[2],"in_max_seed",`max seeds ${default_nb_seeds*2}`,"w-100");
