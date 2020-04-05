@@ -10,9 +10,12 @@ MIT
 
 # Dependencies
  
-## File saver
+## Export / Download
+* with Filesaver
  npm install file-saver --save
- file-saver@2.0.2 
+ file-saver@2.0.2
+
+* with 'a' attribute : https://www.w3schools.com/tags/att_a_download.asp
 
 # References
 bootstrap :

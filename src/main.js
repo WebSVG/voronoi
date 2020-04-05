@@ -1,51 +1,110 @@
-import {input_range,input_text,button,hr,cols,toggle,html,click, save_svg} from "./utils.js"
+import {input_range,input_text,button,hr,cols,toggle,html,save_svg} from "./utils.js"
 import {Voronoi} from "./index.js"
 
-
 const b = document.body
+let vor = new Voronoi(b)
 const default_nb_seeds = 50;
 const nb_samples = 10
 
-
 function main(){
 
-    let vor = new Voronoi(b)
     let seeds_cols = cols(b,3)
-    html(seeds_cols[0],"a",/*html*/`<a style="margin:10px">Max Distance</a>`)
+    //html(seeds_cols[0],"a",/*html*/`<h4 style="margin:10px">Distance</h4>`)
     let toggle_alg = toggle(seeds_cols[0],"Sampling","Single")
     let in_sampling = input_text(seeds_cols[0],"in_nb_samples",`${nb_samples} samples`);
     let toggle_walls = toggle(seeds_cols[0],"walls away","walls stick")
     //br(seeds_cols[0])
-    let seeds_btn = button(seeds_cols[1],"btn_seed",`generate seeds`);
-    let seeds_intxt = input_text(seeds_cols[1],"in_nb_seed",`${default_nb_seeds} seeds`);
-    let rg_seeds = input_range(seeds_cols[2],default_nb_seeds * 2)
-    let seeds_max = input_text(seeds_cols[2],"in_max_seed",`max seeds ${default_nb_seeds*2}`,"w-100");
+    let btn_seeds = button(seeds_cols[1],"btn_seed",`generate seeds`);
+    let in_nb_seeds = input_text(seeds_cols[1],"in_nb_seed",`${default_nb_seeds} seeds`);
+    let toggle_seeds = toggle(seeds_cols[1],"visible","hidden")
+
+    let rg_nb_seeds = input_range(seeds_cols[2],default_nb_seeds * 2)
+    let in_max_seeds = input_text(seeds_cols[2],"in_max_seed",`max seeds ${default_nb_seeds*2}`,"w-100");
     hr(b)
-    let save_btn = button(b,"btn_save",`export SVG`);
-    click(save_btn,()=>{save_svg(vor.svg,"voronoi_svg_export.svg")})
+    let btn_save_svg = button(b,"btn_save",`export SVG`);
+    let toggle_export_seeds = toggle(b,"seeds","no seeds")
+    toggle_export_seeds.checked = false
+
+    let btn_save_data = button(b,"btn_save",`export seeds coordinates`);
+    html(b,"h4",/*html*/`<a style="margin:10px">Drag and drop 'seeds.json' to import</a>`)
+
+    $(btn_save_svg).click(()=>{
+        vor.view_seeds(toggle_export_seeds.checked)
+        save_svg(vor.svg,"voronoi_svg_export.svg")
+        vor.view_seeds(toggle_seeds.checked)
+    })
+
+    $(btn_save_data).click(()=>{
+        vor.save_seeds("seeds.json")
+    })
 
     vor.sampling = true
-    //not working because of bootstrap
-    toggle_alg.addEventListener("change",()=>{vor.sampling = toggle_alg.checked})
-    vor.walls_dist = true
-    //not working because of bootstrap
-    toggle_walls.addEventListener("change",()=>{vor.walls_dist = toggle_walls.checked})
+    $(toggle_alg).change(()=>{
+        vor.sampling = toggle_alg.checked
+        in_sampling.style.visibility = toggle_alg.checked?"visible":"hidden"
+        vor.run(rg_nb_seeds.value,true)//clear = true
+    })
 
-    click(seeds_btn,(e)=>{
-        vor.sampling = toggle_alg.checked;
+    vor.walls_dist = true
+    $(toggle_walls).change(()=>{
         vor.walls_dist = toggle_walls.checked
-        vor.adjust_nb_seeds(rg_seeds.value,true)
+        vor.run(rg_nb_seeds.value,true)//clear = true
     })
-    rg_seeds.addEventListener("input",(e)=>{
-        vor.sampling = toggle_alg.checked;
-        vor.walls_dist = toggle_walls.checked
-        seeds_intxt.value = rg_seeds.value
-        vor.adjust_nb_seeds(rg_seeds.value,false)
+
+    $(btn_seeds).click((e)=>{
+        vor.run(rg_nb_seeds.value,true)//clear = true
     })
-    seeds_intxt.addEventListener("change",()=>{rg_seeds.value = seeds_intxt.value})
-    seeds_max.addEventListener("change",()=>{rg_seeds.max = seeds_max.value})
+
+    $(rg_nb_seeds).on("input",(e)=>{
+        in_nb_seeds.value = rg_nb_seeds.value
+        vor.run(rg_nb_seeds.value)
+    })
+
+    $(in_nb_seeds).change(()=>{
+        rg_nb_seeds.value = in_nb_seeds.value
+        vor.run(rg_nb_seeds.value)
+    })
+    $(in_max_seeds).change(()=>{rg_nb_seeds.max = in_max_seeds.value})
     vor.nb_samples = nb_samples
-    in_sampling.addEventListener("change",()=>{vor.nb_samples = in_sampling.value})
+    $(in_sampling).change(()=>{
+        vor.nb_samples = in_sampling.value
+        vor.run(rg_nb_seeds.value,true)//clear = true
+    })
+
+    $(toggle_seeds).change((e)=>{
+        vor.view_seeds(toggle_seeds.checked)
+        vor.run(rg_nb_seeds.value)
+    })
+
+    $(document).ready(()=>{
+        vor.run(rg_nb_seeds.value)
+    })
+
+    init_drag_events()
+}
+
+function init_drag_events(){
+	['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+		document.addEventListener(eventName, onDragEvents, false)
+	});
+}
+
+function onDragEvents(event){
+    event.stopPropagation();
+    event.preventDefault();
+    if(event.type == "dragenter"){
+        event.dataTransfer.dropEffect = "copy";
+    }
+    if(event.type == "drop"){
+        if(event.dataTransfer.files.length != 1){
+            alert("only one file allowed");
+            console.log(event.dataTransfer.files);
+            return;
+        }else{
+            vor.load_dropped_seeds(event.dataTransfer.files[0]);
+        }
+    };
 }
 
 main();
+

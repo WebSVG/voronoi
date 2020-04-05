@@ -1,4 +1,4 @@
-import {html,circle,draw_path} from "./utils.js"
+import {defined,html,circle,draw_path,save_json} from "./utils.js"
 import * as vor_core from "../libs/rhill-voronoi-core.js"
 
 function get_seeds(nb,w,h){
@@ -6,8 +6,8 @@ function get_seeds(nb,w,h){
     for(let i = 0;i<nb; i++){
         res.push({
             id:i,
-            x:Math.round(Math.random()*w),
-            y:Math.round(Math.random()*h)
+            x:Math.random()*w,
+            y:Math.random()*h
         })
     }
     return res
@@ -17,8 +17,8 @@ function get_seed_samples(nb,w,h){
     let res = []
     for(let i = 0;i<nb; i++){
         res.push({
-            x:Math.round(Math.random()*w),
-            y:Math.round(Math.random()*h)
+            x:Math.random()*w,
+            y:Math.random()*h
         })
     }
     return res
@@ -74,15 +74,21 @@ class Voronoi{
         this.walls_dist = false;
         this.sampling = false;
         this.path = null;
+        this.seeds_visible = true;
     }
-    clear_seeds(){
-        this.seeds = []
-        this.svg_seeds.forEach((el)=>{
-            if(el.parentElement != null){//not understood why needed
-                el.parentElement.removeChild(el)
-            }
-        })
-        this.svg_seeds = []
+    
+    clear_seeds(clear_array=true,clear_svg_array=true){
+        if(clear_array){
+            this.seeds = []
+        }
+        if(clear_svg_array){
+            this.svg_seeds.forEach((el)=>{
+                if(el.parentElement != null){//not understood why needed
+                    el.parentElement.removeChild(el)
+                }
+            })
+            this.svg_seeds = []
+        }
     }
 
     get_seed(id,w,h){
@@ -128,30 +134,7 @@ class Voronoi{
         }
     }
 
-    adjust_nb_seeds(nb,clear=false){
-        if(clear){
-            this.clear_seeds()
-        }
-        const nb_samples = this.sampling?nb*this.nb_samples:nb
-        const walls_msg = this.sampling?this.walls_dist:"irrelevant"
-        console.log(`generating ${nb} seeds ; sampling=${this.sampling} ; walls=${walls_msg} : ${nb_samples} samples`)
-        console.time("adjust_seeds")
-        if(nb < this.svg_seeds.length){
-            const nb_pop = this.svg_seeds.length - nb
-            for(let i=0;i<nb_pop;i++){
-                this.seeds.pop()
-                let last = this.svg_seeds.pop()
-                this.svg.removeChild(last)
-            }
-        }else if(nb > this.svg_seeds.length){
-            if(this.sampling){
-                this.add_seeds_sampling(nb - this.svg_seeds.length)
-            }else{
-                this.add_seeds_random(nb - this.svg_seeds.length)
-            }
-        }
-        console.timeEnd("adjust_seeds")
-        //here compute voronoi
+    compute_voronoi(){
         console.time("voronoi")
         let voronoi = new vor_core.Voronoi()
         const w = this.svg.width.baseVal.value
@@ -166,6 +149,98 @@ class Voronoi{
         console.timeEnd("draw path")
         console.log(`stats : ${res.cells.length} cells , ${res.vertices.length} vertices , ${res.edges.length} edges`)
     }
+
+    run(nb,clear=false){
+        if(clear){
+            this.clear_seeds()
+        }
+        const nb_samples = this.sampling?nb*this.nb_samples:nb
+        const walls_msg = this.sampling?this.walls_dist:"irrelevant"
+        console.log(`generating ${nb} seeds ; sampling=${this.sampling} ; walls=${walls_msg} : ${nb_samples} samples`)
+        console.time("adjust_seeds")
+        if(nb < this.seeds.length){
+            const nb_pop = this.svg_seeds.length - nb
+            for(let i=0;i<nb_pop;i++){
+                this.seeds.pop()
+                let last = this.svg_seeds.pop()
+                this.svg.removeChild(last)
+            }
+        }else if(nb > this.seeds.length){
+            if(this.sampling){
+                this.add_seeds_sampling(nb - this.svg_seeds.length)
+            }else{
+                this.add_seeds_random(nb - this.svg_seeds.length)
+            }
+            this.view_seeds()
+        }
+        console.timeEnd("adjust_seeds")
+        //here compute voronoi
+        this.compute_voronoi()
+    }
+
+    set_seeds(seeds){
+        this.clear_seeds()
+        this.seeds = seeds
+        for(let i=0;i<seeds.length;i++){
+            const s = seeds[i]
+            this.svg_seeds.push( circle(this.svg,s.x,s.y,`c_${s.id}`) )
+        }
+        this.compute_voronoi()
+    }
+
+    view_seeds(visible=null){
+        if(visible != null){
+            this.seeds_visible = visible
+        }
+        this.svg_seeds.forEach((seed)=>{
+            if(this.seeds_visible){
+                seed.setAttributeNS(null,"visibility","visible")
+            }else{
+                seed.setAttributeNS(null,"visibility","hidden")
+            }
+        })
+    }
+
+    save_seeds(fileName){
+        this.seeds.forEach((s)=>{
+            delete s.voronoiId
+        })
+        save_json(this.seeds,fileName)
+    }
+
+    load_dropped_seeds(file){
+        let extension = file.name.split('.').pop();
+        var reader = new FileReader();
+        let is_valid = false;
+        const vor_context = this
+        if(extension == "json"){
+            console.log("extention check - OK")
+            reader.onloadend = function(e) {
+                var result = JSON.parse(this.result);
+                if(Array.isArray(result)){
+                    console.log("array type - OK")
+                    if(result.length > 0){
+                        console.log("length - OK")
+                        const seed0 = result[0]
+                        if((defined(seed0.x)) && (defined(seed0.y)) &&(defined(seed0.id))){
+                            console.log("seed structure - OK")
+                            is_valid = true
+                        }
+                    }
+                }
+                if(is_valid){
+                    vor_context.set_seeds(result)
+                }else{
+                    alert(`unsupported seeds format`);
+                }
+            };
+        }
+        else{
+            alert(`unsupported file format`);
+        }
+        reader.readAsText(file);
+    }
+
 }
 
 

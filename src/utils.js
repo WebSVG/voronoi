@@ -1,3 +1,7 @@
+function defined(obj){
+    return (typeof(obj) != "undefined")
+}
+
 function attributes(parent,tagName,attributes){
     const xmlns = "http://www.w3.org/2000/svg";
     let element = document.createElementNS(xmlns,tagName);
@@ -88,24 +92,28 @@ function hr(parent){
     parent.appendChild(document.createElement("hr"))
 }
 
-class Evt{
+//mini jQuery like events wrapper
+class Events{
     constructor(){
-
+        const events_list = ["click","change","input"]
+        events_list.forEach((evtName)=>{
+            this[evtName] = (element,func)=> {
+                element.addEventListener(evtName,func)
+            }
+        })
     }
-
-    click(element,func){
-        element.addEventListener("click",func)
-    }
-}
-
-function click(element,func){
-    element.addEventListener("click",func)
 }
 
 function save_svg(svg,fileName){
     let s = new XMLSerializer();
     const svg_str = s.serializeToString(svg);
     var blob = new Blob([svg_str], {type: 'image/svg+xml'});
+    saveAs(blob, fileName);
+}
+
+function save_json(object,fileName){
+    const json_str = JSON.stringify(object,null,'\t');
+    var blob = new Blob([json_str], {type: 'application/json'});
     saveAs(blob, fileName);
 }
 
@@ -121,7 +129,8 @@ export{
     toggle,
     cols,
     br,hr,
-    Evt,
-    click,
-    save_svg
+    Events,
+    save_svg,
+    save_json,
+    defined
 }
