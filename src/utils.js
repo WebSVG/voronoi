@@ -30,13 +30,13 @@ function circle_move(element,coord){
     element.setAttributeNS(null,"cy",coord.y)
 }
 
-function draw_path(parent,edges){
+function draw_path(parent,edges,width){
     let d = ""
     edges.forEach((e)=>{
         d = d + `M ${e.va.x} ${e.va.y} L ${e.vb.x} ${e.vb.y} `
     })
     return html(parent,"path",
-    /*html*/`<path d="${d}" stroke="black" stroke-width="2" />`
+    /*html*/`<path d="${d}" stroke="black" stroke-width="${width}" />`
     )
 
 }
@@ -82,6 +82,9 @@ function draw_cells(parent,cells,col=false){
 }
 
 function draw_cells_bezier(parent,cells,col=false){
+    if(cells.length<=1){
+        return
+    }
     let res = []
     for(let i=0;i<cells.length;i++){
         const c = cells[i]
@@ -131,7 +134,7 @@ function input_text(parent,id,placeholder,width="w-25"){
 
 function input_range(parent,max){
     return html(parent,"input",
-    /*html*/`<input type="range" class="custom-range" id="customRange1" max=${max} >`)
+    /*html*/`<input type="range" class="custom-range" max=${max} >`)
 }
 
 function cols(parent,nb_cols,props=null){

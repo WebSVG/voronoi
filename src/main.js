@@ -3,20 +3,23 @@ import {    input_range,input_text,button,hr,cols,toggle,html,
 import {Voronoi} from "./index.js"
 
 const b = document.body
-let vor = new Voronoi(b)
+let vor = new Voronoi(b,"100%","70%")
 const default_nb_seeds = 30;
-const nb_samples = 10
 
 function main(){
 
-    let seeds_cols = cols(b,4,["col","col","col","col-1"])
+    let seeds_cols = cols(b,4,["col-4","col","col-3","col-1"])
     //html(seeds_cols[0],"a",/*html*/`<h4 style="margin:10px">Distance</h4>`)
-    let toggle_alg = toggle(seeds_cols[0],"Sampling","Single")
-    let in_sampling = input_text(seeds_cols[0],"in_nb_samples",`${nb_samples} samples`);
     let toggle_walls = toggle(seeds_cols[0],"walls away","walls stick")
+    let toggle_alg = toggle(seeds_cols[0],"Sampling","Single")
+    let in_sampling = input_text(seeds_cols[0],"in_nb_samples",`${vor.nb_samples} samples`);
+
+    html(seeds_cols[0],"a",/*html*/`<a style="margin:10px">Edges thickness</a>`)
+    let rg_path_width = input_range(seeds_cols[0],30)
+    rg_path_width.value = vor.path_width
+
     //br(seeds_cols[0])
     let btn_seeds = button(seeds_cols[1],"btn_seed",`generate seeds`);
-    let in_nb_seeds = input_text(seeds_cols[1],"in_nb_seed",`${default_nb_seeds} seeds`);
     //let toggle_seeds = toggle(seeds_cols[1],"visible","hidden")
 
     const view_states = [vor.view_svg.cells,vor.view_svg.edges,vor.view_svg.seeds]
@@ -26,6 +29,8 @@ function main(){
     })
     //html(seeds_cols[1],"a",/*html*/`<a style="margin:10px">runtime ms</a>`)
 
+    let in_nb_seeds = input_text(seeds_cols[2],"in_nb_seed",`${default_nb_seeds} seeds`,"w-100");
+    //html(seeds_cols[2],"a",/*html*/`<a style="margin:10px">number of seeds</a>`)
     let rg_nb_seeds = input_range(seeds_cols[2],default_nb_seeds * 2)
     let in_max_seeds = input_text(seeds_cols[2],"in_max_seed",`max seeds ${default_nb_seeds*2}`,"w-100");
 
@@ -77,12 +82,15 @@ function main(){
         vor.run(rg_nb_seeds.value)
     })
 
+    $(rg_path_width).on("input",(e)=>{
+        vor.set_path_width(rg_path_width.value)
+    })
+
     $(in_nb_seeds).change(()=>{
         rg_nb_seeds.value = in_nb_seeds.value
         vor.run(rg_nb_seeds.value)
     })
     $(in_max_seeds).change(()=>{rg_nb_seeds.max = in_max_seeds.value})
-    vor.nb_samples = nb_samples
     $(in_sampling).change(()=>{
         vor.nb_samples = in_sampling.value
         vor.run(rg_nb_seeds.value,true)//clear = true

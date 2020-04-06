@@ -74,11 +74,11 @@ function get_closest_index(seeds,coord){
     return index_of_closest
 }
 class Voronoi{
-    constructor(parent){
+    constructor(parent,w,h){
         this.seeds = []
         this.svg_seeds = []
         this.svg = html(parent,"svg",
-        /*html*/`<svg id="main_svg" xmlns="http://www.w3.org/2000/svg" width="100%" height=75%></svg>`
+        /*html*/`<svg id="main_svg" xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"></svg>`
         );
         html(this.svg,"rect",
         /*html*/`<rect width="100%" height="100%" style="fill:rgb(255,250,245)"></rect>`
@@ -87,6 +87,7 @@ class Voronoi{
         this.walls_dist = false;
         this.sampling = false;
         this.path = null;
+        this.path_width = 2;
         this.cells = null;
         this.view_svg = {
             cells:true,
@@ -164,8 +165,13 @@ class Voronoi{
         if(this.path != null){
             this.svg.removeChild(this.path)
         }
-        this.path = draw_path(this.svg,res.edges)
+        this.path = draw_path(this.svg,res.edges,this.path_width)
         console.timeEnd("draw path")
+    }
+
+    set_path_width(width){
+        this.path_width = width
+        this.path.setAttributeNS(null,"stroke-width",width)
     }
 
     draw_cells(res){
@@ -278,13 +284,15 @@ class Voronoi{
         }else{
             this.path.setAttributeNS(null,"visibility","hidden")
         }
-        this.cells.forEach((cell)=>{
-            if(visibility.cells){
-                cell.setAttributeNS(null,"visibility","visible")
-            }else{
-                cell.setAttributeNS(null,"visibility","hidden")
-            }
-        })
+        if(defined(this.cells)){
+            this.cells.forEach((cell)=>{
+                if(visibility.cells){
+                    cell.setAttributeNS(null,"visibility","visible")
+                }else{
+                    cell.setAttributeNS(null,"visibility","hidden")
+                }
+            })
+        }
     }
 
     save_svg(fileName){
