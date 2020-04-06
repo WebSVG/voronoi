@@ -134,13 +134,13 @@ function input_range(parent,max){
     /*html*/`<input type="range" class="custom-range" id="customRange1" max=${max} >`)
 }
 
-function cols(parent,nb_cols){
+function cols(parent,nb_cols,props=null){
     let contaienr = html(parent,"div",/*html*/`<div class="container"></div>`)
     let row = html(contaienr,"div",/*html*/`<div class="row"></div>`)
 
     let cols = []
     for(let i=0;i<nb_cols;i++){
-        cols.push(html(row,"div",/*html*/`<div class="col"></div>`))
+        cols.push(html(row,"div",/*html*/`<div class="${(props==null)?"col":props[i]}"></div>`))
     }
     return cols
 }
@@ -166,6 +166,19 @@ function radio_group(parent,labels_list,nb_checked,callback){
         /*html*/`<div class="custom-control custom-radio">
                     <input type="radio" data-action="${label}" class="custom-control-input" id="rg_${label}" name="rg_radios" ${(i==nb_checked)?"checked":""} >
                     <label class="custom-control-label" for="rg_${label}">${label}</label>
+                </div>`
+        )
+        $(element).change(callback)
+    }
+}
+
+function checkbox_group(parent,name,labels_list,checked_list,callback){
+    for(let i=0;i<labels_list.length;i++){
+        const label = labels_list[i]
+        let element = html(parent,"div",
+        /*html*/`<div class="custom-control custom-checkbox">
+                    <input type="checkbox" data-name="${label}" class="custom-control-input" id="cb_${name}_${label}" name="${name}" ${(checked_list[i])?"checked":""}>
+                    <label class="custom-control-label" for="cb_${name}_${label}">${label}</label>
                 </div>`
         )
         $(element).change(callback)
@@ -214,7 +227,8 @@ export{
     Events,
     save_svg,
     save_json,
-    defined,
     radio_group,
-    draw_cells_bezier
+    defined,
+    draw_cells_bezier,
+    checkbox_group
 }

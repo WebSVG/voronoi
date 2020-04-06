@@ -1,4 +1,4 @@
-import {defined,html,circle,circle_move,draw_path,draw_cells,save_json,draw_cells_bezier} from "./utils.js"
+import {save_svg,defined,html,circle,circle_move,draw_path,draw_cells,save_json,draw_cells_bezier} from "./utils.js"
 import * as vor_core from "../libs/rhill-voronoi-core.js"
 
 function get_seeds(nb,w,h){
@@ -88,8 +88,17 @@ class Voronoi{
         this.sampling = false;
         this.path = null;
         this.cells = null;
-        this.seeds_visible = true;
+        this.view_svg = {
+            cells:true,
+            edges:true,
+            seeds:true
+        }
         this.mouse_action = "nothing"
+        this.export_svg = {
+            cells:true,
+            edges:false,
+            seeds:false
+        }
         this.init_events()
     }
     
@@ -179,8 +188,10 @@ class Voronoi{
         let res = voronoi.compute(this.seeds,{xl:0, xr:w, yt:0, yb:h})
         console.timeEnd("voronoi")
         //console.log(`stats : ${res.cells.length} cells , ${res.vertices.length} vertices , ${res.edges.length} edges`)
+        //draw even if not visible as could be exported
         this.draw_path(res)
         this.draw_cells(res)
+        this.set_visibility()
     }
 
     run(nb,clear=false){
@@ -204,7 +215,6 @@ class Voronoi{
             }else{
                 this.add_seeds_random(nb - this.svg_seeds.length)
             }
-            this.view_seeds()
         }
         console.timeEnd("adjust_seeds")
         this.compute_voronoi()
@@ -252,17 +262,35 @@ class Voronoi{
         this.compute_voronoi()
     }
 
-    view_seeds(visible=null){
-        if(visible != null){
-            this.seeds_visible = visible
+    set_visibility(visibility=null){
+        if(visibility == null){
+            visibility = this.view_svg
         }
         this.svg_seeds.forEach((seed)=>{
-            if(this.seeds_visible){
+            if(visibility.seeds){
                 seed.setAttributeNS(null,"visibility","visible")
             }else{
                 seed.setAttributeNS(null,"visibility","hidden")
             }
         })
+        if(visibility.edges){
+            this.path.setAttributeNS(null,"visibility","visible")
+        }else{
+            this.path.setAttributeNS(null,"visibility","hidden")
+        }
+        this.cells.forEach((cell)=>{
+            if(visibility.cells){
+                cell.setAttributeNS(null,"visibility","visible")
+            }else{
+                cell.setAttributeNS(null,"visibility","hidden")
+            }
+        })
+    }
+
+    save_svg(fileName){
+        this.set_visibility(this.export_svg)
+        save_svg(this.svg,fileName)
+        this.set_visibility(this.view_svg)
     }
 
     save_seeds(fileName){

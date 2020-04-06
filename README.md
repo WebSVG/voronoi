@@ -9,18 +9,20 @@ https://websvg.github.io/voronoi/
 * Export Vornoi to SVG
 * Edit seeds : add, move, remove
 * Export and import seeds (drag and drop seeds.json) and continue editing of an existing seeds set
+* bezier cells (quadratic curves)
 * Parametric Seeds generation
   * Controlled seeds spread regularity with multiple sampling and keeping best candidate (farthest from neighbors)
   * Optionally include distance from walls to the sampling selection cost
 * Range slider with interactive update for adding and removing seeds to and out of existing set
-* Show/hide seeds, and independently include/exclude seeds in/out of SVG export
+* Show/hide (cells, edges, seeds) and independently configure the SVG export
 
 # Planned features
 * Shaped tesslation area
 * bezier cells option
-  * variable cell edges thickness
-  * variable bezier curve
+  * variable cell edges thickness (cell edge move to center)
+  * variable bezier curve (cubic bezier curve with variable control points length)
 * edit seed weight
+* store config
 
 # License
 MIT
