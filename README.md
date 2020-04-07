@@ -18,11 +18,16 @@ https://websvg.github.io/voronoi/
 
 # Planned features
 * Shaped tesslation area
+* geometric cells with variable size and filet effect
 * bezier cells option
   * variable cell edges thickness (cell edge move to center)
   * variable bezier curve (cubic bezier curve with variable control points length)
+* optionally remove pointy edges of bezier cells (ignore short edges)
 * edit seed weight
 * store config
+
+# Known Issues
+* loss of real time view when seeds are not visible and scrolling the seeds number
 
 # License
 MIT

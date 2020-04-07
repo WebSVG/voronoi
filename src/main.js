@@ -25,7 +25,7 @@ function main(){
     const view_states = [vor.view_svg.cells,vor.view_svg.edges,vor.view_svg.seeds]
     checkbox_group(seeds_cols[1],"cbx_view",["cells","edges","seeds"],view_states,(e)=>{
         vor.view_svg[e.target.getAttribute("data-name")] = e.target.checked
-        vor.set_visibility()
+        vor.draw()
     })
     //html(seeds_cols[1],"a",/*html*/`<a style="margin:10px">runtime ms</a>`)
 
