@@ -61,6 +61,12 @@ function center(he){
     return ({x:(he.edge.va.x+he.edge.vb.x)/2,y:(he.edge.va.y+he.edge.vb.y)/2})
 }
 
+function edge_length(he){
+    const dx = he.edge.va.x-he.edge.vb.x
+    const dy = he.edge.va.y-he.edge.vb.y
+    return Math.sqrt(dx * dx + dy * dy)
+}
+
 function draw_cells(parent,cells,col=false){
     let res = []
     for(let i=0;i<cells.length;i++){
@@ -81,7 +87,7 @@ function draw_cells(parent,cells,col=false){
     return res
 }
 
-function draw_cells_bezier(parent,cells,col=false){
+function draw_cells_bezier(parent,cells,min_edge=0,col=false){
     if(cells.length<=1){
         return
     }
@@ -92,12 +98,18 @@ function draw_cells_bezier(parent,cells,col=false){
         const center0 = center(c.halfedges[0])
         let d = `M ${center0.x} ${center0.y} `
         for(let j=1;j<c.halfedges.length;j++){
-            const Q = first_ccw(c.halfedges[j])
-            const cent = center(c.halfedges[j])
-            d = d + `Q ${Q.x} ${Q.y} ${cent.x} ${cent.y} `
+            const e_length = edge_length(c.halfedges[j])
+            if(e_length > min_edge){
+                const Q = first_ccw(c.halfedges[j])
+                const cent = center(c.halfedges[j])
+                d = d + `Q ${Q.x} ${Q.y} ${cent.x} ${cent.y} `
+            }
         }
         //d = d + "z"
-        d = d + `Q ${Q0.x} ${Q0.y} ${center0.x} ${center0.y} `
+        const e0_length = edge_length(c.halfedges[0])
+        if(e0_length > min_edge){
+            d = d + `Q ${Q0.x} ${Q0.y} ${center0.x} ${center0.y} `
+        }
         const color = (col)?rand_col():"#221155"
         let cell_svg = html(parent,"path",
         /*html*/`<path d="${d}" stroke="black" stroke-width="0" fill="${color}" fill-opacity="0.2"/>`

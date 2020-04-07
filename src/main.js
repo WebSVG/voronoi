@@ -17,6 +17,8 @@ function main(){
     html(seeds_cols[0],"a",/*html*/`<a style="margin:10px">Edges thickness</a>`)
     let rg_path_width = input_range(seeds_cols[0],30)
     rg_path_width.value = vor.path_width
+    html(seeds_cols[0],"a",/*html*/`<a style="margin:10px">min edge cells (still buggy)</a>`)
+    let rg_min_edge = input_range(seeds_cols[0],50)
 
     //br(seeds_cols[0])
     let btn_seeds = button(seeds_cols[1],"btn_seed",`generate seeds`);
@@ -85,6 +87,11 @@ function main(){
     $(rg_path_width).on("input",(e)=>{
         vor.set_path_width(rg_path_width.value)
     })
+    $(rg_min_edge).on("input",(e)=>{
+        vor.min_edge = rg_min_edge.value
+        vor.draw()
+    })
+    
 
     $(in_nb_seeds).change(()=>{
         rg_nb_seeds.value = in_nb_seeds.value

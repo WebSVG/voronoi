@@ -26,8 +26,9 @@ https://websvg.github.io/voronoi/
 * edit seed weight
 * store config
 
-# Known Issues
-* loss of real time view when seeds are not visible and scrolling the seeds number
+## Known Issues
+* min edge removal does not curve with the rest
+* tesslation size does not cover the full height
 
 # License
 MIT

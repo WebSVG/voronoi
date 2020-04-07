@@ -89,6 +89,8 @@ class Voronoi{
         this.path = null;
         this.path_width = 2;
         this.cells = [];
+        this.min_edge = 20
+        this.is_color = false
         this.view_svg = {
             cells:true,
             edges:true,
@@ -168,7 +170,7 @@ class Voronoi{
     draw_cells(){
         console.time("draw cells")
         //todo select color checkbox true false
-        this.cells = draw_cells_bezier(this.svg,this.res.cells)
+        this.cells = draw_cells_bezier(this.svg,this.res.cells,this.min_edge,this.is_color)
         console.timeEnd("draw cells")
     }
 
@@ -239,7 +241,7 @@ class Voronoi{
         console.log(`generating ${nb} seeds ; sampling=${this.sampling} ; walls=${walls_msg} : ${nb_samples} samples`)
         console.time("adjust_seeds")
         if(nb < this.seeds.length){
-            const nb_pop = this.svg_seeds.length - nb
+            const nb_pop = this.seeds.length - nb
             for(let i=0;i<nb_pop;i++){
                 this.seeds.pop()
                 //let last = this.svg_seeds.pop()
@@ -247,9 +249,9 @@ class Voronoi{
             }
         }else if(nb > this.seeds.length){
             if(this.sampling){
-                this.add_seeds_sampling(nb - this.svg_seeds.length)
+                this.add_seeds_sampling(nb - this.seeds.length)
             }else{
-                this.add_seeds_random(nb - this.svg_seeds.length)
+                this.add_seeds_random(nb - this.seeds.length)
             }
         }
         console.timeEnd("adjust_seeds")
