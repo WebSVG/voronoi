@@ -15,6 +15,7 @@ https://websvg.github.io/voronoi/
   * Optionally include distance from walls to the sampling selection cost
 * Range slider with interactive update for adding and removing seeds to and out of existing set
 * Show/hide (cells, edges, seeds) and independently configure the SVG export
+* Browser local storage of config parameters (Not SVG, not seeds as they can be saved separately)
 
 # Planned features
 * Shaped tesslation area
@@ -24,11 +25,11 @@ https://websvg.github.io/voronoi/
   * variable bezier curve (cubic bezier curve with variable control points length)
 * optionally remove pointy edges of bezier cells (ignore short edges)
 * edit seed weight
-* store config
 
 ## Known Issues
 * min edge removal does not curve with the rest
 * tesslation size does not cover the full height
+* edit checkboxes not persisted
 
 # License
 MIT

@@ -51,20 +51,22 @@ class Svg{
     
     draw_cells(parent,cells,col=false){
         let res = []
-        for(let i=0;i<cells.length;i++){
-            const c = cells[i]
-            const p = this.first_ccw(c.halfedges[0])
-            let d = `M ${p.x} ${p.y} `
-            for(let j=1;j<c.halfedges.length;j++){
-                const p = this.first_ccw(c.halfedges[j])
-                d = d + `L ${p.x} ${p.y} `
+        if(cells.length>1){//otherwise single cell has no half edges
+            for(let i=0;i<cells.length;i++){
+                const c = cells[i]
+                const p = this.first_ccw(c.halfedges[0])
+                let d = `M ${p.x} ${p.y} `
+                for(let j=1;j<c.halfedges.length;j++){
+                    const p = this.first_ccw(c.halfedges[j])
+                    d = d + `L ${p.x} ${p.y} `
+                }
+                d = d + "z"
+                const color = (col)?this.rand_col():"#221155"
+                let cell_svg = html(parent,"path",
+                /*html*/`<path d="${d}" stroke="black" stroke-width="0" fill="${color}" fill-opacity="0.2"/>`
+                )
+                res.push(cell_svg)
             }
-            d = d + "z"
-            const color = (col)?this.rand_col():"#221155"
-            let cell_svg = html(parent,"path",
-            /*html*/`<path d="${d}" stroke="black" stroke-width="0" fill="${color}" fill-opacity="0.2"/>`
-            )
-            res.push(cell_svg)
         }
         return res
     }

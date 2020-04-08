@@ -78,33 +78,53 @@ function get_closest_index(seeds,coord){
 }
 class Voronoi{
     constructor(parent,w,h){
-        this.seeds = []
-        this.svg_seeds = []
-        this.svg = html(parent,"svg",
+        //const use_storage = false
+        let init_needed = false
+        this.version = "3"
+        const config = JSON.parse(localStorage.getItem("voronoi_config"))
+        if(config === null){
+            console.log("First time usage, no config stored")
+            init_needed = true
+        }else{
+            if(config.version == this.version){
+                console.log(`same version ${this.version}, loading`)
+                //console.log(config)
+                Object.assign(this,config)
+            }else{
+                console.log(`version mismatch (localstorage = ${config.version} , loaded page = ${this.version}) reinitialising`)
+                init_needed = true
+            }
+        }
+
+        if(init_needed){
+            this.seeds = []
+            this.nb_seeds = 30;
+            this.nb_samples = 10;
+            this.walls_dist = false;
+            this.sampling = false;
+            this.path_width = 2;
+            this.min_edge = 20
+            this.is_color = false
+            this.view_svg = {
+                cells:true,
+                edges:true,
+                seeds:true
+            }
+            this.mouse_action = "nothing"
+            this.export_svg = {
+                cells:true,
+                edges:false,
+                seeds:false
+            }
+        }
+        this.svg = {}
+        this.svg.seeds = []
+        this.svg.main = html(parent,"svg",
         /*html*/`<svg id="main_svg" xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"></svg>`
         );
-        this.rect = html(this.svg,"rect",
-        /*html*/`<rect width="100%" height="100%" style="fill:rgb(255,250,245)"></rect>`
-        );
-        this.nb_samples = 10;
-        this.walls_dist = false;
-        this.sampling = false;
-        this.path = null;
-        this.path_width = 2;
-        this.cells = [];
-        this.min_edge = 20
-        this.is_color = false
-        this.view_svg = {
-            cells:true,
-            edges:true,
-            seeds:true
-        }
-        this.mouse_action = "nothing"
-        this.export_svg = {
-            cells:true,
-            edges:false,
-            seeds:false
-        }
+        this.svg.path = null;
+        this.svg.cells = [];
+
         this.init_events()
     }
     
@@ -120,60 +140,52 @@ class Voronoi{
     }
 
     add_seeds_sampling(nb){
-        const w = this.svg.width.baseVal.value
-        //issue not full height
-        const h = this.svg.height.baseVal.value
-        //console.log(`seeding in w:${w} ; h:${h}`)
+        const w = this.svg.main.width.baseVal.value
+        const h = this.svg.main.height.baseVal.value
         const prev_nb = this.seeds.length
-        //const new_seeds = get_seeds(nb,w,h)
         for(let i=0;i<nb;i++){
             const new_id = prev_nb+i
             const s = this.get_seed(new_id,w,h)
             this.seeds.push(s)
-            //let c = circle(this.svg,s.x,s.y,`c_${new_id}`)
-            //this.svg_seeds.push(c)
         }
     }
 
     add_seeds_random(nb){
-        const w = this.svg.width.baseVal.value
-        //issue not full height
-        const h = this.svg.height.baseVal.value
-        //console.log(`seeding in w:${w} ; h:${h}`)
+        const w = this.svg.main.width.baseVal.value
+        const h = this.svg.main.height.baseVal.value
         const prev_nb = this.seeds.length
         const new_seeds = get_seeds(nb,w,h)
         for(let i=0;i<nb;i++){
             const s = new_seeds[i]
             const new_id = prev_nb+i
             this.seeds.push({id:new_id,x:s.x,y:s.y})
-            //let c = circle(this.svg,s.x,s.y,`c_${new_id}`)
-            //this.svg_seeds.push(c)
         }
     }
 
     draw_seeds(){
         for(let i=0;i<this.seeds.length;i++){
             const s = this.seeds[i]
-            let c = svg.circle(this.svg,s.x,s.y,`c_${s.id}`)
-            this.svg_seeds.push(c)
+            let c = svg.circle(this.svg.main,s.x,s.y,`c_${s.id}`)
+            this.svg.seeds.push(c)
         }
     }
 
     draw_path(){
         console.time("draw path")
-        this.path = svg.draw_path(this.svg,this.res.edges,this.path_width)
+        this.svg.path = svg.draw_path(this.svg.main,this.res.edges,this.path_width)
         console.timeEnd("draw path")
     }
 
     set_path_width(width){
         this.path_width = width
-        this.path.setAttributeNS(null,"stroke-width",width)
+        this.svg.path.setAttributeNS(null,"stroke-width",width)
+        this.store()
     }
 
     draw_cells(){
         console.time("draw cells")
         //todo select color checkbox true false
-        this.cells = svg.draw_cells_bezier(this.svg,this.res.cells,this.min_edge,this.is_color)
+        this.svg.cells = svg.draw_cells_bezier(this.svg.main,this.res.cells,this.min_edge,this.is_color)
         console.timeEnd("draw cells")
     }
 
@@ -182,12 +194,12 @@ class Voronoi{
             this.seeds = []
         }
         if(clear_svg_array){
-            this.svg_seeds.forEach((el)=>{
+            this.svg.seeds.forEach((el)=>{
                 if(el.parentElement != null){//not understood why needed
                     el.parentElement.removeChild(el)
                 }
             })
-            this.svg_seeds = []
+            this.svg.seeds = []
         }
     }
 
@@ -196,16 +208,16 @@ class Voronoi{
             this.clear_seeds(false,true)
         }
         if(is_clear_path){
-            if(this.path != null){
-                this.svg.removeChild(this.path)
-                this.path = null
+            if(this.svg.path != null){
+                this.svg.main.removeChild(this.svg.path)
+                this.svg.path = null
             }
         }
         if(is_clear_cells){
-            this.cells.forEach((c)=>{
+            this.svg.cells.forEach((c)=>{
                 c.parentElement.removeChild(c)
             })
-            this.cells = []
+            this.svg.cells = []
         }
     }
 
@@ -221,13 +233,23 @@ class Voronoi{
             this.draw_cells()
         }
         //this.set_visibility()
+        this.store()
+    }
+
+    store(){
+        let config = Object.assign({},this)
+        delete config.svg
+        delete config.seeds
+        delete config.res
+        console.log(`storing config version ${config.version}`)
+        localStorage.setItem("voronoi_config",JSON.stringify(config))
     }
 
     compute_voronoi(){
         console.time("voronoi")
         let voronoi = new vor_core.Voronoi()
-        const w = this.svg.width.baseVal.value
-        const h = this.svg.height.baseVal.value
+        const w = this.svg.main.width.baseVal.value
+        const h = this.svg.main.height.baseVal.value
         this.res = voronoi.compute(this.seeds,{xl:0, xr:w, yt:0, yb:h})
         console.timeEnd("voronoi")
         //console.log(`stats : ${res.cells.length} cells , ${res.vertices.length} vertices , ${res.edges.length} edges`)
@@ -235,7 +257,8 @@ class Voronoi{
         this.draw()
     }
 
-    run(nb,clear=false){
+    run(clear=false){
+        const nb = this.nb_seeds
         if(clear){
             this.clear_seeds()
         }
@@ -292,7 +315,7 @@ class Voronoi{
         if(visibility == null){
             visibility = this.view_svg
         }
-        this.svg_seeds.forEach((seed)=>{
+        this.svg.seeds.forEach((seed)=>{
             if(visibility.seeds){
                 seed.setAttributeNS(null,"visibility","visible")
             }else{
@@ -300,12 +323,12 @@ class Voronoi{
             }
         })
         if(visibility.edges){
-            this.path.setAttributeNS(null,"visibility","visible")
+            this.svg.path.setAttributeNS(null,"visibility","visible")
         }else{
-            this.path.setAttributeNS(null,"visibility","hidden")
+            this.svg.path.setAttributeNS(null,"visibility","hidden")
         }
-        if(defined(this.cells)){
-            this.cells.forEach((cell)=>{
+        if(defined(this.svg.cells)){
+            this.svg.cells.forEach((cell)=>{
                 if(visibility.cells){
                     cell.setAttributeNS(null,"visibility","visible")
                 }else{
@@ -313,11 +336,12 @@ class Voronoi{
                 }
             })
         }
+        this.store()
     }
 
     save_svg(fileName){
         this.clear_svg()
-        this.svg.removeChild(this.rect)
+        //this.svg.removeChild(this.rect)
         if(this.export_svg.seeds){
             this.draw_seeds()
         }
@@ -327,8 +351,8 @@ class Voronoi{
         if(this.export_svg.cells){
             this.draw_cells()
         }
-        svg.save(this.svg,fileName)
-        this.svg.appendChild(this.rect)
+        svg.save(this.svg.main,fileName)
+        //this.svg.appendChild(this.rect)
         this.draw()
     }
 
@@ -373,21 +397,21 @@ class Voronoi{
     }
 
     init_events(){
-        $(this.svg).click((e)=>{
+        $(this.svg.main).click((e)=>{
             if(this.mouse_action == "add"){
                 this.add_seed({x:e.clientX, y:e.clientY})
             }else if(this.mouse_action == "remove"){
                 this.remove_seed({x:e.clientX, y:e.clientY})
             }
         })
-        $(this.svg).mousemove((e)=>{
+        $(this.svg.main).mousemove((e)=>{
             if(this.mouse_action == "move"){
                 if(e.buttons == 1){
                     this.move_seed({x:e.clientX, y:e.clientY})
                 }
             }
         })
-        $(this.svg).mousedown((e)=>{
+        $(this.svg.main).mousedown((e)=>{
             if(this.mouse_action == "move"){
                 this.move_seed({x:e.clientX, y:e.clientY})
             }

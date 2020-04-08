@@ -5,7 +5,6 @@ import {Voronoi} from "./index.js"
 const b = document.body
 let vor = new Voronoi(b,"100%","70%")
 let bs = new Bootstrap()
-const default_nb_seeds = 30;
 
 function main(){
 
@@ -32,10 +31,11 @@ function main(){
     })
     //html(seeds_cols[1],"a",/*html*/`<a style="margin:10px">runtime ms</a>`)
 
-    let in_nb_seeds = bs.input_text(seeds_cols[2],"in_nb_seed",`${default_nb_seeds} seeds`,"w-100");
+    let in_nb_seeds = bs.input_text(seeds_cols[2],"in_nb_seed",`${vor.nb_seeds} seeds`,"w-100");
     //html(seeds_cols[2],"a",/*html*/`<a style="margin:10px">number of seeds</a>`)
-    let rg_nb_seeds = bs.input_range(seeds_cols[2],default_nb_seeds * 2)
-    let in_max_seeds = bs.input_text(seeds_cols[2],"in_max_seed",`max seeds ${default_nb_seeds*2}`,"w-100");
+    let rg_nb_seeds = bs.input_range(seeds_cols[2],vor.nb_seeds * 2)
+    rg_nb_seeds.value = vor.nb_seeds
+    let in_max_seeds = bs.input_text(seeds_cols[2],"in_max_seed",`max seeds ${vor.nb_seeds*2}`,"w-100");
 
     vor.mouse_action = "move"
     bs.radio_group(seeds_cols[3],["add","move","remove"],1,(e)=>{
@@ -67,22 +67,23 @@ function main(){
     $(toggle_alg).change(()=>{
         vor.sampling = toggle_alg.checked
         in_sampling.style.visibility = toggle_alg.checked?"visible":"hidden"
-        vor.run(rg_nb_seeds.value,true)//clear = true
+        vor.run(true)//clear = true
     })
 
     vor.walls_dist = true
     $(toggle_walls).change(()=>{
         vor.walls_dist = toggle_walls.checked
-        vor.run(rg_nb_seeds.value,true)//clear = true
+        vor.run(true)//clear = true
     })
 
     $(btn_seeds).click((e)=>{
-        vor.run(rg_nb_seeds.value,true)//clear = true
+        vor.run(true)//clear = true
     })
 
     $(rg_nb_seeds).on("input",(e)=>{
         in_nb_seeds.value = rg_nb_seeds.value
-        vor.run(rg_nb_seeds.value)
+        vor.nb_seeds = rg_nb_seeds.value
+        vor.run()
     })
 
     $(rg_path_width).on("input",(e)=>{
@@ -96,16 +97,17 @@ function main(){
 
     $(in_nb_seeds).change(()=>{
         rg_nb_seeds.value = in_nb_seeds.value
-        vor.run(rg_nb_seeds.value)
+        vor.nb_seeds = rg_nb_seeds.value
+        vor.run()
     })
     $(in_max_seeds).change(()=>{rg_nb_seeds.max = in_max_seeds.value})
     $(in_sampling).change(()=>{
         vor.nb_samples = in_sampling.value
-        vor.run(rg_nb_seeds.value,true)//clear = true
+        vor.run(true)//clear = true
     })
 
     $(document).ready(()=>{
-        vor.run(rg_nb_seeds.value)
+        vor.run(true)
     })
 
     init_drag_events()
