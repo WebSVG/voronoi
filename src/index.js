@@ -1,5 +1,8 @@
-import {save_svg,defined,html,circle,circle_move,draw_path,draw_cells,save_json,draw_cells_bezier} from "./utils.js"
+import {defined,html,save_json} from "./utils.js"
 import * as vor_core from "../libs/rhill-voronoi-core.js"
+import {Svg} from "./svg_utils.js"
+
+let svg = new Svg()
 
 function get_seeds(nb,w,h){
     let res = []
@@ -151,14 +154,14 @@ class Voronoi{
     draw_seeds(){
         for(let i=0;i<this.seeds.length;i++){
             const s = this.seeds[i]
-            let c = circle(this.svg,s.x,s.y,`c_${s.id}`)
+            let c = svg.circle(this.svg,s.x,s.y,`c_${s.id}`)
             this.svg_seeds.push(c)
         }
     }
 
     draw_path(){
         console.time("draw path")
-        this.path = draw_path(this.svg,this.res.edges,this.path_width)
+        this.path = svg.draw_path(this.svg,this.res.edges,this.path_width)
         console.timeEnd("draw path")
     }
 
@@ -170,7 +173,7 @@ class Voronoi{
     draw_cells(){
         console.time("draw cells")
         //todo select color checkbox true false
-        this.cells = draw_cells_bezier(this.svg,this.res.cells,this.min_edge,this.is_color)
+        this.cells = svg.draw_cells_bezier(this.svg,this.res.cells,this.min_edge,this.is_color)
         console.timeEnd("draw cells")
     }
 
@@ -244,8 +247,6 @@ class Voronoi{
             const nb_pop = this.seeds.length - nb
             for(let i=0;i<nb_pop;i++){
                 this.seeds.pop()
-                //let last = this.svg_seeds.pop()
-                //this.svg.removeChild(last)
             }
         }else if(nb > this.seeds.length){
             if(this.sampling){
@@ -261,10 +262,6 @@ class Voronoi{
     set_seeds(seeds){
         this.clear_seeds()
         this.seeds = seeds
-        //for(let i=0;i<seeds.length;i++){
-        //    const s = seeds[i]
-        //    this.svg_seeds.push( circle(this.svg,s.x,s.y,`c_${s.id}`) )
-        //}
         this.compute_voronoi()
     }
 
@@ -272,7 +269,6 @@ class Voronoi{
         const new_id = this.seeds[this.seeds.length-1].id + 1
         let s = {x:coord.x, y:coord.y, id:new_id}
         this.seeds.push(s)
-        //this.svg_seeds.push(circle(this.svg,s.x,s.y,`c_${s.id}`))
         this.compute_voronoi()
     }
 
@@ -280,12 +276,6 @@ class Voronoi{
         const closest = get_closest_index(this.seeds,coord)
         const seed_id = this.seeds[closest].id
         this.seeds.splice(closest,1)
-        //const svg_seed_list = $(`#c_${seed_id}`)
-        //if(svg_seed_list.length != 1){
-        //    console.log(`'#c_${seed_id}' returned ${svg_seed_list.length} entries`)
-        //}
-        //const svg_seed = svg_seed_list[0]
-        //svg_seed.parentElement.removeChild(svg_seed)
         this.compute_voronoi()
     }
 
@@ -295,10 +285,6 @@ class Voronoi{
         closest_seed.x = coord.x
         closest_seed.y = coord.y
         const seed_id = this.seeds[closest_index].id
-        //const svg_seed = $(`#c_${seed_id}`)[0]
-        //if(this.view_svg.seeds){
-        //    circle_move(svg_seed,coord)
-        //}
         this.compute_voronoi()
     }
 
@@ -341,7 +327,7 @@ class Voronoi{
         if(this.export_svg.cells){
             this.draw_cells()
         }
-        save_svg(this.svg,fileName)
+        svg.save(this.svg,fileName)
         this.svg.appendChild(this.rect)
         this.draw()
     }
@@ -410,6 +396,4 @@ class Voronoi{
 }
 
 
-export {
-    Voronoi
-    };
+export {Voronoi};

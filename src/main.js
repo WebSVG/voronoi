@@ -1,56 +1,57 @@
-import {    input_range,input_text,button,hr,cols,toggle,html,
-            save_svg,radio_group,checkbox_group} from "./utils.js"
+import {hr,html,} from "./utils.js"
+import {Bootstrap} from "./bs_utils.js"
 import {Voronoi} from "./index.js"
 
 const b = document.body
 let vor = new Voronoi(b,"100%","70%")
+let bs = new Bootstrap()
 const default_nb_seeds = 30;
 
 function main(){
 
-    let seeds_cols = cols(b,4,["col-4","col","col-3","col-1"])
+    let seeds_cols = bs.cols(b,4,["col-4","col","col-3","col-1"])
     //html(seeds_cols[0],"a",/*html*/`<h4 style="margin:10px">Distance</h4>`)
-    let toggle_walls = toggle(seeds_cols[0],"walls away","walls stick")
-    let toggle_alg = toggle(seeds_cols[0],"Sampling","Single")
-    let in_sampling = input_text(seeds_cols[0],"in_nb_samples",`${vor.nb_samples} samples`);
+    let toggle_walls = bs.toggle(seeds_cols[0],"walls away","walls stick")
+    let toggle_alg = bs.toggle(seeds_cols[0],"Sampling","Single")
+    let in_sampling = bs.input_text(seeds_cols[0],"in_nb_samples",`${vor.nb_samples} samples`);
 
     html(seeds_cols[0],"a",/*html*/`<a style="margin:10px">Edges thickness</a>`)
-    let rg_path_width = input_range(seeds_cols[0],30)
+    let rg_path_width = bs.input_range(seeds_cols[0],30)
     rg_path_width.value = vor.path_width
     html(seeds_cols[0],"a",/*html*/`<a style="margin:10px">min edge cells (still buggy)</a>`)
-    let rg_min_edge = input_range(seeds_cols[0],50)
+    let rg_min_edge = bs.input_range(seeds_cols[0],50)
 
     //br(seeds_cols[0])
-    let btn_seeds = button(seeds_cols[1],"btn_seed",`generate seeds`);
+    let btn_seeds = bs.button(seeds_cols[1],"btn_seed",`generate seeds`);
     //let toggle_seeds = toggle(seeds_cols[1],"visible","hidden")
 
     const view_states = [vor.view_svg.cells,vor.view_svg.edges,vor.view_svg.seeds]
-    checkbox_group(seeds_cols[1],"cbx_view",["cells","edges","seeds"],view_states,(e)=>{
+    bs.checkbox_group(seeds_cols[1],"cbx_view",["cells","edges","seeds"],view_states,(e)=>{
         vor.view_svg[e.target.getAttribute("data-name")] = e.target.checked
         vor.draw()
     })
     //html(seeds_cols[1],"a",/*html*/`<a style="margin:10px">runtime ms</a>`)
 
-    let in_nb_seeds = input_text(seeds_cols[2],"in_nb_seed",`${default_nb_seeds} seeds`,"w-100");
+    let in_nb_seeds = bs.input_text(seeds_cols[2],"in_nb_seed",`${default_nb_seeds} seeds`,"w-100");
     //html(seeds_cols[2],"a",/*html*/`<a style="margin:10px">number of seeds</a>`)
-    let rg_nb_seeds = input_range(seeds_cols[2],default_nb_seeds * 2)
-    let in_max_seeds = input_text(seeds_cols[2],"in_max_seed",`max seeds ${default_nb_seeds*2}`,"w-100");
+    let rg_nb_seeds = bs.input_range(seeds_cols[2],default_nb_seeds * 2)
+    let in_max_seeds = bs.input_text(seeds_cols[2],"in_max_seed",`max seeds ${default_nb_seeds*2}`,"w-100");
 
     vor.mouse_action = "move"
-    radio_group(seeds_cols[3],["add","move","remove"],1,(e)=>{
+    bs.radio_group(seeds_cols[3],["add","move","remove"],1,(e)=>{
         vor.mouse_action = e.target.getAttribute("data-action")
     })
 
     hr(b)
 
-    let exp_cols = cols(b,3,["col-2","col-2","col"])
-    let btn_save_svg = button(exp_cols[0],"btn_save",`export SVG`);
+    let exp_cols = bs.cols(b,3,["col-2","col-2","col"])
+    let btn_save_svg = bs.button(exp_cols[0],"btn_save",`export SVG`);
     const export_states = [vor.export_svg.cells,vor.export_svg.edges,vor.export_svg.seeds]
-    checkbox_group(exp_cols[1],"cbx_export",["cells","edges","seeds"],export_states,(e)=>{
+    bs.checkbox_group(exp_cols[1],"cbx_export",["cells","edges","seeds"],export_states,(e)=>{
         vor.export_svg[e.target.getAttribute("data-name")] = e.target.checked
     })
 
-    let btn_save_data = button(exp_cols[2],"btn_save",`export seeds coordinates`);
+    let btn_save_data = bs.button(exp_cols[2],"btn_save",`export seeds coordinates`);
     html(exp_cols[2],"h4",/*html*/`<a style="margin:10px">Drag and drop 'seeds.json' to import</a>`)
 
 
