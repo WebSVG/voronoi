@@ -186,26 +186,10 @@ class Voronoi{
     }
 
     clear_svg(is_clear_seeds=true,is_clear_path=true,is_clear_cells=true){
-        if(is_clear_seeds){
-            this.svg.seeds.forEach((el)=>{
-                if(el.parentElement != null){//not understood why needed
-                    el.parentElement.removeChild(el)
-                }
-            })
-            this.svg.seeds = []
-        }
-        if(is_clear_path){
-            if(this.svg.path != null){
-                this.svg.path.parentElement.removeChild(this.svg.path)
-                this.svg.path = null
-            }
-        }
-        if(is_clear_cells){
-            this.svg.cells.forEach((c)=>{
-                c.parentElement.removeChild(c)
-            })
-            this.svg.cells = []
-        }
+        let children = [ ...this.svg.main.children];
+        children.forEach((child)=>{
+            child.parentElement.removeChild(child)
+        })
     }
 
     draw(){
@@ -219,7 +203,6 @@ class Voronoi{
         if(this.view_svg.cells){
             this.draw_cells()
         }
-        //this.set_visibility()
         this.store()
     }
 
@@ -240,32 +223,27 @@ class Voronoi{
         this.res = voronoi.compute(this.seeds,{xl:0, xr:w, yt:0, yb:h})
         console.timeEnd("voronoi")
         //console.log(`stats : ${res.cells.length} cells , ${res.vertices.length} vertices , ${res.edges.length} edges`)
-        //draw even if not visible as could be exported
         this.draw()
     }
 
-    run(clear=false){
-        const nb = this.nb_seeds
+    update_seeds(clear){
+        console.time("update_seeds")
         if(clear){
             this.seeds = []
         }
-        const nb_samples = this.sampling?nb*this.nb_samples:nb
-        const walls_msg = this.sampling?this.walls_dist:"irrelevant"
-        console.log(`generating ${nb} seeds ; sampling=${this.sampling} ; walls=${walls_msg} : ${nb_samples} samples`)
-        console.time("adjust_seeds")
-        if(nb < this.seeds.length){
-            const nb_pop = this.seeds.length - nb
+        if(this.nb_samples < this.seeds.length){
+            const nb_pop = this.seeds.length - this.nb_samples
             for(let i=0;i<nb_pop;i++){
                 this.seeds.pop()
             }
-        }else if(nb > this.seeds.length){
+        }else if(this.nb_samples > this.seeds.length){
             if(this.sampling){
-                this.add_seeds_sampling(nb - this.seeds.length)
+                this.add_seeds_sampling(this.nb_samples - this.seeds.length)
             }else{
-                this.add_seeds_random(nb - this.seeds.length)
+                this.add_seeds_random(this.nb_samples - this.seeds.length)
             }
         }
-        console.timeEnd("adjust_seeds")
+        console.timeEnd("update_seeds")
         this.compute_voronoi()
     }
 

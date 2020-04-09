@@ -53,12 +53,13 @@ class Svg{
     }
     
     draw_path(parent,edges,width){
+        let group = html(parent,"g",/*html*/`<g id="svg_g_edges"/>`)
         let d = ""
         edges.forEach((e)=>{
             d = d + `M ${e.va.x} ${e.va.y} L ${e.vb.x} ${e.vb.y} `
         })
-        return html(parent,"path",
-        /*html*/`<path d="${d}" stroke="black" stroke-width="${width}" />`
+        return html(group,"path",
+        /*html*/`<path id="svg_path_edges" d="${d}" stroke="black" stroke-width="${width}" />`
         )
     
     }

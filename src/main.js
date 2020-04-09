@@ -66,23 +66,23 @@ function main(){
     $(toggle_alg).change(()=>{
         vor.sampling = toggle_alg.checked
         in_sampling.style.visibility = toggle_alg.checked?"visible":"hidden"
-        vor.run(true)//clear = true
+        vor.update_seeds(true)//clear = true
     })
 
     vor.walls_dist = true
     $(toggle_walls).change(()=>{
         vor.walls_dist = toggle_walls.checked
-        vor.run(true)//clear = true
+        vor.update_seeds(true)//clear = true
     })
 
     $(btn_seeds).click((e)=>{
-        vor.run(true)//clear = true
+        vor.update_seeds(true)//clear = true
     })
 
     $(rg_nb_seeds).on("input",(e)=>{
         in_nb_seeds.value = rg_nb_seeds.value
         vor.nb_seeds = rg_nb_seeds.value
-        vor.run()
+        vor.update_seeds()
     })
 
     $(rg_path_width).on("input",(e)=>{
@@ -93,20 +93,19 @@ function main(){
         vor.draw()
     })
     
-
     $(in_nb_seeds).change(()=>{
         rg_nb_seeds.value = in_nb_seeds.value
         vor.nb_seeds = rg_nb_seeds.value
-        vor.run()
+        vor.update_seeds()
     })
     $(in_max_seeds).change(()=>{rg_nb_seeds.max = in_max_seeds.value})
     $(in_sampling).change(()=>{
         vor.nb_samples = in_sampling.value
-        vor.run(true)//clear = true
+        vor.update_seeds(true)//clear = true
     })
 
     $(document).ready(()=>{
-        vor.run(true)
+        vor.update_seeds(true)
     })
 
     init_drag_events()
