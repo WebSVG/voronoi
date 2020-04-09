@@ -80,7 +80,7 @@ class Voronoi{
     constructor(parent,w,h){
         //const use_storage = false
         let init_needed = false
-        this.version = "3"
+        this.version = "9"
         const config = JSON.parse(localStorage.getItem("voronoi_config"))
         if(config === null){
             console.log("First time usage, no config stored")
@@ -104,13 +104,15 @@ class Voronoi{
             this.sampling = false;
             this.path_width = 2;
             this.min_edge = 20
-            this.is_color = false
+            this.is_color = false//not usable yet as flickers on updates
+            this.width = 400
+            this.height = 200
             this.view_svg = {
                 cells:true,
                 edges:true,
                 seeds:true
             }
-            this.mouse_action = "nothing"
+            this.mouse_action = "move"
             this.export_svg = {
                 cells:true,
                 edges:false,
@@ -119,9 +121,8 @@ class Voronoi{
         }
         this.svg = {}
         this.svg.seeds = []
-        this.svg.main = html(parent,"svg",
-        /*html*/`<svg id="main_svg" xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"></svg>`
-        );
+        this.svg.main = html(parent,"svg",/*html*/`<svg id="main_svg" xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"></svg>`);
+        //this.svg.main = html(parent,"svg",/*html*/`<svg id="main_svg" xmlns="http://www.w3.org/2000/svg"></svg>`);
         this.svg.path = null;
         this.svg.cells = [];
 
@@ -140,21 +141,17 @@ class Voronoi{
     }
 
     add_seeds_sampling(nb){
-        const w = this.svg.main.width.baseVal.value
-        const h = this.svg.main.height.baseVal.value
         const prev_nb = this.seeds.length
         for(let i=0;i<nb;i++){
             const new_id = prev_nb+i
-            const s = this.get_seed(new_id,w,h)
+            const s = this.get_seed(new_id,this.width,this.height)
             this.seeds.push(s)
         }
     }
 
     add_seeds_random(nb){
-        const w = this.svg.main.width.baseVal.value
-        const h = this.svg.main.height.baseVal.value
         const prev_nb = this.seeds.length
-        const new_seeds = get_seeds(nb,w,h)
+        const new_seeds = get_seeds(nb,this.width,this.height)
         for(let i=0;i<nb;i++){
             const s = new_seeds[i]
             const new_id = prev_nb+i
@@ -185,7 +182,7 @@ class Voronoi{
         console.timeEnd("draw cells")
     }
 
-    clear_svg(is_clear_seeds=true,is_clear_path=true,is_clear_cells=true){
+    clear_svg(){
         let children = [ ...this.svg.main.children];
         children.forEach((child)=>{
             child.parentElement.removeChild(child)
@@ -194,14 +191,14 @@ class Voronoi{
 
     draw(){
         this.clear_svg()
-        if(this.view_svg.seeds){
-            this.draw_seeds()
+        if(this.view_svg.cells){
+            this.draw_cells()
         }
         if(this.view_svg.edges){
             this.draw_path()
         }
-        if(this.view_svg.cells){
-            this.draw_cells()
+        if(this.view_svg.seeds){
+            this.draw_seeds()
         }
         this.store()
     }
@@ -218,29 +215,64 @@ class Voronoi{
     compute_voronoi(){
         console.time("voronoi")
         let voronoi = new vor_core.Voronoi()
-        const w = this.svg.main.width.baseVal.value
-        const h = this.svg.main.height.baseVal.value
-        this.res = voronoi.compute(this.seeds,{xl:0, xr:w, yt:0, yb:h})
+        this.res = voronoi.compute(this.seeds,{xl:0, xr:this.width, yt:0, yb:this.height})
+        this.res.edges.forEach((edge)=>{
+            edge.va.x = parseFloat(edge.va.x)
+            edge.va.y = parseFloat(edge.va.y)
+            edge.vb.x = parseFloat(edge.vb.x)
+            edge.vb.y = parseFloat(edge.vb.y)
+        })
         console.timeEnd("voronoi")
         //console.log(`stats : ${res.cells.length} cells , ${res.vertices.length} vertices , ${res.edges.length} edges`)
         this.draw()
+    }
+
+    update_size(clear){
+        //this.width = this.svg.main.clientWidth
+        //this.height = this.svg.main.clientHeight
+        this.max_width = this.svg.main.clientWidth
+        this.max_height = this.svg.main.clientHeight
+        if(this.width > this.max_width){
+            this.width = this.max_width
+        }
+        if(this.height > this.max_height){
+            this.height = this.max_height
+        }
+        console.log(`set svg ( ${this.width} , ${this.height} )`)
+        this.update_seeds(clear)
+    }
+
+    outside(coord){
+        if(coord.x > this.width){
+            return true
+        }
+        if(coord.y > this.height){
+            return true
+        }
+        return false
     }
 
     update_seeds(clear){
         console.time("update_seeds")
         if(clear){
             this.seeds = []
+        }else{
+            for(let i=0;i<this.seeds.length;i++){
+                if(this.outside(this.seeds[i])){
+                    this.seeds.splice(i,1)
+                }
+            }
         }
-        if(this.nb_samples < this.seeds.length){
-            const nb_pop = this.seeds.length - this.nb_samples
+        if(this.nb_seeds < this.seeds.length){
+            const nb_pop = this.seeds.length - this.nb_seeds
             for(let i=0;i<nb_pop;i++){
                 this.seeds.pop()
             }
-        }else if(this.nb_samples > this.seeds.length){
+        }else if(this.nb_seeds > this.seeds.length){
             if(this.sampling){
-                this.add_seeds_sampling(this.nb_samples - this.seeds.length)
+                this.add_seeds_sampling(this.nb_seeds - this.seeds.length)
             }else{
-                this.add_seeds_random(this.nb_samples - this.seeds.length)
+                this.add_seeds_random(this.nb_seeds - this.seeds.length)
             }
         }
         console.timeEnd("update_seeds")

@@ -20,18 +20,26 @@ function edge_length(he){
 }
 
 function draw_cell_bezier(c,min_edge){
+    //console.log(c.halfedges.length)
+    if(c.halfedges.length == 0){
+        return ""
+    }
     const Q0 = first_ccw(c.halfedges[0])
     const center0 = center(c.halfedges[0])
     let d = `M ${center0.x} ${center0.y} `
     for(let j=1;j<c.halfedges.length;j++){
         const e_length = edge_length(c.halfedges[j])
-        if(e_length > min_edge){
+        if(e_length > min_edge)
+        {
+            //console.log(c.halfedges[j])
             const Q = first_ccw(c.halfedges[j])
             const cent = center(c.halfedges[j])
+            //console.log(`Q(${Q.x},${Q.y}) => center(${cent.x},${cent.y})`)
             d = d + `Q ${Q.x} ${Q.y} ${cent.x} ${cent.y} `
         }
     }
     //d = d + "z"
+    //console.log(d)
     const e0_length = edge_length(c.halfedges[0])
     if(e0_length > min_edge){
         d = d + `Q ${Q0.x} ${Q0.y} ${center0.x} ${center0.y} `
@@ -101,7 +109,7 @@ class Svg{
             let group = html(parent,"g",/*html*/`<g id="svg_g_bezier_cells"/>`)
             for(let i=0;i<cells.length;i++){
                 const d = draw_cell_bezier(cells[i],min_edge)
-                const color = (col)?this.rand_col():"#221155"
+                const color = (col==true)?this.rand_col():"#221155"
                 let cell_svg = html(group,"path",
                 /*html*/`<path d="${d}" stroke="black" stroke-width="0" fill="${color}" fill-opacity="0.2"/>`
                 )
