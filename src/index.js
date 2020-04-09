@@ -185,23 +185,14 @@ class Voronoi{
         console.timeEnd("draw cells")
     }
 
-    clear_seeds(clear_array=true,clear_svg_array=true){
-        if(clear_array){
-            this.seeds = []
-        }
-        if(clear_svg_array){
+    clear_svg(is_clear_seeds=true,is_clear_path=true,is_clear_cells=true){
+        if(is_clear_seeds){
             this.svg.seeds.forEach((el)=>{
                 if(el.parentElement != null){//not understood why needed
                     el.parentElement.removeChild(el)
                 }
             })
             this.svg.seeds = []
-        }
-    }
-
-    clear_svg(is_clear_seeds=true,is_clear_path=true,is_clear_cells=true){
-        if(is_clear_seeds){
-            this.clear_seeds(false,true)
         }
         if(is_clear_path){
             if(this.svg.path != null){
@@ -256,7 +247,7 @@ class Voronoi{
     run(clear=false){
         const nb = this.nb_seeds
         if(clear){
-            this.clear_seeds()
+            this.seeds = []
         }
         const nb_samples = this.sampling?nb*this.nb_samples:nb
         const walls_msg = this.sampling?this.walls_dist:"irrelevant"
@@ -279,7 +270,6 @@ class Voronoi{
     }
 
     set_seeds(seeds){
-        this.clear_seeds()
         this.seeds = seeds
         this.compute_voronoi()
     }
