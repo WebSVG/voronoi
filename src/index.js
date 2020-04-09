@@ -80,7 +80,7 @@ class Voronoi{
     constructor(parent,w,h){
         //const use_storage = false
         let init_needed = false
-        this.version = "9"
+        this.version = "11"
         const config = JSON.parse(localStorage.getItem("voronoi_config"))
         if(config === null){
             console.log("First time usage, no config stored")
@@ -105,8 +105,8 @@ class Voronoi{
             this.path_width = 2;
             this.min_edge = 20
             this.is_color = false//not usable yet as flickers on updates
-            this.width = 400
-            this.height = 200
+            this.width = 0
+            this.height = 0
             this.view_svg = {
                 cells:true,
                 edges:true,
@@ -215,27 +215,22 @@ class Voronoi{
     compute_voronoi(){
         console.time("voronoi")
         let voronoi = new vor_core.Voronoi()
-        this.res = voronoi.compute(this.seeds,{xl:0, xr:this.width, yt:0, yb:this.height})
-        this.res.edges.forEach((edge)=>{
-            edge.va.x = parseFloat(edge.va.x)
-            edge.va.y = parseFloat(edge.va.y)
-            edge.vb.x = parseFloat(edge.vb.x)
-            edge.vb.y = parseFloat(edge.vb.y)
-        })
+        this.res = voronoi.compute(this.seeds,{xl:0, xr:parseFloat(this.width), yt:0, yb:parseFloat(this.height)})
         console.timeEnd("voronoi")
         //console.log(`stats : ${res.cells.length} cells , ${res.vertices.length} vertices , ${res.edges.length} edges`)
         this.draw()
     }
 
     update_size(clear){
-        //this.width = this.svg.main.clientWidth
-        //this.height = this.svg.main.clientHeight
         this.max_width = this.svg.main.clientWidth
         this.max_height = this.svg.main.clientHeight
-        if(this.width > this.max_width){
+        if(this.width == 0){
+
+        }
+        if((this.width == 0) || (this.width > this.max_width)){
             this.width = this.max_width
         }
-        if(this.height > this.max_height){
+        if((this.height == 0) || (this.height > this.max_height)){
             this.height = this.max_height
         }
         console.log(`set svg ( ${this.width} , ${this.height} )`)

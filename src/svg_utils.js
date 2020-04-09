@@ -19,31 +19,62 @@ function edge_length(he){
     return Math.sqrt(dx * dx + dy * dy)
 }
 
-function draw_cell_bezier(c,min_edge){
+function circ(parent,x,y,id){
+    return html(parent,"circle",
+    /*html*/`<circle id=${id} cx=${x} cy=${y} r="3" stroke="black" stroke-width="0" fill="blue" />`
+    );
+}
+
+function line(parent,a,b){
+    let d = `M ${a.x} ${a.y} L ${b.x} ${b.y} `
+    return html(parent,"path",
+    /*html*/`<path d="${d}" stroke="black" stroke-width="1" />`
+    )
+}
+
+function get_cell_vertices(cell){
+    let res = []
+    for(let i=0;i<cell.halfedges.length;i++){
+        res.push(first_ccw(cell.halfedges[i]))
+    }
+    return res
+}
+
+function draw_cell_bezier_cubic(c,min_edge,parent,debug){
+    let vertices = get_cell_vertices(c)
+    let prev = vertices[0]
+    let first = prev
+    if(debug){
+        circ(parent,first.x,first.y)
+    }
+    for(let i=1;i<vertices.length;i++){
+        if(debug){
+            line(parent,prev,vertices[i])
+            circ(parent,vertices[i].x,vertices[i].y)
+            prev = vertices[i]
+        }
+    }
+    if(debug){
+        line(parent,first,prev)
+    }
+return ""
+}
+
+function draw_cell_bezier_quadratic(c){
     //console.log(c.halfedges.length)
     if(c.halfedges.length == 0){
         return ""
     }
     const Q0 = first_ccw(c.halfedges[0])
-    const center0 = center(c.halfedges[0])
-    let d = `M ${center0.x} ${center0.y} `
+    let cent = center(c.halfedges[0])
+    const center0 = cent
+    let d = `M ${cent.x} ${cent.y} `
     for(let j=1;j<c.halfedges.length;j++){
-        const e_length = edge_length(c.halfedges[j])
-        if(e_length > min_edge)
-        {
-            //console.log(c.halfedges[j])
-            const Q = first_ccw(c.halfedges[j])
-            const cent = center(c.halfedges[j])
-            //console.log(`Q(${Q.x},${Q.y}) => center(${cent.x},${cent.y})`)
-            d = d + `Q ${Q.x} ${Q.y} ${cent.x} ${cent.y} `
-        }
+        const Q = first_ccw(c.halfedges[j])
+        cent = center(c.halfedges[j])
+        d = d + `Q ${Q.x} ${Q.y} ${cent.x} ${cent.y} `
     }
-    //d = d + "z"
-    //console.log(d)
-    const e0_length = edge_length(c.halfedges[0])
-    if(e0_length > min_edge){
-        d = d + `Q ${Q0.x} ${Q0.y} ${center0.x} ${center0.y} `
-    }
+    d = d + `Q ${Q0.x} ${Q0.y} ${center0.x} ${center0.y} `
     return d
 }
 
@@ -108,7 +139,8 @@ class Svg{
         if(cells.length>1){//otherwise single cell has no half edges
             let group = html(parent,"g",/*html*/`<g id="svg_g_bezier_cells"/>`)
             for(let i=0;i<cells.length;i++){
-                const d = draw_cell_bezier(cells[i],min_edge)
+
+                const d = draw_cell_bezier_quadratic(cells[i],min_edge,parent,(i==2))
                 const color = (col==true)?this.rand_col():"#221155"
                 let cell_svg = html(group,"path",
                 /*html*/`<path d="${d}" stroke="black" stroke-width="0" fill="${color}" fill-opacity="0.2"/>`

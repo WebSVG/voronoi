@@ -40,8 +40,8 @@ function menu_sampling_walls(parent){
     html(parent,"a",/*html*/`<a style="margin:10px">Edges thickness</a>`)
     let rg_path_width = bs.input_range(parent,30)
     rg_path_width.value = vor.path_width
-    html(parent,"a",/*html*/`<a style="margin:10px">min edge cells (still buggy)</a>`)
-    let rg_min_edge = bs.input_range(parent,50)
+    //html(parent,"a",/*html*/`<a style="margin:10px">min edge cells (still buggy)</a>`)
+    //let rg_min_edge = bs.input_range(parent,50)
 
     vor.walls_dist = true
     $(toggle_walls).change(()=>{
@@ -62,10 +62,10 @@ function menu_sampling_walls(parent){
     $(rg_path_width).on("input",(e)=>{
         vor.set_path_width(rg_path_width.value)
     })
-    $(rg_min_edge).on("input",(e)=>{
-        vor.min_edge = rg_min_edge.value
-        vor.draw()
-    })
+    //$(rg_min_edge).on("input",(e)=>{
+    //    vor.min_edge = rg_min_edge.value
+    //    vor.draw()
+    //})
 }
 
 function menu_generate_view(parent){
