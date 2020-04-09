@@ -163,11 +163,7 @@ class Voronoi{
     }
 
     draw_seeds(){
-        for(let i=0;i<this.seeds.length;i++){
-            const s = this.seeds[i]
-            let c = svg.circle(this.svg.main,s.x,s.y,`c_${s.id}`)
-            this.svg.seeds.push(c)
-        }
+        this.svg.seeds = svg.draw_seeds(this.svg.main,this.seeds)
     }
 
     draw_path(){
@@ -209,7 +205,7 @@ class Voronoi{
         }
         if(is_clear_path){
             if(this.svg.path != null){
-                this.svg.main.removeChild(this.svg.path)
+                this.svg.path.parentElement.removeChild(this.svg.path)
                 this.svg.path = null
             }
         }
@@ -311,37 +307,8 @@ class Voronoi{
         this.compute_voronoi()
     }
 
-    set_visibility(visibility=null){
-        if(visibility == null){
-            visibility = this.view_svg
-        }
-        this.svg.seeds.forEach((seed)=>{
-            if(visibility.seeds){
-                seed.setAttributeNS(null,"visibility","visible")
-            }else{
-                seed.setAttributeNS(null,"visibility","hidden")
-            }
-        })
-        if(visibility.edges){
-            this.svg.path.setAttributeNS(null,"visibility","visible")
-        }else{
-            this.svg.path.setAttributeNS(null,"visibility","hidden")
-        }
-        if(defined(this.svg.cells)){
-            this.svg.cells.forEach((cell)=>{
-                if(visibility.cells){
-                    cell.setAttributeNS(null,"visibility","visible")
-                }else{
-                    cell.setAttributeNS(null,"visibility","hidden")
-                }
-            })
-        }
-        this.store()
-    }
-
     save_svg(fileName){
         this.clear_svg()
-        //this.svg.removeChild(this.rect)
         if(this.export_svg.seeds){
             this.draw_seeds()
         }
@@ -352,7 +319,6 @@ class Voronoi{
             this.draw_cells()
         }
         svg.save(this.svg.main,fileName)
-        //this.svg.appendChild(this.rect)
         this.draw()
     }
 
