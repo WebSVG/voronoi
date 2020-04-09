@@ -217,10 +217,18 @@ class Voronoi{
         let voronoi = new vor_core.Voronoi()
         this.res = voronoi.compute(this.seeds,{xl:0, xr:this.width, yt:0, yb:this.height})
         this.res.edges.forEach((edge)=>{
-            edge.va.x = parseFloat(edge.va.x)
-            edge.va.y = parseFloat(edge.va.y)
-            edge.vb.x = parseFloat(edge.vb.x)
-            edge.vb.y = parseFloat(edge.vb.y)
+            console.log(edge.va)
+            console.log(edge.vb)
+            if(typeof(edge.va.x)=="string"){
+                console.log(`edge.va.x is a string = '${edge.va.x}'`)
+            }
+            //edge.va.x = parseFloat(edge.va.x)
+            if(typeof(edge.va.y)=="string"){
+                console.log(`edge.va.x is a string = '${edge.va.y}'`)
+            }
+            //edge.va.y = parseFloat(edge.va.y)
+            //edge.vb.x = parseFloat(edge.vb.x)
+            //edge.vb.y = parseFloat(edge.vb.y)
         })
         console.timeEnd("voronoi")
         //console.log(`stats : ${res.cells.length} cells , ${res.vertices.length} vertices , ${res.edges.length} edges`)

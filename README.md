@@ -66,4 +66,3 @@ MIT
 * http://alexbeutel.com/webgl/voronoi.html
 * http://cfbrasz.github.io/VoronoiColoring.html
 * https://www.jasondavies.com/maps/voronoi/
-* 
