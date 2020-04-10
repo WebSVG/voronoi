@@ -9,8 +9,12 @@ function first_ccw(he){
 }
 
 
-function center(he){
+function center_he(he){
     return ({x:(he.edge.va.x+he.edge.vb.x)/2,y:(he.edge.va.y+he.edge.vb.y)/2})
+}
+
+function center(va,vb){
+    return ({x:(va.x+vb.x)/2,y:(va.y+vb.y)/2})
 }
 
 function edge_length(he){
@@ -40,24 +44,43 @@ function get_cell_vertices(cell){
     return res
 }
 
+function get_cell_centers(vertices){
+    let res = []
+    let prev = vertices[0]
+    for(let i=1;i<vertices.length;i++){
+        res.push(center(prev,vertices[i]))
+        prev = vertices[i]
+    }
+    //loop back
+    res.push(center(prev,vertices[0]))
+    return res
+}
+
+//M100,200 C100,100 250,100 250,200 S400,300 400,200
+//M(start-1) C(control-1) (control-2) (point-2) S(control-end) (point-end)
 function draw_cell_bezier_cubic(c,min_edge,parent,debug){
     let vertices = get_cell_vertices(c)
+    let centers = get_cell_centers(vertices)
     let prev = vertices[0]
-    let first = prev
+    let first = vertices[0]
+    let d = ""
     if(debug){
         circ(parent,first.x,first.y)
     }
     for(let i=1;i<vertices.length;i++){
+        const cur = vertices[i]
+        const cent = centers[i-1]
         if(debug){
-            line(parent,prev,vertices[i])
-            circ(parent,vertices[i].x,vertices[i].y)
-            prev = vertices[i]
+            line(parent,prev,cur)
+            circ(parent,cur.x,cur.y)
         }
+        d = d + `M${cent.x},${cent.y} C${cur}`
+        prev = cur
     }
     if(debug){
         line(parent,first,prev)
     }
-return ""
+    return d
 }
 
 function draw_cell_bezier_quadratic(c){
@@ -66,12 +89,12 @@ function draw_cell_bezier_quadratic(c){
         return ""
     }
     const Q0 = first_ccw(c.halfedges[0])
-    let cent = center(c.halfedges[0])
+    let cent = center_he(c.halfedges[0])
     const center0 = cent
     let d = `M ${cent.x} ${cent.y} `
     for(let j=1;j<c.halfedges.length;j++){
         const Q = first_ccw(c.halfedges[j])
-        cent = center(c.halfedges[j])
+        cent = center_he(c.halfedges[j])
         d = d + `Q ${Q.x} ${Q.y} ${cent.x} ${cent.y} `
     }
     d = d + `Q ${Q0.x} ${Q0.y} ${center0.x} ${center0.y} `

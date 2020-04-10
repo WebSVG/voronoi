@@ -16,6 +16,7 @@ https://websvg.github.io/voronoi/
 * Range slider with interactive update for adding and removing seeds to and out of existing set
 * Show/hide (cells, edges, seeds) and independently configure the SVG export
 * Browser local storage of config parameters (Not SVG, not seeds as they can be saved separately)
+* voronoi icon
 
 # Planned features
 * Shaped tesslation area

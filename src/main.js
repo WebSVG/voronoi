@@ -83,23 +83,31 @@ function menu_generate_view(parent){
 
 function menu_nb_seeds(parent){
     let in_nb_seeds = bs.input_text(parent,"in_nb_seed",`${vor.nb_seeds} seeds`,"w-100");
-    let rg_nb_seeds = bs.input_range(parent,vor.nb_seeds * 2)
+    let rg_nb_seeds = bs.input_range(parent,vor.max_seeds)
     rg_nb_seeds.value = vor.nb_seeds
-    let in_max_seeds = bs.input_text(parent,"in_max_seed",`max seeds ${vor.nb_seeds*2}`,"w-100");
-
+    let in_max_seeds = bs.input_text(parent,"in_max_seed",`max seeds ${vor.max_seeds}`,"w-100");
     $(rg_nb_seeds).on("input",(e)=>{
         in_nb_seeds.value = rg_nb_seeds.value
         vor.nb_seeds = rg_nb_seeds.value
         vor.update_seeds()
     })
 
-    
     $(in_nb_seeds).change(()=>{
+        if(in_nb_seeds.value > vor.max_seeds){
+            vor.max_seeds = in_nb_seeds.value
+            rg_nb_seeds.max = vor.max_seeds
+            in_max_seeds.setAttribute("placeholder",`max seeds ${vor.max_seeds}`)
+            in_max_seeds.value = null
+        }
         rg_nb_seeds.value = in_nb_seeds.value
         vor.nb_seeds = rg_nb_seeds.value
         vor.update_seeds()
     })
-    $(in_max_seeds).change(()=>{rg_nb_seeds.max = in_max_seeds.value})
+    $(in_max_seeds).change(()=>{
+        rg_nb_seeds.max = in_max_seeds.value
+        vor.max_seeds = in_max_seeds.value
+        vor.store()
+    })
 }
 
 function menu_svg_size(parent){
