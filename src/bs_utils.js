@@ -49,12 +49,12 @@ class Bootstrap{
         /*html*/`<input type="checkbox" class="ml-1" data-height="20" checked data-toggle="toggle" data-on="${on}" data-off="${off}" >`)
     }
     
-    radio_group(parent,labels_list,nb_checked,callback){
+    radio_group(parent,name,labels_list,nb_checked,callback){
         for(let i=0;i<labels_list.length;i++){
             const label = labels_list[i]
             let element = html(parent,"div",
             /*html*/`<div class="custom-control custom-radio">
-                        <input type="radio" data-action="${label}" class="custom-control-input" id="rg_${label}" name="rg_radios" ${(i==nb_checked)?"checked":""} >
+                        <input type="radio" data-label="${label}" class="custom-control-input" id="rg_${label}" name="rg_${name}" ${(i==nb_checked)?"checked":""} >
                         <label class="custom-control-label" for="rg_${label}">${label}</label>
                     </div>`
             )

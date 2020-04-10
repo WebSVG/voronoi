@@ -43,6 +43,14 @@ function menu_sampling_walls(parent){
     //html(parent,"a",/*html*/`<a style="margin:10px">min edge cells (still buggy)</a>`)
     //let rg_min_edge = bs.input_range(parent,50)
 
+    html(parent,"a",/*html*/`<a style="margin:10px">Cells shape</a>`)
+    const cells_shapes = ["edges","quadratic","cubic"]
+    const shape_index = cells_shapes.findIndex((shape)=>{return (shape == vor.cells_shape)})
+    bs.radio_group(parent,"shapes",cells_shapes,shape_index,(e)=>{
+        vor.cells_shape = e.target.getAttribute("data-label")
+        vor.update_seeds()
+    })
+
     vor.walls_dist = true
     $(toggle_walls).change(()=>{
         vor.walls_dist = toggle_walls.checked
@@ -82,6 +90,7 @@ function menu_generate_view(parent){
 }
 
 function menu_nb_seeds(parent){
+    html(parent,"a",/*html*/`<a style="margin:10px">Seeds Number</a>`)
     let in_nb_seeds = bs.input_text(parent,"in_nb_seed",`${vor.nb_seeds} seeds`,"w-100");
     let rg_nb_seeds = bs.input_range(parent,vor.max_seeds)
     rg_nb_seeds.value = vor.nb_seeds
@@ -111,6 +120,7 @@ function menu_nb_seeds(parent){
 }
 
 function menu_svg_size(parent){
+    html(parent,"a",/*html*/`<a style="margin:5px">View width height</a>`)
     let in_width = bs.input_text(parent,"in_width",`${vor.max_width} max width`,"w-100");
     let rg_width = bs.input_range(parent,vor.max_width)
     rg_width.value = vor.width
@@ -178,11 +188,11 @@ function main(){
     menu_nb_seeds(col1)
     menu_sampling_walls(col4)
 
-    //col3
+    html(col2,"a",/*html*/`<a style="margin:10px">Mouse</a>`)
     const actions_array = ["add","move","remove"]
     const action_index = actions_array.findIndex((action)=>{return (action == vor.mouse_action)})
-    bs.radio_group(col2,actions_array,action_index,(e)=>{
-        vor.mouse_action = e.target.getAttribute("data-action")
+    bs.radio_group(col2,"actions",actions_array,action_index,(e)=>{
+        vor.mouse_action = e.target.getAttribute("data-label")
         vor.store()
     })
     hr(b)

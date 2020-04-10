@@ -80,7 +80,7 @@ class Voronoi{
     constructor(parent,w,h){
         //const use_storage = false
         let init_needed = false
-        this.version = "13"
+        this.version = "15"
         const config = JSON.parse(localStorage.getItem("voronoi_config"))
         if(config === null){
             console.log("First time usage, no config stored")
@@ -108,6 +108,7 @@ class Voronoi{
             this.is_color = false//not usable yet as flickers on updates
             this.width = 0
             this.height = 0
+            this.cells_shape = "quadratic"
             this.view_svg = {
                 cells:true,
                 edges:true,
@@ -179,7 +180,11 @@ class Voronoi{
     draw_cells(){
         console.time("draw cells")
         //todo select color checkbox true false
-        this.svg.cells = svg.draw_cells_bezier(this.svg.main,this.res.cells,this.min_edge,this.is_color)
+        this.svg.cells = svg.draw_cells_bezier(this.svg.main,this.res.cells,{
+            shape:this.cells_shape,
+            color:this.is_color,
+            min_edge:this.min_edge
+        })
         console.timeEnd("draw cells")
     }
 
