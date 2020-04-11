@@ -2,6 +2,21 @@ import {defined,html} from "./utils.js"
 
 import {Vector} from "../libs/Vector.js"
 
+let svg = null
+
+function line(l){
+    let d = `M ${l.p1.x} ${l.p1.y} L ${l.p2.x} ${l.p2.y} `
+    return html(svg,"path",
+    /*html*/`<path d="${d}" stroke="red" stroke-width="2" />`
+    )
+}
+
+function circ(point){
+    return html(svg,"circle",
+    /*html*/`<circle cx=${point.x} cy=${point.y} r="3" stroke="black" stroke-width="0" fill="blue" />`
+    );
+}
+
 function center(va,vb){
     return ({x:(va.x+vb.x)/2,y:(va.y+vb.y)/2})
 }
@@ -160,9 +175,23 @@ class cell{
         d = d + "Z"
         return d
     }
-    retract(dist,org){
-        this.edges[0].v2.x = org.edges[0].v2.x + dist
-        this.edges[1].v1.x = org.edges[1].v1.x + dist
+    retract(dist,org,ind){
+        if(ind == 2){
+            let lines = []
+            this.edges.forEach((e)=>{
+                circ(e.c)
+                const dir = Vector.sub(e.c,e.v2)
+                let inside = Vector.perp(dir)
+                inside = Vector.normalise(inside)
+                inside = Vector.mult(inside,dist)
+                const new_center = Vector.add(e.c,inside)
+                const l = {p1:new_center,p2:Vector.add(e.v2,inside)}
+                const new_edge = {p1:Vector.add(e.v1,inside),p2:Vector.add(e.v2,inside)}
+                line(new_edge)
+                lines.push(l)
+                //circ(new_center)
+            })
+        }
     }
 
 }
@@ -185,10 +214,12 @@ class diagram{
         }
         return res
     }
-    retract_cells(dist){
+    retract_cells(dist,parent){
+        svg = parent
+        //console.log(this.cells)
         dist = parseFloat(dist)
         for(let i=0;i<this.cells.length;i++){
-            this.cells[i].retract(dist,this.org_cells[i])
+            this.cells[i].retract(dist,this.org_cells[i],i)
         }
     }
 }
