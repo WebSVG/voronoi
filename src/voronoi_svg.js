@@ -1,6 +1,7 @@
 import {defined,html,save_json} from "./utils.js"
 import * as vor_core from "../libs/rhill-voronoi-core.js"
 import {Svg} from "./svg_utils.js"
+import {diagram} from "./voronoi_geometry.js"
 
 let svg = new Svg()
 
@@ -181,11 +182,13 @@ class Voronoi{
     draw_cells(){
         console.time("draw cells")
         //todo select color checkbox true false
-        this.svg.cells = svg.draw_cells_bezier(this.svg.main,this.res.cells,{
+        const props = {
             shape:this.cells_shape,
             color:this.is_color,
             min_edge:this.min_edge
-        })
+        }
+        //this.svg.cells = svg.draw_cells_deprecated(this.svg.main,this.res.cells,props)
+        this.svg.cells = svg.draw_cells(this.svg.main,this.diagram.cells,props)
         console.timeEnd("draw cells")
     }
 
@@ -215,6 +218,7 @@ class Voronoi{
         delete config.svg
         delete config.seeds
         delete config.res
+        delete config.diagram
         //console.log(`storing config version ${config.version}`)
         localStorage.setItem("voronoi_config",JSON.stringify(config))
     }
@@ -224,6 +228,10 @@ class Voronoi{
         let voronoi = new vor_core.Voronoi()
         this.res = voronoi.compute(this.seeds,{xl:0, xr:parseFloat(this.width), yt:0, yb:parseFloat(this.height)})
         console.timeEnd("voronoi")
+        console.time("post proc")
+        this.res.type = "rhill"
+        this.diagram = new diagram(this.res)
+        console.timeEnd("post proc")
         //console.log(`stats : ${res.cells.length} cells , ${res.vertices.length} vertices , ${res.edges.length} edges`)
         this.draw()
     }

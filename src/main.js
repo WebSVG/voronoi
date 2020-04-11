@@ -32,23 +32,41 @@ function menu_export(parent){
     })
 }
 
-function menu_sampling_walls(parent){
+function menu_shape_space_min(parent){
     html(parent,"a",/*html*/`<a style="margin:10px">Cells shape</a>`)
     const cells_shapes = ["edges","quadratic","cubic"]
     const shape_index = cells_shapes.findIndex((shape)=>{return (shape == vor.cells_shape)})
-    bs.radio_group(parent,"shapes",cells_shapes,shape_index,(e)=>{
-        vor.cells_shape = e.target.getAttribute("data-label")
-        vor.update_seeds()
-    })
+    let rg_groups = bs.radio_group(parent,"shapes",cells_shapes,shape_index)
 
     html(parent,"a",/*html*/`<a style="margin:10px">Space between cells</a>`)
     let rg_space = bs.input_range(parent,30)
     rg_space.value = vor.cells_space
     let in_label = html(parent,"a",/*html*/`<a style="margin:10px">min cell edge ${vor.min_edge}</a>`)
-    const max_min_cell_edge = 200
+    const max_min_cell_edge = 100
     let rg_min_edge = bs.input_range(parent,max_min_cell_edge)
     rg_min_edge.value = vor.min_edge
 
+    if(vor.cells_shape == "cubic"){
+        in_label.style.visibility = "visible"
+        rg_min_edge.style.visibility = "visible"
+    }else{
+        in_label.style.visibility = "hidden"
+        rg_min_edge.style.visibility = "hidden"
+    }
+
+    rg_groups.forEach((el)=>{
+        $(el).change((e)=>{
+            vor.cells_shape = e.target.getAttribute("data-label")
+            vor.update_seeds()
+            if(vor.cells_shape == "cubic"){
+                in_label.style.visibility = "visible"
+                rg_min_edge.style.visibility = "visible"
+            }else{
+                in_label.style.visibility = "hidden"
+                rg_min_edge.style.visibility = "hidden"
+            }
+        })
+    })
 
     $(rg_space).on("input",(e)=>{
         vor.cells_space = rg_space.value
@@ -193,7 +211,7 @@ function main(){
 
     menu_generate_view(col0)
     menu_nb_seeds(col1)
-    menu_sampling_walls(col4)
+    menu_shape_space_min(col4)
 
     html(col2,"a",/*html*/`<a style="margin:10px">Mouse</a>`)
     const actions_array = ["add","move","remove"]

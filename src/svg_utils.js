@@ -280,7 +280,7 @@ class Svg{
         return color;
     }
     
-    draw_cells(parent,cells,col=false){
+    draw_cells_direct_deprecated(parent,cells,col=false){
         let res = []
         if(cells.length>1){//otherwise single cell has no half edges
             for(let i=0;i<cells.length;i++){
@@ -302,7 +302,7 @@ class Svg{
         return res
     }
     
-    draw_cells_bezier(parent,cells,params){
+    draw_cells_deprecated(parent,cells,params){
         let res = []
         if(cells.length>1){//otherwise single cell has no half edges
             let group = html(parent,"g",/*html*/`<g id="svg_g_bezier_cells"/>`)
@@ -311,13 +311,37 @@ class Svg{
                 const new_cell = filter_cell(cells[i])
                 let d
                 if(params.shape == "cubic"){
-                    d = draw_cell_bezier_cubic(new_cell,params.min_edge,parent,(i==2))
+                    d = draw_cell_bezier_cubic_filter(new_cell,params.min_edge,parent,(i==2))
                 }else if(params.shape == "quadratic"){
                     d = draw_cell_bezier_quadratic(new_cell,params.min_edge,parent,(i==2))
                 }else{
                     d = draw_cell_edges(new_cell,params.min_edge,parent,(i==2))
                 }
                 const color = (params.color==true)?this.rand_col():"#221155"
+                let cell_svg = html(group,"path",
+                /*html*/`<path d="${d}" stroke="red" stroke-width="0" fill="${color}" fill-opacity="0.2"/>`
+                )
+                res.push(cell_svg)
+            }
+        }
+        return res
+    }
+
+    draw_cells(parent,cells,params){
+        let res = []
+        if(cells.length>1){//otherwise single cell has no half edges
+            let group = html(parent,"g",/*html*/`<g id="svg_g_bezier_cells"/>`)
+            for(let i=0;i<cells.length;i++){
+                //here you can retract or detract small edges before either drawing technique
+                let d
+                if(params.shape == "cubic"){
+                    d = cells[i].path_bezier_cubic_filter(params.min_edge)
+                }else if(params.shape == "quadratic"){
+                    d = cells[i].path_bezier_quadratic()
+                }else{
+                    d = cells[i].path_edges()
+                }
+                let color = (params.color==true)?this.rand_col():"#221155"
                 let cell_svg = html(group,"path",
                 /*html*/`<path d="${d}" stroke="red" stroke-width="0" fill="${color}" fill-opacity="0.2"/>`
                 )

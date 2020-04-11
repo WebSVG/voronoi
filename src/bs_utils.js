@@ -49,7 +49,8 @@ class Bootstrap{
         /*html*/`<input type="checkbox" class="ml-1" data-height="20" checked data-toggle="toggle" data-on="${on}" data-off="${off}" >`)
     }
     
-    radio_group(parent,name,labels_list,nb_checked,callback){
+    radio_group(parent,name,labels_list,nb_checked,callback=null){
+        let res = []
         for(let i=0;i<labels_list.length;i++){
             const label = labels_list[i]
             let element = html(parent,"div",
@@ -58,8 +59,12 @@ class Bootstrap{
                         <label class="custom-control-label" for="rg_${label}">${label}</label>
                     </div>`
             )
-            $(element).change(callback)
+            if(callback != null){
+                $(element).change(callback)
+            }
+            res.push(element)
         }
+        return res
     }
     
     checkbox_group(parent,name,labels_list,checked_list,callback){
