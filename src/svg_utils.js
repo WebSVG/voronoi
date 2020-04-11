@@ -17,9 +17,15 @@ function center(va,vb){
     return ({x:(va.x+vb.x)/2,y:(va.y+vb.y)/2})
 }
 
-function edge_length(he){
+function he_length(he){
     const dx = he.edge.va.x-he.edge.vb.x
     const dy = he.edge.va.y-he.edge.vb.y
+    return Math.sqrt(dx * dx + dy * dy)
+}
+
+function points_dist(va,vb){
+    const dx = va.x-vb.x
+    const dy = va.y-vb.y
     return Math.sqrt(dx * dx + dy * dy)
 }
 
@@ -32,7 +38,7 @@ function circ(parent,x,y,id){
 function line(parent,a,b){
     let d = `M ${a.x} ${a.y} L ${b.x} ${b.y} `
     return html(parent,"path",
-    /*html*/`<path d="${d}" stroke="black" stroke-width="1" />`
+    /*html*/`<path d="${d}" stroke="red" stroke-width="2" />`
     )
 }
 
@@ -56,34 +62,110 @@ function get_cell_centers(vertices){
     return res
 }
 
-//M100,200 C100,100 250,100 250,200 S400,300 400,200
-//M(start-1) C(control-1) (control-2) (point-2) S(control-end) (point-end)
+function get_edges_lengthes(cell){
+    let res = []
+    for(let i=0;i<cell.halfedges.length;i++){
+        res.push(he_length(cell.halfedges[i]))
+    }
+    return res
+}
+
+function filter_cell(cell){
+    let res = {}
+    res.vertices = get_cell_vertices(cell)
+    res.centers = get_cell_centers(res.vertices)
+    res.edges_length = get_edges_lengthes(cell)
+    return res
+}
+
+//M(point-1) C(control-1) (control-2) (point-2)
+//S(control-next) (point-next)
 function draw_cell_bezier_cubic(c,min_edge,parent,debug=false){
-    let vertices = get_cell_vertices(c)
-    let centers = get_cell_centers(vertices)
+    let vertices = c.vertices
+    let centers = c.centers
     let d = ""
+    let pos = "first"
+    let log = ""
     for(let i=0;i<vertices.length;i++){
         const p1 = (i==0)?centers.slice(-1)[0]:centers[i-1]
         const p2 = centers[i]
         const q1 = vertices[i]
         const q2 = vertices[i]
-        //const p1t = (i==0)?"last":i-1;
+        const p1t = (i==0)?"last":i-1;
         //circ(parent,vertices[i].x,vertices[i].y)
         //html(parent,"text",/*html*/`<text x="${p1.x}" y="${p1.y}">${p1t}</text>`)
         //html(parent,"text",/*html*/`<text x="${q1.x}" y="${q1.y}">q:${i}</text>`)
-        if(i == 0){
+        if(pos == "first"){
             d = d + `M${p1.x},${p1.y} C${q1.x},${q1.y} ${q2.x},${q2.y} ${p2.x},${p2.y} `
+            log += `M(center-${p1t}) C(vert-${i}) (vert-${i}) (center-${i})`
+            pos = "sec"
         }else{
             d = d + `S${q2.x},${q2.y} ${p2.x},${p2.y} `
+            log += `S(vert-${i}) (center-${i}) `
         }
     }
     d = d + "Z"
+    if(debug){
+        console.log(log)
+    }
     return d
 }
 
+//ref
+//M(center-last) C(vert-0) (vert-0) (center-0)
+//S(vert-1) (center-1) 
+//S(vert-2) (center-2) 
+//S(vert-3) (center-3) 
+//
+//res
+//M(center-last) C(vert-0) (vert-1) (center-1)
+//S(vert-2) (center-2) 
+//S(vert-3) (center-3) 
+
+//M(point-1) C(control-1) (control-2) (point-2)
+//S(control-next) (point-next)
+function draw_cell_bezier_cubic_test(c,min_edge,parent,debug=false){
+    let vertices = c.vertices
+    let centers = c.centers
+    let d = ""
+    let pos = "first"
+    let log = ""
+    for(let i=0;i<vertices.length;i++){
+        const p1 = (i==0)?centers.slice(-1)[0]:centers[i-1]
+        const p2 = centers[i]
+        const q1 = vertices[i]
+        const q2 = vertices[i]
+        const p1t = (i==0)?"last":i-1;
+        if(debug && (i == 0)){
+            circ(parent,vertices[i].x,vertices[i].y)
+            html(parent,"text",/*html*/`<text x="${p1.x}" y="${p1.y}">${p1t}</text>`)
+            html(parent,"text",/*html*/`<text x="${q1.x}" y="${q1.y}">q:${i}</text>`)
+        }
+        if(pos == "first"){
+            d = d + `M${p1.x},${p1.y} C${q1.x},${q1.y} `
+            log += `M(center-${p1t}) C(vert-${i}) `
+            pos = "sec"
+        }else if(pos == "sec"){
+            d = d + `${q2.x},${q2.y} ${p2.x},${p2.y} `
+            log += `(vert-${i}) (center-${i}) `
+            pos = "third"
+        }else{
+            d = d + `S${q2.x},${q2.y} ${p2.x},${p2.y} `
+            log += `S(vert-${i}) (center-${i}) `
+        }
+    }
+    d = d + "Z"
+    if(debug){
+        console.log(log)
+    }
+    return d
+}
+
+//M(point-1) L(point-2)
+//L(point-next)
 function draw_cell_edges(c,retract,parent,debug=false){
-    let vertices = get_cell_vertices(c)
-    let centers = get_cell_centers(vertices)
+    let vertices = c.vertices
+    let centers = c.centers
     let d = ""
     for(let i=0;i<vertices.length;i++){
         const p2 = vertices[i]
@@ -98,21 +180,69 @@ function draw_cell_edges(c,retract,parent,debug=false){
     return d
 }
 
-function draw_cell_bezier_quadratic(c){
-    //console.log(c.halfedges.length)
-    if(c.halfedges.length == 0){
-        return ""
+//M(point-1) Q(control-1) (point-2)
+//Q(control-next) (point-next)
+function draw_cell_bezier_quadratic(c,min_edge,parent,debug){
+    debug = false
+    let vertices = c.vertices
+    let centers = c.centers
+    let d = ""
+    let first = true
+    for(let i=0;i<vertices.length;i++){
+        const p1 = (i==0)?centers.slice(-1)[0]:centers[i-1]
+        const p2 = centers[i]
+        const q1 = vertices[i]
+        const q2 = vertices[i]
+        if(debug==true){
+            const qn = (i==vertices.length-1)?vertices[0]:vertices[i+1]
+            line(parent,q1,qn)
+            circ(parent,q1.x,q1.y)
+            const q1t = (i==0)?"last":i-1;
+            html(parent,"text",/*html*/`<text x="${q1.x}" y="${q1.y}">${q1t}</text>`)
+            //html(parent,"text",/*html*/`<text x="${q1.x}" y="${q1.y}">q:${i}</text>`)
+        }
+        if(first == true){
+            d = d + `M${p1.x},${p1.y} Q${q1.x},${q1.y} ${p2.x},${p2.y} `
+            first = false
+        }else{
+            d = d + `Q${q2.x},${q2.y} ${p2.x},${p2.y} `
+        }
     }
-    const Q0 = first_ccw(c.halfedges[0])
-    let cent = center_he(c.halfedges[0])
-    const center0 = cent
-    let d = `M ${cent.x} ${cent.y} `
-    for(let j=1;j<c.halfedges.length;j++){
-        const Q = first_ccw(c.halfedges[j])
-        cent = center_he(c.halfedges[j])
-        d = d + `Q ${Q.x} ${Q.y} ${cent.x} ${cent.y} `
+    d = d + "Z"
+    //console.log(d)
+    return d
+}
+
+//M(point-1) Q(control-1) (point-2)
+//Q(control-next) (point-next)
+function draw_cell_bezier_quadratic_test(c,min_edge,parent,debug){
+    let vertices = c.vertices
+    let centers = c.centers
+    let d = ""
+    let pos = "first"
+    for(let i=0;i<vertices.length;i++){
+        const p1 = centers[i]
+        const p2 = (i==centers.length-1)?centers[0]:centers[i+1]
+        const qn = (i==vertices.length-1)?vertices[0]:vertices[i+1]
+        const q1 = qn
+        const q2 = qn
+        if(debug==true){
+            const q_prev = vertices[i]
+            line(parent,q_prev,q1)
+            circ(parent,q1.x,q1.y)
+            const q1t = (i==0)?"last":i-1;
+            html(parent,"text",/*html*/`<text x="${q1.x}" y="${q1.y}">${q1t}</text>`)
+            //html(parent,"text",/*html*/`<text x="${q1.x}" y="${q1.y}">q:${i}</text>`)
+        }
+        if(pos == "first"){
+            d = d + `M${p1.x},${p1.y} Q${q1.x},${q1.y} ${p2.x},${p2.y} `
+            pos = "sec"
+        }else{
+            d = d + `Q${q2.x},${q2.y} ${p2.x},${p2.y} `
+        }
     }
-    d = d + `Q ${Q0.x} ${Q0.y} ${center0.x} ${center0.y} `
+    d = d + "Z"
+    //console.log(d)
     return d
 }
 
@@ -177,13 +307,15 @@ class Svg{
         if(cells.length>1){//otherwise single cell has no half edges
             let group = html(parent,"g",/*html*/`<g id="svg_g_bezier_cells"/>`)
             for(let i=0;i<cells.length;i++){
+                //here you can retract or detract small edges before either drawing technique
+                const new_cell = filter_cell(cells[i])
                 let d
                 if(params.shape == "cubic"){
-                    d = draw_cell_bezier_cubic(cells[i],params.min_edge,parent,(i==2))
+                    d = draw_cell_bezier_cubic(new_cell,params.min_edge,parent,(i==2))
                 }else if(params.shape == "quadratic"){
-                    d = draw_cell_bezier_quadratic(cells[i],params.min_edge,parent,(i==2))
+                    d = draw_cell_bezier_quadratic(new_cell,params.min_edge,parent,(i==2))
                 }else{
-                    d = draw_cell_edges(cells[i],params.min_edge,parent,(i==2))
+                    d = draw_cell_edges(new_cell,params.min_edge,parent,(i==2))
                 }
                 const color = (params.color==true)?this.rand_col():"#221155"
                 let cell_svg = html(group,"path",

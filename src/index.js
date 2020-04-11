@@ -80,7 +80,7 @@ class Voronoi{
     constructor(parent,w,h){
         //const use_storage = false
         let init_needed = false
-        this.version = "15"
+        this.version = "17"
         const config = JSON.parse(localStorage.getItem("voronoi_config"))
         if(config === null){
             console.log("First time usage, no config stored")
@@ -101,14 +101,15 @@ class Voronoi{
             this.nb_seeds = 30;
             this.max_seeds = 50;
             this.nb_samples = 10;
-            this.walls_dist = false;
-            this.sampling = false;
+            this.walls_dist = true;
+            this.sampling = true;
             this.path_width = 2;
             this.min_edge = 20
             this.is_color = false//not usable yet as flickers on updates
             this.width = 0
             this.height = 0
             this.cells_shape = "quadratic"
+            this.cells_space = 0
             this.view_svg = {
                 cells:true,
                 edges:true,
@@ -214,7 +215,7 @@ class Voronoi{
         delete config.svg
         delete config.seeds
         delete config.res
-        console.log(`storing config version ${config.version}`)
+        //console.log(`storing config version ${config.version}`)
         localStorage.setItem("voronoi_config",JSON.stringify(config))
     }
 
@@ -253,9 +254,9 @@ class Voronoi{
         return false
     }
 
-    update_seeds(clear){
+    update_seeds(clear=false){
         console.time("update_seeds")
-        if(clear){
+        if(clear===true){
             this.seeds = []
         }else{
             for(let i=0;i<this.seeds.length;i++){
@@ -282,6 +283,7 @@ class Voronoi{
 
     set_seeds(seeds){
         this.seeds = seeds
+        this.nb_seeds = this.seeds.length
         this.compute_voronoi()
     }
 

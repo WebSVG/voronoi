@@ -33,16 +33,6 @@ function menu_export(parent){
 }
 
 function menu_sampling_walls(parent){
-    let toggle_walls = bs.toggle(parent,"walls away","walls stick")
-    let toggle_alg   = bs.toggle(parent,"Sampling","Single")
-    let in_sampling  = bs.input_text(parent,"in_nb_samples",`${vor.nb_samples} samples`);
-    br(parent)
-    html(parent,"a",/*html*/`<a style="margin:10px">Edges thickness</a>`)
-    let rg_path_width = bs.input_range(parent,30)
-    rg_path_width.value = vor.path_width
-    //html(parent,"a",/*html*/`<a style="margin:10px">min edge cells (still buggy)</a>`)
-    //let rg_min_edge = bs.input_range(parent,50)
-
     html(parent,"a",/*html*/`<a style="margin:10px">Cells shape</a>`)
     const cells_shapes = ["edges","quadratic","cubic"]
     const shape_index = cells_shapes.findIndex((shape)=>{return (shape == vor.cells_shape)})
@@ -51,29 +41,24 @@ function menu_sampling_walls(parent){
         vor.update_seeds()
     })
 
-    vor.walls_dist = true
-    $(toggle_walls).change(()=>{
-        vor.walls_dist = toggle_walls.checked
-        vor.update_seeds(true)//clear = true
-    })
+    html(parent,"a",/*html*/`<a style="margin:10px">Space between cells</a>`)
+    let rg_space = bs.input_range(parent,30)
+    rg_space.value = vor.cells_space
+    let in_label = html(parent,"a",/*html*/`<a style="margin:10px">min cell edge ${vor.min_edge}</a>`)
+    const max_min_cell_edge = 200
+    let rg_min_edge = bs.input_range(parent,max_min_cell_edge)
+    rg_min_edge.value = vor.min_edge
 
-    vor.sampling = true
-    $(toggle_alg).change(()=>{
-        vor.sampling = toggle_alg.checked
-        in_sampling.style.visibility = toggle_alg.checked?"visible":"hidden"
-        vor.update_seeds(true)//clear = true
+
+    $(rg_space).on("input",(e)=>{
+        vor.cells_space = rg_space.value
+        vor.draw()
     })
-    $(in_sampling).change(()=>{
-        vor.nb_samples = in_sampling.value
-        vor.update_seeds(true)//clear = true
+    $(rg_min_edge).on("input",(e)=>{
+        vor.min_edge = rg_min_edge.value
+        in_label.innerHTML = `min cell edge ${vor.min_edge}`
+        vor.draw()
     })
-    $(rg_path_width).on("input",(e)=>{
-        vor.set_path_width(rg_path_width.value)
-    })
-    //$(rg_min_edge).on("input",(e)=>{
-    //    vor.min_edge = rg_min_edge.value
-    //    vor.draw()
-    //})
 }
 
 function menu_generate_view(parent){
@@ -95,10 +80,17 @@ function menu_nb_seeds(parent){
     let rg_nb_seeds = bs.input_range(parent,vor.max_seeds)
     rg_nb_seeds.value = vor.nb_seeds
     let in_max_seeds = bs.input_text(parent,"in_max_seed",`max seeds ${vor.max_seeds}`,"w-100");
+
+    let toggle_walls = bs.toggle(parent,"walls away","walls stick")
+    toggle_walls.checked = vor.walls_dist
+    let toggle_alg   = bs.toggle(parent,"Sampling","Single")
+    toggle_alg.checked = vor.sampling
+    let in_sampling  = bs.input_text(parent,"in_nb_samples",`${vor.nb_samples} samples`);
+
     $(rg_nb_seeds).on("input",(e)=>{
         in_nb_seeds.value = rg_nb_seeds.value
         vor.nb_seeds = rg_nb_seeds.value
-        vor.update_seeds()
+        vor.update_seeds(false)
     })
 
     $(in_nb_seeds).change(()=>{
@@ -117,6 +109,21 @@ function menu_nb_seeds(parent){
         vor.max_seeds = in_max_seeds.value
         vor.store()
     })
+
+    $(toggle_walls).change(()=>{
+        vor.walls_dist = toggle_walls.checked
+        vor.update_seeds(true)//clear = true
+    })
+    $(toggle_alg).change(()=>{
+        vor.sampling = toggle_alg.checked
+        in_sampling.style.visibility = toggle_alg.checked?"visible":"hidden"
+        vor.update_seeds(true)//clear = true
+    })
+    $(in_sampling).change(()=>{
+        vor.nb_samples = in_sampling.value
+        vor.update_seeds(true)//clear = true
+    })
+
 }
 
 function menu_svg_size(parent){
@@ -182,7 +189,7 @@ function menu_svg_size(parent){
 function main(){
 
     hr(b)
-    let [col0,col1,col2,col3,col4] = bs.cols(b,5,["col-2","col-3","col-1","col-2","col"])
+    let [col0,col1,col2,col3,col4] = bs.cols(b,5,["col-2","col-4","col-1","col-2","col"])
 
     menu_generate_view(col0)
     menu_nb_seeds(col1)

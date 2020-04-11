@@ -27,8 +27,20 @@ https://websvg.github.io/voronoi/
 * optionally remove pointy edges of bezier cells (ignore short edges)
 * edit seed weight
 
+# Minimal cells edge size
+<img src="./media/short_edges.gif" width=400>
+
+* goal is to filter small edge to avoid ugly bezier edgy effect
+* ignoring an edge poses the issue of which vertex to use as control point for the left edges
+* using the center of the removed edge as new control point would break the tangency alignment with the previous curve
+* clean way would require ignoring the corresponding site completely and extend the left edges till the small edge is nullified, thus reducing the total number of sides of the cell
+* cell sides expansion only works for bezier cells not for geometric cell
+* therefore, the min edge size filtering is currently disabled until proper small edges expansion is implemented
+
+# SVG path tesslation area
+* sampling points and check if point inside SVG with `document.elementFromPoint(x, y);`
+
 ## Known Issues
-* min edge removal does not curve with the rest
 * tesslation size does not cover the full height
 * edit checkboxes not persisted
 
