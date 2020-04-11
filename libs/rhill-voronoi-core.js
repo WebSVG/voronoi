@@ -65,6 +65,7 @@ Voronoi.Halfedge object:
   site: the Voronoi site object owning this Voronoi.Halfedge object.
   edge: a reference to the unique Voronoi.Edge object underlying this
     Voronoi.Halfedge object.
+  angle: oprientation of the half edge (start -> end)
   getStartpoint(): a method returning an object with an 'x' and a 'y' property
     for the start point of this halfedge. Keep in mind halfedges are always
     countercockwise.

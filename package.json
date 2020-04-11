@@ -22,6 +22,7 @@
   "homepage": "https://github.com/WebSVG/voronoi#readme",
   "dependencies": {
     "bootstrap": "^4.4.1",
-    "file-saver": "^2.0.2"
+    "file-saver": "^2.0.2",
+    "matter-js": "^0.14.2"
   }
 }

@@ -1,5 +1,6 @@
 import {defined,html} from "./utils.js"
 
+import {Vector} from "../libs/Vector.js"
 
 function center(va,vb){
     return ({x:(va.x+vb.x)/2,y:(va.y+vb.y)/2})
@@ -32,8 +33,24 @@ class cell{
     constructor(create){
         if(defined(create.site)){
             this.from_rhill_cell(create)
-            this.add_prev_next()
         }
+        this.add_prev_next()
+    }
+    copy(){
+        let copy = {}
+        copy.seed = {x:this.seed.x,y:this.seed.y}
+        copy.edges = []
+        for(let i=0;i<this.edges.length;i++){
+            const e = this.edges[i]
+            let ne = {}
+            ne.v1 = {x:e.v1.x,y:e.v1.y}
+            ne.v2 = {x:e.v2.x,y:e.v2.y}
+            ne.c = {x:e.c.x,y:e.c.y}
+            ne.l = e.l
+            ne.a = e.a
+            copy.edges.push(ne)
+        }
+        return copy
     }
     add_prev_next(){
         for(let i=0;i<this.edges.length;i++){
@@ -51,6 +68,7 @@ class cell{
             let edge = {v1:v1,v2:v2}
             edge.l = he_length(he)
             edge.c = center(edge.v1,edge.v2)
+            edge.a = c.halfedges[i].angle
             this.edges.push(edge)
         }
     }
@@ -142,6 +160,10 @@ class cell{
         d = d + "Z"
         return d
     }
+    retract(dist,org){
+        this.edges[0].v2.x = org.edges[0].v2.x + dist
+        this.edges[1].v1.x = org.edges[1].v1.x + dist
+    }
 
 }
 
@@ -149,13 +171,24 @@ class diagram{
     constructor(create){
         this.type = "wfil"
         this.cells = []
+        this.org_cells = []
         if(create.type =="rhill"){
-            this.from_rhill_diagram(create)
+            this.cells      =  this.from_rhill_diagram(create)
         }
+        this.cells.forEach((c)=>{this.org_cells.push(c.copy())})
+
     }
     from_rhill_diagram(diag){
+        let res = []
         for(let i=0;i<diag.cells.length;i++){
-            this.cells.push(new cell(diag.cells[i]))
+            res.push(new cell(diag.cells[i]))
+        }
+        return res
+    }
+    retract_cells(dist){
+        dist = parseFloat(dist)
+        for(let i=0;i<this.cells.length;i++){
+            this.cells[i].retract(dist,this.org_cells[i])
         }
     }
 }

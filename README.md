@@ -56,6 +56,9 @@ MIT
   * [live demo](http://www.raymondhill.net/voronoi/rhill-voronoi.html)
   * used `rhill-voronoi-core.js` from commit 3fe2165
 
+## Vector module from matter.js
+* modified `./node_modules/matter-js/src/geometry/Vector.js` for ES2015 module import
+
 ## bootstrap
 * https://getbootstrap.com/docs/4.4/getting-started/introduction/
 * https://gitbrent.github.io/bootstrap4-toggle/

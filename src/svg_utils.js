@@ -327,19 +327,20 @@ class Svg{
         return res
     }
 
-    draw_cells(parent,cells,params){
+    draw_cells(parent,diag,params){
         let res = []
-        if(cells.length>1){//otherwise single cell has no half edges
+        if(diag.cells.length>1){//otherwise single cell has no half edges
+            diag.retract_cells(params.retraction)
             let group = html(parent,"g",/*html*/`<g id="svg_g_bezier_cells"/>`)
-            for(let i=0;i<cells.length;i++){
+            for(let i=0;i<diag.cells.length;i++){
                 //here you can retract or detract small edges before either drawing technique
                 let d
                 if(params.shape == "cubic"){
-                    d = cells[i].path_bezier_cubic_filter(params.min_edge)
+                    d = diag.cells[i].path_bezier_cubic_filter(params.min_edge)
                 }else if(params.shape == "quadratic"){
-                    d = cells[i].path_bezier_quadratic()
+                    d = diag.cells[i].path_bezier_quadratic()
                 }else{
-                    d = cells[i].path_edges()
+                    d = diag.cells[i].path_edges()
                 }
                 let color = (params.color==true)?this.rand_col():"#221155"
                 let cell_svg = html(group,"path",

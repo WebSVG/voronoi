@@ -185,10 +185,11 @@ class Voronoi{
         const props = {
             shape:this.cells_shape,
             color:this.is_color,
-            min_edge:this.min_edge
+            min_edge:this.min_edge,
+            retraction:this.cells_space
         }
         //this.svg.cells = svg.draw_cells_deprecated(this.svg.main,this.res.cells,props)
-        this.svg.cells = svg.draw_cells(this.svg.main,this.diagram.cells,props)
+        this.svg.cells = svg.draw_cells(this.svg.main,this.diagram,props)
         console.timeEnd("draw cells")
     }
 
@@ -232,6 +233,8 @@ class Voronoi{
         this.res.type = "rhill"
         this.diagram = new diagram(this.res)
         console.timeEnd("post proc")
+        //console.log(this.res)
+        //console.log(this.diagram)
         //console.log(`stats : ${res.cells.length} cells , ${res.vertices.length} vertices , ${res.edges.length} edges`)
         this.draw()
     }
