@@ -38,9 +38,9 @@ function menu_shape_space_min(parent){
     const shape_index = cells_shapes.findIndex((shape)=>{return (shape == vor.cells_shape)})
     let rg_groups = bs.radio_group(parent,"shapes",cells_shapes,shape_index)
 
-    html(parent,"a",/*html*/`<a style="margin:10px">Space between cells</a>`)
-    let rg_space = bs.input_range(parent,30)
-    rg_space.value = vor.cells_space
+    //html(parent,"a",/*html*/`<a style="margin:10px">Space between cells</a>`)
+    //let rg_space = bs.input_range(parent,30)
+    //rg_space.value = vor.cells_space
     let in_label = html(parent,"a",/*html*/`<a style="margin:10px">min cell edge ${vor.min_edge}</a>`)
     const max_min_cell_edge = 100
     let rg_min_edge = bs.input_range(parent,max_min_cell_edge)
@@ -68,10 +68,10 @@ function menu_shape_space_min(parent){
         })
     })
 
-    $(rg_space).on("input",(e)=>{
-        vor.cells_space = rg_space.value
-        vor.draw()
-    })
+    //$(rg_space).on("input",(e)=>{
+    //    vor.cells_space = rg_space.value
+    //    vor.draw()
+    //})
     $(rg_min_edge).on("input",(e)=>{
         vor.min_edge = rg_min_edge.value
         in_label.innerHTML = `min cell edge ${vor.min_edge}`
