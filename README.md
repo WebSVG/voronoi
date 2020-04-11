@@ -73,8 +73,9 @@ MIT
 ```
 * to be replaced with 'a' download attribute : https://www.w3schools.com/tags/att_a_download.asp
 
-# Vornoi js Reference
+# References
 
+## js voronoi SVG
 * 'stg' voronoi SVG vectorisation : 
   * also baed on [gorhill](https://github.com/gorhill/Javascript-Voronoi)'s library
   * [github stg repo](https://github.com/stg/SVoronoiG)
@@ -82,4 +83,7 @@ MIT
 * http://alexbeutel.com/webgl/voronoi.html
 * http://cfbrasz.github.io/VoronoiColoring.html
 * https://www.jasondavies.com/maps/voronoi/
-* 
+
+## lines intersection
+* https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection
+<img src="./media/intersection_formula.svg">

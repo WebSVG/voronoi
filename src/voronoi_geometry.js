@@ -4,17 +4,30 @@ import {Vector} from "../libs/Vector.js"
 
 let svg = null
 
-function line(l){
+function line(l,col){
     let d = `M ${l.p1.x} ${l.p1.y} L ${l.p2.x} ${l.p2.y} `
     return html(svg,"path",
-    /*html*/`<path d="${d}" stroke="red" stroke-width="2" />`
+    /*html*/`<path d="${d}" stroke="${col}" stroke-width="2" />`
     )
 }
 
-function circ(point){
+function eline(e,col){
+    let d = `M ${e.v1.x} ${e.v1.y} L ${e.v2.x} ${e.v2.y} `
+    return html(svg,"path",
+    /*html*/`<path d="${d}" stroke="${col}" stroke-width="2" />`
+    )
+}
+
+function circ(point,col){
     return html(svg,"circle",
-    /*html*/`<circle cx=${point.x} cy=${point.y} r="3" stroke="black" stroke-width="0" fill="blue" />`
+    /*html*/`<circle cx=${point.x} cy=${point.y} r="3" stroke="black" stroke-width="0" fill="${col}" />`
     );
+}
+
+function points_dist(va,vb){
+    const dx = va.x-vb.x
+    const dy = va.y-vb.y
+    return Math.sqrt(dx * dx + dy * dy)
 }
 
 function center(va,vb){
@@ -44,17 +57,33 @@ function ccw_vertices(he){
     }
 }
 
+function intersect(e1,e2){
+    const x1 = e1.v1.x
+    const y1 = e1.v1.y
+    const x2 = e1.v2.x
+    const y2 = e1.v2.y
+    const x3 = e2.v1.x
+    const y3 = e2.v1.y
+    const x4 = e2.v2.x
+    const y4 = e2.v2.y
+    const x1_y2_m_y1_x2 = (x1*y2 - y1*x2)
+    const x3_y4_m_y3_x4 = (x3*y4 - y3*x4)
+    const denominator = ((x1-x2)*(y3-y4) - (y1-y2)*(x3-x4))
+    return {x:(x1_y2_m_y1_x2*(x3-x4) - (x1-x2)*x3_y4_m_y3_x4) / denominator,
+            y:(x1_y2_m_y1_x2*(y3-y4) - (y1-y2)*x3_y4_m_y3_x4) / denominator}
+}
 class cell{
     constructor(create){
         if(defined(create.site)){
             this.from_rhill_cell(create)
+            this.add_prev_next(this.edges)
+        }else{
+            this.seed = {x:0,y:0}
+            this.edges = []
         }
-        this.add_prev_next()
     }
-    copy(){
-        let copy = {}
-        copy.seed = {x:this.seed.x,y:this.seed.y}
-        copy.edges = []
+    get_edges_copy(){
+        let new_edges = []
         for(let i=0;i<this.edges.length;i++){
             const e = this.edges[i]
             let ne = {}
@@ -63,15 +92,22 @@ class cell{
             ne.c = {x:e.c.x,y:e.c.y}
             ne.l = e.l
             ne.a = e.a
-            copy.edges.push(ne)
+            new_edges.push(ne)
         }
+        this.add_prev_next(new_edges)
+        return new_edges
+    }
+    copy(){
+        let copy = new cell("empty")
+        copy.seed = {x:this.seed.x,y:this.seed.y}
+        copy.edges = this.get_edges_copy()
         return copy
     }
-    add_prev_next(){
-        for(let i=0;i<this.edges.length;i++){
-            let edge = this.edges[i]
-            edge.prev = (i==0)?this.edges.slice(-1)[0]:this.edges[i-1]
-            edge.next = (i==this.edges.length-1)?this.edges[0]:this.edges[i+1]
+    add_prev_next(edges){
+        for(let i=0;i<edges.length;i++){
+            let edge = edges[i]
+            edge.prev = (i==0)?edges.slice(-1)[0]:edges[i-1]
+            edge.next = (i==edges.length-1)?edges[0]:edges[i+1]
         }
     }
     from_rhill_cell(c){
@@ -175,25 +211,57 @@ class cell{
         d = d + "Z"
         return d
     }
+
+    remove_edge(i){
+        this.edges.splice(i,1)
+        this.add_prev_next(this.edges)
+    }
+    check_closed_edges(){
+        let removed = false
+        for(let i=0;i<this.edges.length;i++){
+            const e = this.edges[i]
+            const l_int = intersect(e,e.prev)
+            const r_int = intersect(e,e.next)
+            //circ(l_int,"red")
+            //circ(r_int,"red")
+            const d1 = points_dist(e.v1,l_int)
+            const d2 = points_dist(e.v1,r_int)
+            if(d1 >= d2){
+                //eline(e,"red")
+                this.remove_edge(i)
+                removed = true
+            }else{
+                e.v1 = l_int
+                e.c = center(l_int,r_int)
+                e.v2 = r_int
+                e.l = points_dist(l_int,r_int)
+            }
+        }
+        return removed
+    }
+
     retract(dist,org,ind){
-        if(ind == 2){
-            let lines = []
-            this.edges.forEach((e)=>{
-                circ(e.c)
+        //if(ind == 2){
+            this.edges = org.get_edges_copy()
+            for(let i=0;i<org.edges.length;i++){
+                const e = org.edges[i]
+                let n = this.edges[i]
                 const dir = Vector.sub(e.c,e.v2)
                 let inside = Vector.perp(dir)
                 inside = Vector.normalise(inside)
                 inside = Vector.mult(inside,dist)
-                const new_center = Vector.add(e.c,inside)
-                const l = {p1:new_center,p2:Vector.add(e.v2,inside)}
-                const new_edge = {p1:Vector.add(e.v1,inside),p2:Vector.add(e.v2,inside)}
-                line(new_edge)
-                lines.push(l)
-                //circ(new_center)
-            })
-        }
+                n.c = Vector.add(e.c,inside)
+                n.v1=Vector.add(e.v1,inside)
+                n.v2=Vector.add(e.v2,inside)
+                //eline(n,"blue")
+                //circ(e.c,"blue")
+            }
+            let removed = true;
+            for(let nb_edges=this.edges.length;(nb_edges>3)&&removed;){
+                removed = this.check_closed_edges()
+            }
+        //}
     }
-
 }
 
 class diagram{
