@@ -1,6 +1,6 @@
 import {hr,html, br,} from "./utils.js"
 import {Bootstrap} from "./bs_utils.js"
-import {Voronoi} from "./index.js"
+import {Voronoi} from "./voronoi_svg.js"
 
 const b = document.body
 let vor = new Voronoi(b,"100%","60%")
