@@ -235,13 +235,14 @@ class cell{
                 e.c = center(l_int,r_int)
                 e.v2 = r_int
                 e.l = points_dist(l_int,r_int)
+                //eline(e,"#22b955")
             }
         }
         return removed
     }
 
     retract(dist,org,ind){
-        //if(ind == 2){
+        //if((ind == 2)||(ind == 3)){
             this.edges = org.get_edges_copy()
             for(let i=0;i<org.edges.length;i++){
                 const e = org.edges[i]
@@ -257,7 +258,7 @@ class cell{
                 //circ(e.c,"blue")
             }
             let removed = true;
-            for(let nb_edges=this.edges.length;(nb_edges>3)&&removed;){
+            for(let nb_edges=this.edges.length;(nb_edges>=3)&&removed;){
                 removed = this.check_closed_edges()
             }
         //}

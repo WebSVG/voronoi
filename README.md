@@ -85,5 +85,6 @@ MIT
 * https://www.jasondavies.com/maps/voronoi/
 
 ## lines intersection
-* https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection
+* [wikipedia - lines intersection](https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection)
+
 <img src="./media/intersection_formula.svg">
