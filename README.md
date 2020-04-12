@@ -6,11 +6,13 @@ https://websvg.github.io/voronoi/
 
 # Gif Demo
 
+<img src ="./media/good_demo.gif" width=600 href="https://websvg.github.io/voronoi/" target="_blank">
 
+We see above the user generating seeds, acting on the input range slider to update the number of seeds in real time, modifying the space between cells, changing the cells type, exporting an SVG file then dropping it on a new browser window, exporting seeds file and dropping it on the seeds area to import it
 
 # Features
-* Generate Voronoi
-* Export Vornoi to SVG
+* Generate Voronoi Diagram
+* Export to SVG file
   ## seeds
 * Edit seeds : add, move, remove
 * Export and import seeds (drag and drop seeds.json) and continue editing of an existing seeds set
@@ -23,19 +25,19 @@ https://websvg.github.io/voronoi/
   * bezier quadratic
   * bezier cubic
   * simple geometric edges
-* cells edges retraction. Not cells scale but edges parallel ertraction with handling of edges discard
+* cells edges retraction. Not cells scale but edges parallel rertraction with handling of closed edges discard
   ## gui
 * Show/hide (cells, edges, seeds) and independently configure the SVG export
-* Browser local storage of config parameters (Not SVG, not seeds as they can be saved separately)
-* voronoi icon
+* Browser local storage of config parameters (No storage of SVG nor seeds as they can be saved separately)
 
 # Planned features
 * Shaped tesslation area
   * sampling points and check if point inside SVG with `document.elementFromPoint(x, y);`
 * edeg cells filet effect
-* optionally remove pointy edges of bezier cells (detract short edges only)
+* detract quadratic bezier short edges
 * edit seed weight (? requires a new engine)
 * add irregularities to the edges thickness (randomize retraction)
+* rearrange the cells when expanding the window
 
 ## Known Issues
 * cubic bezier export `./media/exp_2_cubic.svg` not supported by Fusion360, not clear if this is an SVG generation issue or Fusion360 limitation
@@ -43,15 +45,22 @@ https://websvg.github.io/voronoi/
 
 # Dev User Guide
 ## cells retraction
-## Minimal cells edge size
-<img src="./media/short_edges.gif" width=400>
+<img src="./media/retraction_discard.gif">
 
-* goal is to filter small edge to avoid ugly bezier edgy effect
-* ignoring an edge poses the issue of which vertex to use as control point for the left edges
-* using the center of the removed edge as new control point would break the tangency alignment with the previous curve
+* The cells are not scaled down, their edges are rather retracted in parallel to their original location.
+* When retracting cells as a consequence some edges could become irrelevant and the shape might decrese in edges number.
+
+<img src="./media/correct_retraction.gif">
+
+* Above is another example where we see in debug mode the translated edges and the discarded one is red
+
+## cubic bezier minimum edge size
+<img src="./media/min_edges.gif" width=400>
+
+* goal is to filter small edge to avoid sharp bezier curves
+* the quadratic bezier only has one control point, so using the center of the removed edge would still break the tangency alignment with the previous curve
 * clean way would require ignoring the corresponding site completely and extend the left edges till the small edge is nullified, thus reducing the total number of sides of the cell
-* cell sides expansion only works for bezier cells not for geometric cell
-* therefore, the min edge size filtering is currently disabled until proper small edges expansion is implemented
+* therfore, in order to keep shapes tangent to the sides, min edge ignore is only implemented in quadratic bezier.
 
 # License
 MIT
