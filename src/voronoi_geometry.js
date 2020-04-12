@@ -340,7 +340,10 @@ class cell{
                 n.c = Vector.add(e.c,inside)
                 n.v1=Vector.add(e.v1,inside)
                 n.v2=Vector.add(e.v2,inside)
-                //eline(n,"blue")
+                if(is_debug){
+                    //eline(n,"blue")
+                    //circ(n.v1,"red")
+                }
             }
             let removed = true;
             while((this.edges.length>3)&&(removed==true)){
@@ -349,11 +352,13 @@ class cell{
                     console.log(`retract check_closed_edges() => removed = ${removed} ; nb edges = (${this.edges.length}) :::: exp = (${((this.edges.length>3)&&(removed==true))})`)
                 }
             }
+            this.check_closed_edges(is_debug)
             if(is_debug){
                 for(let i=0;i<this.edges.length;i++){
                     let p = this.edges[i].v1
-                    circ(this.edges[i].c,"black")
-                    circ(p,"blue")
+                    //circ(this.edges[i].c,"black")
+                    circ(p,"black")
+                    circ(this.edges[i].v2,"red")
                     //console.log(`<text x="${p.x}" y="${p.y}">${i}</text>`)
                     html(svg,"text",/*html*/`<text x="${p.x}" y="${p.y}">${i}</text>`)
                 }
