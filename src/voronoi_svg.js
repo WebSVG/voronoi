@@ -81,7 +81,7 @@ class Voronoi{
     constructor(parent,w,h){
         //const use_storage = false
         let init_needed = false
-        this.version = "21"
+        this.version = "24"
         const config = JSON.parse(localStorage.getItem("voronoi_config"))
         if(config === null){
             console.log("First time usage, no config stored")
@@ -112,11 +112,11 @@ class Voronoi{
             this.is_color = false//not usable yet as flickers on updates
             this.width = 0
             this.height = 0
-            this.cells_shape = "quadratic"
-            this.cells_space = 0
+            this.cells_shape = "cubic"
+            this.cells_space = 5
             this.view_svg = {
                 cells:true,
-                edges:true,
+                edges:false,
                 seeds:true
             }
             this.mouse_action = "move"
@@ -278,18 +278,6 @@ class Voronoi{
                 }
             }
         }
-        const new_gen_surface = this.width * this.height
-        const win_seeds = Math.round((this.nb_seeds * (((new_gen_surface-this.gen_surface) / this.gen_surface))))
-        console.log(`won seeds ${win_seeds} (${new_gen_surface} / ${this.gen_surface})`)
-        if(clear){
-            this.gen_surface = this.width * this.height
-            this.nb_seeds_gen = this.nb_seeds
-        }else{
-            //if((win_seeds>0)&&(Math.abs(win_seeds) < this.nb_seeds * 2)){
-            if(Math.abs(win_seeds) < this.nb_seeds){
-                    this.nb_seeds = this.nb_seeds_gen + win_seeds
-            }
-        }
         if(this.nb_seeds < this.seeds.length){
             const nb_pop = this.seeds.length - this.nb_seeds
             for(let i=0;i<nb_pop;i++){
@@ -300,6 +288,18 @@ class Voronoi{
                 this.add_seeds_sampling(this.nb_seeds - this.seeds.length)
             }else{
                 this.add_seeds_random(this.nb_seeds - this.seeds.length)
+            }
+        }
+        const new_gen_surface = this.width * this.height
+        const win_seeds = Math.round((this.nb_seeds * (((new_gen_surface-this.gen_surface) / this.gen_surface))))
+        console.log(`won seeds ${win_seeds} (${new_gen_surface} / ${this.gen_surface})`)
+        if(clear){
+            this.gen_surface = this.width * this.height
+            this.nb_seeds_gen = this.nb_seeds
+        }else{
+            //if((win_seeds>0)&&(Math.abs(win_seeds) < this.nb_seeds * 2)){
+            if(Math.abs(win_seeds) < this.nb_seeds){
+                    //this.nb_seeds = this.nb_seeds_gen + win_seeds
             }
         }
         for(let i=0;i<this.seeds.length;i++){
