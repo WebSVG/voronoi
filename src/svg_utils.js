@@ -330,7 +330,7 @@ class Svg{
     draw_cells(parent,diag,params){
         let res = []
         if(diag.cells.length>1){//otherwise single cell has no half edges
-            diag.retract_cells(params.retraction,parent)
+            diag.retract_cells(params,parent)
             let group = html(parent,"g",/*html*/`<g id="svg_g_bezier_cells"/>`)
             for(let i=0;i<diag.cells.length;i++){
                 //here you can retract or detract small edges before either drawing technique

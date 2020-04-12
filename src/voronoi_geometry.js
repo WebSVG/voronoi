@@ -18,9 +18,16 @@ function eline(e,col){
     )
 }
 
+function pline(v1,v2,col){
+    let d = `M ${v1.x} ${v1.y} L ${v2.x} ${v2.y} `
+    return html(svg,"path",
+    /*html*/`<path d="${d}" stroke="${col}" stroke-width="1" />`
+    )
+}
+
 function circ(point,col){
     return html(svg,"circle",
-    /*html*/`<circle cx=${point.x} cy=${point.y} r="3" stroke="black" stroke-width="0" fill="${col}" />`
+    /*html*/`<circle cx=${point.x} cy=${point.y} r="2" stroke="black" stroke-width="0" fill="${col}" />`
     );
 }
 
@@ -216,32 +223,111 @@ class cell{
         this.edges.splice(i,1)
         this.add_prev_next(this.edges)
     }
-    check_closed_edges(){
-        let removed = false
-        for(let i=0;i<this.edges.length;i++){
+    check_closed_edges(is_debug){
+        let any_edge_removed = false
+        let to_be_removed = []
+        let new_edges = []
+        for(let i=0;i<(this.edges.length);i++){
+            if(is_debug)console.log(`processing edge (${i}) / (${this.edges.length})`)
+            let this_edge_removed = false
+        //for(let i=0;i<(this.edges.length && !removed);i++){
             const e = this.edges[i]
             const l_int = intersect(e,e.prev)
             const r_int = intersect(e,e.next)
-            //circ(l_int,"red")
-            //circ(r_int,"red")
-            const d1 = points_dist(e.v1,l_int)
-            const d2 = points_dist(e.v1,r_int)
-            if(d1 >= d2){
-                //eline(e,"red")
+            if(true){
+                const d1 = points_dist(e.v1,l_int)
+                const d2 = points_dist(e.v1,r_int)
+                //if(is_debug)console.log(`intersections d1=(${d1}) , d2=(${d2})`)
+                if(d1 >= d2){
+                    this_edge_removed = true
+                }
+            }
+            if(true){
+                const d1 = points_dist(e.v2,r_int)
+                const d2 = points_dist(e.v2,l_int)
+                //if(is_debug)console.log(`intersections d1=(${d1}) , d2=(${d2})`)
+                if(d1 >= d2){
+                    this_edge_removed = true
+                }
+            }
+
+            const new_v1 = l_int
+            const new_v2 = r_int
+            if(false){
+                const v1_l = Vector.sub(e.v1,l_int)
+                const v1_r = Vector.sub(e.v1,r_int)
+                const vects_dir = Vector.dot(v1_l,v1_r)
+                if(vects_dir<0){
+                    this_edge_removed = true
+                }
+            }
+            if(false){
+                if((i == 1) &&(is_debug)){
+                    const v_check_1 = Vector.sub(e.prev.v1,new_v1)
+                    const v_x = intersect(e.prev,e.next)
+                    const v_check_2 = Vector.sub(v_x,new_v1)
+                    const dir_check = Vector.dot(v_check_1,v_check_2)
+                    if(is_debug)console.log(`   dir_check = ${dir_check}`)
+                    if(dir_check> 0 ){
+                        this_edge_removed = true
+                        eline(e,"#22b955")
+                        eline(e.prev,"black")
+                        eline(e.next,"black")
+                        circ(new_v1,"blue")
+                        circ(e.prev.v1,"green")
+                        circ(v_x,"red")
+                        pline(new_v1,new_v2,"green")
+                    }else{
+                        pline(new_v1,new_v2,"red")
+                        console.log(`   red line length ${points_dist(new_v1,new_v2)}`)
+                    }
+                }
+                //if((i == 1)&&(is_debug)){
+            }
+
+            if(this_edge_removed == true){
+                to_be_removed.push(i)
+                if(is_debug)console.log(`   edge //// (${i}) removed / (${this.edges.length})`)
+                //update neighbors
+                //const neighbors_intersect = intersect(e.prev,e.next)
+                //e.prev.v2 = neighbors_intersect
+                //e.next.v1 = neighbors_intersect
+                //e.prev.c = center(e.prev.v1,e.prev.v2)
+                //e.next.c = center(e.next.v1,e.next.v2)
+                //e.prev.l = points_dist(e.prev.v1,e.prev.v2)
+                //e.next.l = points_dist(e.next.v1,e.next.v2)
                 this.remove_edge(i)
-                removed = true
+                i--
+                if(is_debug)console.log(`   reset to (${i})`)
+                any_edge_removed = true
             }else{
-                e.v1 = l_int
-                e.c = center(l_int,r_int)
-                e.v2 = r_int
-                e.l = points_dist(l_int,r_int)
-                //eline(e,"#22b955")
+                let new_edge = {}
+                new_edge.v1 = new_v1
+                new_edge.c = center(new_v1,new_v2)
+                new_edge.v2 = new_v2
+                new_edge.l = points_dist(new_v1,new_v2)
+                new_edge.index = i
+                new_edges.push(new_edge)
             }
         }
-        return removed
+        new_edges.forEach((ne)=>{
+            let e_replace = this.edges[ne.index]
+            e_replace.v1 = ne.v1
+            e_replace.c = ne.c
+            e_replace.v2 = ne.v2
+            e_replace.l = ne.l
+        })
+        if(any_edge_removed == true){
+            to_be_removed.forEach((i)=>{
+                //this.remove_edge(i)
+                //if(is_debug)console.log(`removed i (${i})`)
+            })
+        }
+        if(is_debug)console.log(`done / (${this.edges.length})`)
+        return any_edge_removed
     }
 
-    retract(dist,org,ind){
+    retract(dist,org,is_debug){
         //if((ind == 2)||(ind == 3)){
             this.edges = org.get_edges_copy()
             for(let i=0;i<org.edges.length;i++){
@@ -255,11 +341,22 @@ class cell{
                 n.v1=Vector.add(e.v1,inside)
                 n.v2=Vector.add(e.v2,inside)
                 //eline(n,"blue")
-                //circ(e.c,"blue")
             }
             let removed = true;
-            for(let nb_edges=this.edges.length;(nb_edges>=3)&&removed;){
-                removed = this.check_closed_edges()
+            while((this.edges.length>3)&&(removed==true)){
+                removed = this.check_closed_edges(is_debug)
+                if(is_debug){
+                    console.log(`retract check_closed_edges() => removed = ${removed} ; nb edges = (${this.edges.length}) :::: exp = (${((this.edges.length>3)&&(removed==true))})`)
+                }
+            }
+            if(is_debug){
+                for(let i=0;i<this.edges.length;i++){
+                    let p = this.edges[i].v1
+                    circ(this.edges[i].c,"black")
+                    circ(p,"blue")
+                    //console.log(`<text x="${p.x}" y="${p.y}">${i}</text>`)
+                    html(svg,"text",/*html*/`<text x="${p.x}" y="${p.y}">${i}</text>`)
+                }
             }
         //}
     }
@@ -283,12 +380,12 @@ class diagram{
         }
         return res
     }
-    retract_cells(dist,parent){
+    retract_cells(params,parent){
         svg = parent
-        //console.log(this.cells)
-        dist = parseFloat(dist)
+        const dist = parseFloat(params.retraction)
         for(let i=0;i<this.cells.length;i++){
-            this.cells[i].retract(dist,this.org_cells[i],i)
+            const is_debug = (params.debug == 0)?false:(params.debug-1 == i)
+            this.cells[i].retract(dist,this.org_cells[i],is_debug)
         }
     }
 }

@@ -81,7 +81,7 @@ class Voronoi{
     constructor(parent,w,h){
         //const use_storage = false
         let init_needed = false
-        this.version = "17"
+        this.version = "18"
         const config = JSON.parse(localStorage.getItem("voronoi_config"))
         if(config === null){
             console.log("First time usage, no config stored")
@@ -101,6 +101,7 @@ class Voronoi{
             this.seeds = []
             this.nb_seeds = 30;
             this.max_seeds = 50;
+            this.seed_debug = 0;
             this.nb_samples = 10;
             this.walls_dist = true;
             this.sampling = true;
@@ -186,7 +187,8 @@ class Voronoi{
             shape:this.cells_shape,
             color:this.is_color,
             min_edge:this.min_edge,
-            retraction:this.cells_space
+            retraction:this.cells_space,
+            debug:this.seed_debug
         }
         //this.svg.cells = svg.draw_cells_deprecated(this.svg.main,this.res.cells,props)
         this.svg.cells = svg.draw_cells(this.svg.main,this.diagram,props)

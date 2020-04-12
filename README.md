@@ -4,30 +4,46 @@ Parametric Voronoi generator with real time editing and SVG export
 # Live demo
 https://websvg.github.io/voronoi/
 
+# Gif Demo
+
+
+
 # Features
 * Generate Voronoi
 * Export Vornoi to SVG
+  ## seeds
 * Edit seeds : add, move, remove
 * Export and import seeds (drag and drop seeds.json) and continue editing of an existing seeds set
-* bezier cells (quadratic curves)
 * Parametric Seeds generation
   * Controlled seeds spread regularity with multiple sampling and keeping best candidate (farthest from neighbors)
   * Optionally include distance from walls to the sampling selection cost
 * Range slider with interactive update for adding and removing seeds to and out of existing set
+  ## cells
+* different cells types
+  * bezier quadratic
+  * bezier cubic
+  * simple geometric edges
+* cells edges retraction. Not cells scale but edges parallel ertraction with handling of edges discard
+  ## gui
 * Show/hide (cells, edges, seeds) and independently configure the SVG export
 * Browser local storage of config parameters (Not SVG, not seeds as they can be saved separately)
 * voronoi icon
 
 # Planned features
 * Shaped tesslation area
-* geometric cells with variable size and filet effect
-* bezier cells option
-  * variable cell edges thickness (cell edge move to center)
-  * variable bezier curve (cubic bezier curve with variable control points length)
-* optionally remove pointy edges of bezier cells (ignore short edges)
-* edit seed weight
+  * sampling points and check if point inside SVG with `document.elementFromPoint(x, y);`
+* edeg cells filet effect
+* optionally remove pointy edges of bezier cells (detract short edges only)
+* edit seed weight (? requires a new engine)
+* add irregularities to the edges thickness (randomize retraction)
 
-# Minimal cells edge size
+## Known Issues
+* cubic bezier export `./media/exp_2_cubic.svg` not supported by Fusion360, not clear if this is an SVG generation issue or Fusion360 limitation
+* some seeds combination result in distorded edges on retraction
+
+# Dev User Guide
+## cells retraction
+## Minimal cells edge size
 <img src="./media/short_edges.gif" width=400>
 
 * goal is to filter small edge to avoid ugly bezier edgy effect
@@ -36,13 +52,6 @@ https://websvg.github.io/voronoi/
 * clean way would require ignoring the corresponding site completely and extend the left edges till the small edge is nullified, thus reducing the total number of sides of the cell
 * cell sides expansion only works for bezier cells not for geometric cell
 * therefore, the min edge size filtering is currently disabled until proper small edges expansion is implemented
-
-# SVG path tesslation area
-* sampling points and check if point inside SVG with `document.elementFromPoint(x, y);`
-
-## Known Issues
-* tesslation size does not cover the full height
-* edit checkboxes not persisted
 
 # License
 MIT

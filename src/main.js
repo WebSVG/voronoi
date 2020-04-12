@@ -3,7 +3,7 @@ import {Bootstrap} from "./bs_utils.js"
 import {Voronoi} from "./voronoi_svg.js"
 
 const b = document.body
-let vor = new Voronoi(b,"100%","60%")
+let vor = new Voronoi(b,"100%","50%")
 let bs = new Bootstrap()
 
 function menu_export(parent){
@@ -40,11 +40,15 @@ function menu_shape_space_min(parent){
 
     let space_label = html(parent,"a",/*html*/`<a style="margin:10px">Space between cells ${vor.cells_space}</a>`)
     let rg_space = bs.input_range(parent,30)
+    rg_space.step = 0.2
     rg_space.value = vor.cells_space
     let in_label = html(parent,"a",/*html*/`<a style="margin:10px">min cell edge ${vor.min_edge}</a>`)
     const max_min_cell_edge = 100
     let rg_min_edge = bs.input_range(parent,max_min_cell_edge)
     rg_min_edge.value = vor.min_edge
+
+    let rg_debug = bs.input_range(parent,vor.nb_seeds)
+    rg_debug.value = 0
 
     if(vor.cells_shape == "cubic"){
         in_label.style.visibility = "visible"
@@ -76,6 +80,10 @@ function menu_shape_space_min(parent){
     $(rg_min_edge).on("input",(e)=>{
         vor.min_edge = rg_min_edge.value
         in_label.innerHTML = `min cell edge ${vor.min_edge}`
+        vor.draw()
+    })
+    $(rg_debug).on("input",(e)=>{
+        vor.seed_debug = rg_debug.value
         vor.draw()
     })
 }
