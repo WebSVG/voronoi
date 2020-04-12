@@ -81,7 +81,7 @@ class Voronoi{
     constructor(parent,w,h){
         //const use_storage = false
         let init_needed = false
-        this.version = "18"
+        this.version = "20"
         const config = JSON.parse(localStorage.getItem("voronoi_config"))
         if(config === null){
             console.log("First time usage, no config stored")
@@ -103,6 +103,8 @@ class Voronoi{
             this.max_seeds = 50;
             this.seed_debug = 0;
             this.nb_samples = 10;
+            this.gen_surface = 0;
+            this.nb_seeds_gen = 0;
             this.walls_dist = true;
             this.sampling = true;
             this.path_width = 2;
@@ -244,9 +246,6 @@ class Voronoi{
     update_size(clear){
         this.max_width = this.svg.main.clientWidth
         this.max_height = this.svg.main.clientHeight
-        if(this.width == 0){
-
-        }
         if((this.width == 0) || (this.width > this.max_width)){
             this.width = this.max_width
         }
@@ -277,6 +276,18 @@ class Voronoi{
                     this.seeds.splice(i,1)
                     i--
                 }
+            }
+        }
+        const new_gen_surface = this.width * this.height
+        const win_seeds = Math.round((this.nb_seeds * ((new_gen_surface / this.gen_surface) - 1)))
+        console.log(`won seeds ${win_seeds} (${new_gen_surface} / ${this.gen_surface})`)
+        if(clear){
+            this.gen_surface = this.width * this.height
+            this.nb_seeds_gen = this.nb_seeds
+        }else{
+            //if((win_seeds>0)&&(Math.abs(win_seeds) < this.nb_seeds * 2)){
+            if(Math.abs(win_seeds) < this.nb_seeds * 2){
+                    this.nb_seeds = this.nb_seeds_gen + win_seeds
             }
         }
         if(this.nb_seeds < this.seeds.length){

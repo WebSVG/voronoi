@@ -20,6 +20,8 @@ We see above the user generating seeds, acting on the input range slider to upda
   * Controlled seeds spread regularity with multiple sampling and keeping best candidate (farthest from neighbors)
   * Optionally include distance from walls to the sampling selection cost
 * Range slider with interactive update for adding and removing seeds to and out of existing set
+* rearrange seeds when modifying window size
+
   ## cells
 * different cells types
   * bezier quadratic
@@ -37,7 +39,6 @@ We see above the user generating seeds, acting on the input range slider to upda
 * detract quadratic bezier short edges
 * edit seed weight (? requires a new engine)
 * add irregularities to the edges thickness (randomize retraction)
-* rearrange the cells when expanding the window
 
 # Dev User Guide
 ## cells retraction
