@@ -336,7 +336,7 @@ class Svg{
                 //here you can retract or detract small edges before either drawing technique
                 let d
                 if(params.shape == "cubic"){
-                    d = diag.cells[i].path_bezier_cubic_filter(params.min_edge)
+                    d = diag.cells[i].path_bezier_cubic_filter_no_s(params.min_edge)
                 }else if(params.shape == "quadratic"){
                     d = diag.cells[i].path_bezier_quadratic()
                 }else{

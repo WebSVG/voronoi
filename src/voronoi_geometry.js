@@ -175,6 +175,51 @@ class cell{
         }
         return d
     }
+    /**
+     * M(point-1) C(control-1) (control-2) (point-2)
+     * S(control-next) (point-next)
+     * first    => M(point-1) C(control-1)
+     * second   =>  (control-2) (point-2)
+     * third... => C(control-next) (control-next) (point-next)
+     */
+    path_bezier_cubic_filter_no_s(min_edge){
+        let d = ""
+        let step = "first"
+        for(let i=0;i<this.edges.length;i++){
+            let e = this.edges[i]
+            if(e.l > min_edge){
+                if(step == "first"){
+                    d = d + `M${e.c.x},${e.c.y} C${e.v2.x},${e.v2.y} `
+                    step = "sec"
+                    //if(debug)console.log("step 1")
+                }else if(step == "sec"){
+                    d = d + `${e.v1.x},${e.v1.y} ${e.c.x},${e.c.y} `
+                    step = "third"
+                    //if(debug)console.log("step 2")
+                }else{
+                    d = d + `C${e.v1.x},${e.v1.y} ${e.v1.x},${e.v1.y} ${e.c.x},${e.c.y} `
+                    //if(debug)console.log("step 3...")
+                    step = "reached"
+                }
+            }
+        }
+        //find closing edge
+        let found = false
+        for(let i=0;(i<this.edges.length)&&(!found);i++){
+            let e = this.edges[i]
+            if(e.l > min_edge){
+                d = d + `S${e.v1.x},${e.v1.y} ${e.c.x},${e.c.y} `
+                found = true
+            }
+        }
+        if(step == "reached"){
+            d = d + "Z"
+        }else{
+            //discard as minimal number of filtered edges of 3 is not reached
+            d = ""
+        }
+        return d
+    }
     //M(point-1) C(control-1) (control-2) (point-2)
     //S(control-next) (point-next)
     path_bezier_cubic(){
