@@ -3,7 +3,7 @@ import {Bootstrap} from "./bs_utils.js"
 import {Voronoi} from "./voronoi_svg.js"
 
 const b = document.body
-let vor = new Voronoi(b,"100%","50%")
+let vor = new Voronoi(b,"100%","60%")
 let bs = new Bootstrap()
 
 function menu_export(parent){
@@ -14,7 +14,9 @@ function menu_export(parent){
                             vor.export_svg[e.target.getAttribute("data-name")] = e.target.checked
                         })
     let btn_save_data = bs.button(ecol2,"btn_save",`export seeds coordinates`);
-    html(ecol2,"a",/*html*/`<a style="margin:10px">Drag and drop 'seeds.json' to import</a>`)
+    html(ecol2,"a",/*html*/`<a align="center">version 7c6cc11c</p>`)
+    html(ecol2,"a",/*html*/`<a style="margin:10px">Drag and drop 'seeds.json' to import</p>`)
+
     html(ecol3,"a",/*html*/`<a>
         <p align="center">
             <a href="https://github.com/WebSVG/voronoi" target="_blank">
@@ -22,6 +24,7 @@ function menu_export(parent){
             <p align="center">Source code on Github</p>
         </p>
     </a>`)
+
 
     $(btn_save_svg).click(()=>{
         vor.save_svg("voronoi_svg_export.svg")

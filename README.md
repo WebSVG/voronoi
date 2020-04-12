@@ -39,10 +39,6 @@ We see above the user generating seeds, acting on the input range slider to upda
 * add irregularities to the edges thickness (randomize retraction)
 * rearrange the cells when expanding the window
 
-## Known Issues
-* cubic bezier export `./media/exp_2_cubic.svg` not supported by Fusion360, not clear if this is an SVG generation issue or Fusion360 limitation
-* some seeds combination result in distorded edges on retraction
-
 # Dev User Guide
 ## cells retraction
 <img src="./media/retraction_discard.gif">
@@ -64,6 +60,9 @@ We see above the user generating seeds, acting on the input range slider to upda
 
 # License
 MIT
+
+## Issues
+https://github.com/WebSVG/voronoi/issues
 
 # Dependencies
 

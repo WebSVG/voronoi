@@ -275,6 +275,7 @@ class Voronoi{
             for(let i=0;i<this.seeds.length;i++){
                 if(this.outside(this.seeds[i])){
                     this.seeds.splice(i,1)
+                    i--
                 }
             }
         }
@@ -290,6 +291,9 @@ class Voronoi{
                 this.add_seeds_random(this.nb_seeds - this.seeds.length)
             }
         }
+        for(let i=0;i<this.seeds.length;i++){
+            this.seeds[i].id = i
+            }
         console.timeEnd("update_seeds")
         this.compute_voronoi()
     }
