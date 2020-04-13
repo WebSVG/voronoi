@@ -11,7 +11,7 @@ Live demo of this repository https://websvg.github.io/voronoi/
 * Edit cells
 * Export SVG
 
-<img src ="./media/demo_overview.gif" width=600 href="https://websvg.github.io/voronoi/" target="_blank">
+<img src ="./media/demo_overview.gif">
 
 We see above the user generating new sets of seeds with their resulting voronoi diagram, hiding and viewing seeds, cells and edges, changing the number of seeds with a slider while the view updates in real time, editing the cells by moving them, removing and adding cells, changing the cells shape to quadratic bezier, simple edges and back to cubic bezier, finally adjusting the space between cells before exporting in an SVG file.
 
