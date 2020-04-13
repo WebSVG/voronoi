@@ -7,15 +7,24 @@ let vor = new Voronoi(b,"100%","60%")
 let bs = new Bootstrap()
 
 function menu_export(parent){
-    let [ecol0,ecol1,ecol2,ecol3] = bs.cols(parent,4,["col-2","col-2","col","col"])
+    br(parent)
+    let [ecol0,ecol1,ecol2,ecol3] = bs.cols(parent,4,["col-3","col-2","col-3","col"])
     let btn_save_svg = bs.button(ecol0,"btn_save",`export SVG`);
+
+    let in_export_ratio = bs.input_text(ecol0,"in_export_ratio",`${vor.export_ratio}`,"w-50");
+    in_export_ratio.style.visibility = "hidden"
+    if(vor.export_ratio == 1.0){
+        in_export_ratio.value = null
+        in_export_ratio.setAttribute("placeholder",`1 unit = 1 pixel`)
+    }
+
     const export_states = [vor.export_svg.cells,vor.export_svg.edges,vor.export_svg.seeds]
     bs.checkbox_group(ecol1,"cbx_export",["cells","edges","seeds"],export_states,(e)=>{
                             vor.export_svg[e.target.getAttribute("data-name")] = e.target.checked
                         })
     let btn_save_data = bs.button(ecol2,"btn_save",`export seeds coordinates`);
-    html(ecol2,"a",/*html*/`<a align="center">version 0e71b68d9d70</p>`)
-    html(ecol2,"a",/*html*/`<a style="margin:10px">Drag and drop 'seeds.json' to import</p>`)
+    html(ecol2,"p",/*html*/`<p align="center">version 0e71b68d9d70</p>`)
+    //html(ecol2,"a",/*html*/`<a style="margin:10px">Drag and drop 'seeds.json' to import</p>`)
 
     html(ecol3,"a",/*html*/`<a>
         <p align="center">
@@ -32,6 +41,17 @@ function menu_export(parent){
 
     $(btn_save_data).click(()=>{
         vor.save_seeds("seeds.json")
+    })
+    $(in_export_ratio).change((e)=>{
+        vor.export_ratio = in_export_ratio.value
+        if(vor.export_ratio == 1.0){
+            in_export_ratio.value = null
+            in_export_ratio.setAttribute("placeholder",`1 unit = 1 pixel`)
+        }
+    })
+    $(in_export_ratio).dblclick((e)=>{
+        vor.export_ratio = (1425.0 / 377.031)
+        in_export_ratio.value = vor.export_ratio
     })
 }
 
@@ -216,24 +236,41 @@ function menu_svg_size(parent){
     })
 }
 
+function menu_mouse(parent){
+    html(parent,"a",/*html*/`<a style="margin:10px">Mouse</a>`)
+    const actions_array = ["add","move","remove"]
+    const action_index = actions_array.findIndex((action)=>{return (action == vor.mouse_action)})
+    bs.radio_group(parent,"actions",actions_array,action_index,(e)=>{
+        vor.mouse_action = e.target.getAttribute("data-label")
+        vor.store()
+    })
+}
+
 function main(){
 
-    hr(b)
-    let [col0,col1,col2,col3,col4] = bs.cols(b,5,["col-2","col-4","col-1","col-2","col"])
+    let bs_cols = []
+    let exp_col;
+
+    if(vor.vertical_view){
+        let [svg_col,menu_col] = bs.cols(b,2,["col","col"])
+        let [r1_col1,r1_col2,r1_col3] = bs.cols(menu_col,3,["col-4","col","col-1"])
+        let [r2_col1,r2_col2] = bs.cols(menu_col,2,["col-4","col"])
+        bs_cols = [r1_col1,r1_col2,r1_col3,r2_col1,r2_col2]
+        vor.change_parent(svg_col,"100%","100%")
+        exp_col = menu_col
+    }else{
+        bs_cols = bs.cols(b,5,["col-2","col-4","col-1","col-2","col"])
+        exp_col = b
+    }
+
+    let [col0,col1,col2,col3,col4] = bs_cols
 
     menu_generate_view(col0)
     menu_nb_seeds(col1)
     menu_shape_space_min(col4)
+    menu_mouse(col2)
 
-    html(col2,"a",/*html*/`<a style="margin:10px">Mouse</a>`)
-    const actions_array = ["add","move","remove"]
-    const action_index = actions_array.findIndex((action)=>{return (action == vor.mouse_action)})
-    bs.radio_group(col2,"actions",actions_array,action_index,(e)=>{
-        vor.mouse_action = e.target.getAttribute("data-label")
-        vor.store()
-    })
-    hr(b)
-    menu_export(b)
+    menu_export(exp_col)
 
     $(document).ready(()=>{
         vor.update_size(true)

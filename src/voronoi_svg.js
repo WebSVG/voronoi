@@ -81,7 +81,7 @@ class Voronoi{
     constructor(parent,w,h){
         //const use_storage = false
         let init_needed = false
-        this.version = "24"
+        this.version = "29"
         const config = JSON.parse(localStorage.getItem("voronoi_config"))
         if(config === null){
             console.log("First time usage, no config stored")
@@ -114,12 +114,14 @@ class Voronoi{
             this.height = 0
             this.cells_shape = "cubic"
             this.cells_space = 5
+            this.vertical_view = false
             this.view_svg = {
                 cells:true,
                 edges:false,
                 seeds:true
             }
             this.mouse_action = "move"
+            this.export_ratio = 1.0
             this.export_svg = {
                 cells:true,
                 edges:false,
@@ -136,6 +138,13 @@ class Voronoi{
         this.init_events()
     }
     
+    change_parent(new_parent,width,height){
+        this.svg.main.parentElement.removeChild(this.svg.main)
+        new_parent.appendChild(this.svg.main)
+        this.svg.main.setAttributeNS(null,"width",width)
+        this.svg.main.setAttributeNS(null,"height",height)
+    }
+
     get_seed(id,w,h){
         let samples = get_seed_samples(this.nb_samples,w,h)
         //console.log(samples)
@@ -292,7 +301,7 @@ class Voronoi{
         }
         const new_gen_surface = this.width * this.height
         const win_seeds = Math.round((this.nb_seeds * (((new_gen_surface-this.gen_surface) / this.gen_surface))))
-        console.log(`won seeds ${win_seeds} (${new_gen_surface} / ${this.gen_surface})`)
+        //console.log(`won seeds ${win_seeds} (${new_gen_surface} / ${this.gen_surface})`)
         if(clear){
             this.gen_surface = this.width * this.height
             this.nb_seeds_gen = this.nb_seeds
@@ -349,7 +358,13 @@ class Voronoi{
         if(this.export_svg.cells){
             this.draw_cells()
         }
+        if(this.export_ratio != 1.0){
+            this.svg.main.setAttributeNS(null,"transform",`scale(${this.export_ratio})`)
+        }
         svg.save(this.svg.main,fileName)
+        if(this.export_ratio != 1.0){
+            this.svg.main.setAttributeNS(null,"transform","")
+        }
         this.draw()
     }
 

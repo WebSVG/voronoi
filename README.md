@@ -66,6 +66,7 @@ The seeds coordinates are what allows to generate again the same voronoig diagra
 
 # Planned features
 * export scale with a ratio (adjusting to a given unit)
+  * transform scale possible but Fusion360 ignores the scale transform
 * Shaped tesselation area
   * sampling points and check if point inside SVG with `document.elementFromPoint(x, y);`
 * Concentration cost map for seeds sampling
@@ -75,6 +76,7 @@ The seeds coordinates are what allows to generate again the same voronoig diagra
   * editing singe seed weight
   * cartographic seeds weight
 * add irregularities to the edges thickness (randomize retraction)
+* vertical mode for longitudinal edits
 
 # License
 MIT
