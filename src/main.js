@@ -14,7 +14,7 @@ function menu_export(parent){
                             vor.export_svg[e.target.getAttribute("data-name")] = e.target.checked
                         })
     let btn_save_data = bs.button(ecol2,"btn_save",`export seeds coordinates`);
-    html(ecol2,"a",/*html*/`<a align="center">version bea9a07d373ff99</p>`)
+    html(ecol2,"a",/*html*/`<a align="center">version 0e71b68d9d70</p>`)
     html(ecol2,"a",/*html*/`<a style="margin:10px">Drag and drop 'seeds.json' to import</p>`)
 
     html(ecol3,"a",/*html*/`<a>

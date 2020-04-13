@@ -65,11 +65,15 @@ The seeds coordinates are what allows to generate again the same voronoig diagra
 * Browser local storage of config parameters (No storage of SVG nor seeds as they can be saved separately)
 
 # Planned features
-* Shaped tesslation area
+* export scale with a ratio (adjusting to a given unit)
+* Shaped tesselation area
   * sampling points and check if point inside SVG with `document.elementFromPoint(x, y);`
-* edeg cells filet effect
+* Concentration cost map for seeds sampling
+* edges cells filet effect
 * detract quadratic bezier short edges
-* edit seed weight (? requires a new engine)
+* edit seed weight to modify cells size (? requires a new engine, or use cells retraction technique)
+  * editing singe seed weight
+  * cartographic seeds weight
 * add irregularities to the edges thickness (randomize retraction)
 
 # License
@@ -79,12 +83,16 @@ MIT
 https://github.com/WebSVG/voronoi/issues
 
 # Dependencies
+
+node dependencies are not required to serve the project locally, but only to reference the used dependencies
+
 ## Vornoi js Library
 
 * 'gorhill' Javascript Voronoi library
   * [github repo](https://github.com/gorhill/Javascript-Voronoi)
   * [live demo](http://www.raymondhill.net/voronoi/rhill-voronoi.html)
   * used `rhill-voronoi-core.js` from commit 3fe2165
+  * modified for ES2015 module import
 
 ## Vector module from matter.js
 * modified `./node_modules/matter-js/src/geometry/Vector.js` for ES2015 module import
@@ -118,3 +126,4 @@ https://github.com/WebSVG/voronoi/issues
 * [wikipedia - lines intersection](https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection)
 
 <img src="./media/intersection_formula.svg">
+

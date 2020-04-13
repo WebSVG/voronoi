@@ -1,8 +1,8 @@
 {
   "name": "voro-gen",
   "version": "1.0.0",
-  "description": "voronoi generator",
-  "main": "index.js",
+  "description": "Parametric Voronoi generator with real time editing and SVG export",
+  "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
