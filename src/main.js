@@ -21,7 +21,7 @@ function menu_export(parent){
         <p align="center">
             <a href="https://github.com/WebSVG/voronoi" target="_blank">
             <img src=./media/github.png width=40 href="https://github.com/WebSVG/voronoi">
-            <p align="center">Source code on Github</p>
+            <p align="center">User Guide and Source Code</p>
         </p>
     </a>`)
 

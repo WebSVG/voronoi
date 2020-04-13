@@ -1,16 +1,48 @@
-# voronoi
+# Description
 Parametric Voronoi generator with real time editing and SVG export
 
-# Live demo
-https://websvg.github.io/voronoi/
+# Voronoi editor webiste
+Live demo of this repository https://websvg.github.io/voronoi/
 
-# Gif Demo
+# User Guide
 
-<img src ="./media/good_demo.gif" width=600 href="https://websvg.github.io/voronoi/" target="_blank">
+## Overview
+* Generate Diagram
+* Edit cells
+* Export SVG
 
-We see above the user generating seeds, acting on the input range slider to update the number of seeds in real time, modifying the space between cells, changing the cells type, exporting an SVG file then dropping it on a new browser window, exporting seeds file and dropping it on the seeds area to import it
+<img src ="./media/demo_overview.gif" width=600 href="https://websvg.github.io/voronoi/" target="_blank">
 
-# Features
+We see above the user generating new sets of seeds with their resulting voronoi diagram, hiding and viewing seeds, cells and edges, changing the number of seeds with a slider while the view updates in real time, editing the cells by moving them, removing and adding cells, changing the cells shape to quadratic bezier, simple edges and back to cubic bezier, finally adjusting the space between cells before exporting in an SVG file.
+
+## Export seeds coordinates
+The seeds coordinates are what allows to generate again the same voronoig diagram
+
+<img src="./media/export_seeds.gif">
+
+* seeds can be exported as a json text file containing each seed coordinate
+* the `seeds.json` can be imported by drag and drop on the view area
+* it is possible therefore to share seeds structures and continue working on a seeds set at any point in time
+
+## cells retraction
+* The cells are not scaled down, their edges are rather retracted in parallel to their original location.
+* When retracting cells as a consequence some edges could become irrelevant and the shape might decrese in edges number.
+
+<img src="./media/retraction_discard.gif">
+
+* Below is another example where we see in debug mode the translated edges and the discarded one is red
+
+<img src="./media/correct_retraction.gif">
+
+## cubic bezier minimum edge size
+<img src="./media/min_edges.gif" width=400>
+
+* goal is to filter small edge to avoid sharp bezier curves
+* the quadratic bezier only has one control point, so using the center of the removed edge would still break the tangency alignment with the previous curve
+* clean way would require ignoring the corresponding site completely and extend the left edges till the small edge is nullified, thus reducing the total number of sides of the cell
+* therfore, in order to keep shapes tangent to the sides, min edge ignore is only implemented in quadratic bezier.
+
+# Features details
 * Generate Voronoi Diagram
 * Export to SVG file
   ## seeds
@@ -40,33 +72,13 @@ We see above the user generating seeds, acting on the input range slider to upda
 * edit seed weight (? requires a new engine)
 * add irregularities to the edges thickness (randomize retraction)
 
-# Dev User Guide
-## cells retraction
-<img src="./media/retraction_discard.gif">
-
-* The cells are not scaled down, their edges are rather retracted in parallel to their original location.
-* When retracting cells as a consequence some edges could become irrelevant and the shape might decrese in edges number.
-
-<img src="./media/correct_retraction.gif">
-
-* Above is another example where we see in debug mode the translated edges and the discarded one is red
-
-## cubic bezier minimum edge size
-<img src="./media/min_edges.gif" width=400>
-
-* goal is to filter small edge to avoid sharp bezier curves
-* the quadratic bezier only has one control point, so using the center of the removed edge would still break the tangency alignment with the previous curve
-* clean way would require ignoring the corresponding site completely and extend the left edges till the small edge is nullified, thus reducing the total number of sides of the cell
-* therfore, in order to keep shapes tangent to the sides, min edge ignore is only implemented in quadratic bezier.
-
 # License
 MIT
 
-## Issues
+# Issues
 https://github.com/WebSVG/voronoi/issues
 
 # Dependencies
-
 ## Vornoi js Library
 
 * 'gorhill' Javascript Voronoi library
