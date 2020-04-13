@@ -79,9 +79,10 @@ function get_closest_index(seeds,coord){
 }
 class Voronoi{
     constructor(parent,w,h){
+        this.parent = parent
         //const use_storage = false
         let init_needed = false
-        this.version = "29"
+        this.version = "31"
         const config = JSON.parse(localStorage.getItem("voronoi_config"))
         if(config === null){
             console.log("First time usage, no config stored")
@@ -118,7 +119,8 @@ class Voronoi{
             this.view_svg = {
                 cells:true,
                 edges:false,
-                seeds:true
+                seeds:true,
+                shape:true
             }
             this.mouse_action = "move"
             this.export_ratio = 1.0
@@ -133,7 +135,17 @@ class Voronoi{
         this.svg.main = html(parent,"svg",/*html*/`<svg id="main_svg" xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"></svg>`);
         //this.svg.main = html(parent,"svg",/*html*/`<svg id="main_svg" xmlns="http://www.w3.org/2000/svg"></svg>`);
         this.svg.path = null;
+        this.svg.seeds_area = null;
         this.svg.cells = [];
+        //fetch("./media/shape.svg")
+        //.then((resp)=>{
+        //    resp.text()
+        //    .then((svg_text)=>{
+        //        parent.insertAdjacentHTML("beforeend",svg_text);
+        //        let elements = parent.getElementsByTagName("svg");
+        //        let res_svg =  elements[elements.length-1];
+        //    })
+        //})
 
         this.init_events()
     }
@@ -153,6 +165,31 @@ class Voronoi{
             id:id,
             x:best_seed.x,
             y:best_seed.y
+        }
+    }
+    add_seeds_in_area(nb){
+        const box = this.svg.seeds_area.getBoundingClientRect();
+        for(let i=0;i<nb;i++){
+            let inside = false
+            let x,y
+            let max_iter = 100
+            while((!inside)&&(max_iter>0)){
+                x = box.x + Math.random()*box.width
+                y = box.y + Math.random()*box.height
+                if(document.elementFromPoint(x, y).id == "seeds_area"){
+                    inside = true
+                }
+                max_iter--
+            }
+            if(max_iter == 0){
+                console.error(`can't sample in path : max iterations 100 reached`)
+            }
+            const s = {
+                id:i,
+                x:x,
+                y:y
+            }
+            this.seeds.push(s)
         }
     }
 
@@ -224,11 +261,15 @@ class Voronoi{
         if(this.view_svg.seeds){
             this.draw_seeds()
         }
+        if(this.svg.seeds_area != null){
+            this.svg.main.appendChild(this.svg.seeds_area)
+        }
         this.store()
     }
 
     store(){
         let config = Object.assign({},this)
+        delete config.parent
         delete config.svg
         delete config.seeds
         delete config.res
@@ -293,10 +334,15 @@ class Voronoi{
                 this.seeds.pop()
             }
         }else if(this.nb_seeds > this.seeds.length){
-            if(this.sampling){
-                this.add_seeds_sampling(this.nb_seeds - this.seeds.length)
+            const nd_seeds_to_add = this.nb_seeds - this.seeds.length
+            if(this.svg.seeds_area != null){
+                this.add_seeds_in_area(nd_seeds_to_add)
             }else{
-                this.add_seeds_random(this.nb_seeds - this.seeds.length)
+                if(this.sampling){
+                    this.add_seeds_sampling(nd_seeds_to_add)
+                }else{
+                    this.add_seeds_random(nd_seeds_to_add)
+                }
             }
         }
         const new_gen_surface = this.width * this.height
@@ -375,34 +421,73 @@ class Voronoi{
         save_json(this.seeds,fileName)
     }
 
-    load_dropped_seeds(file){
-        let extension = file.name.split('.').pop();
-        var reader = new FileReader();
+    load_dropped_svg(reader){
+        console.log("svg dropped")
         let is_valid = false;
         const vor_context = this
-        if(extension == "json"){
-            console.log("extention check - OK")
-            reader.onloadend = function(e) {
-                var result = JSON.parse(this.result);
-                if(Array.isArray(result)){
-                    console.log("array type - OK")
-                    if(result.length > 0){
-                        console.log("length - OK")
-                        const seed0 = result[0]
-                        if((defined(seed0.x)) && (defined(seed0.y)) &&(defined(seed0.id))){
-                            console.log("seed structure - OK")
-                            is_valid = true
-                        }
+        reader.onloadend = function(e) {
+            let svg_text = this.result;
+            vor_context.parent.insertAdjacentHTML("beforeend",svg_text);
+            let elements = vor_context.parent.getElementsByTagName("svg");
+            let res_svg =  elements[elements.length-1];
+            vor_context.parent.removeChild(res_svg);
+            let children = [...res_svg.childNodes];
+            let nb_paths = 0
+            let path = null
+            children.forEach((c)=>{
+                if(c.nodeType != Node.TEXT_NODE){
+                    if(c.tagName == "path"){
+                        nb_paths++
+                        path = c
                     }
                 }
-                if(is_valid){
-                    vor_context.set_seeds(result)
-                }else{
-                    alert(`unsupported seeds format`);
+            })
+            if(nb_paths == 1){
+                //check path inside window
+                //check path closed
+                //check path area min
+                vor_context.svg.seeds_area = path
+                vor_context.svg.main.appendChild(path)
+                path.setAttributeNS(null,"fill-opacity",0.2)
+                path.setAttributeNS(null,"fill","#115522")
+                path.id = "seeds_area"
+            }else{
+                alert(`only supported import of SVG with a single path on the top level`)
+            }
+        };
+    }
+    load_dropped_seeds(reader){
+        console.log("extention check - OK")
+        let is_valid = false;
+        const vor_context = this
+        reader.onloadend = function(e) {
+            var result = JSON.parse(this.result);
+            if(Array.isArray(result)){
+                console.log("array type - OK")
+                if(result.length > 0){
+                    console.log("length - OK")
+                    const seed0 = result[0]
+                    if((defined(seed0.x)) && (defined(seed0.y)) &&(defined(seed0.id))){
+                        console.log("seed structure - OK")
+                        is_valid = true
+                    }
                 }
-            };
-        }
-        else{
+            }
+            if(is_valid){
+                vor_context.set_seeds(result)
+            }else{
+                alert(`unsupported seeds format`);
+            }
+        };
+    }
+    load_dropped_file(file){
+        var reader = new FileReader();
+        let extension = file.name.split('.').pop();
+        if(extension == "json"){
+            this.load_dropped_seeds(reader)
+        }else if(extension == "svg"){
+            this.load_dropped_svg(reader)
+        }else{
             alert(`unsupported file format`);
         }
         reader.readAsText(file);

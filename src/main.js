@@ -129,7 +129,7 @@ function menu_nb_seeds(parent){
     let in_nb_seeds = bs.input_text(parent,"in_nb_seed",`${vor.nb_seeds} seeds`,"w-100");
     let rg_nb_seeds = bs.input_range(parent,vor.max_seeds)
     rg_nb_seeds.value = vor.nb_seeds
-    let in_max_seeds = bs.input_text(parent,"in_max_seed",`max seeds ${vor.max_seeds}`,"w-100");
+    let in_max_seeds = bs.input_text(parent,"in_max_seed",`enter max seeds, current ${vor.max_seeds}`,"w-100");
 
     let toggle_walls = bs.toggle(parent,"walls away","walls stick")
     toggle_walls.checked = vor.walls_dist
@@ -302,7 +302,7 @@ function onDragEvents(event){
             console.log(event.dataTransfer.files);
             return;
         }else{
-            vor.load_dropped_seeds(event.dataTransfer.files[0]);
+            vor.load_dropped_file(event.dataTransfer.files[0]);
         }
     };
 }

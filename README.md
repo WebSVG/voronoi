@@ -77,6 +77,7 @@ The seeds coordinates are what allows to generate again the same voronoig diagra
   * cartographic seeds weight
 * add irregularities to the edges thickness (randomize retraction)
 * vertical mode for longitudinal edits
+* improve error alerts by using boostrap auto vanishing alerts
 
 # License
 MIT
