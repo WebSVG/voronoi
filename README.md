@@ -130,3 +130,5 @@ node dependencies are not required to serve the project locally, but only to ref
 
 <img src="./media/intersection_formula.svg">
 
+## Bezier curves
+* https://pomax.github.io/bezierinfo/

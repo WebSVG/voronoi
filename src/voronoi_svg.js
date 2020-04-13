@@ -5,6 +5,14 @@ import {diagram} from "./voronoi_geometry.js"
 
 let svg = new Svg()
 
+function circ(parent,point,col){
+    return html(parent,"circle",
+    /*html*/`<circle cx=${point.x} cy=${point.y} r="2" stroke="black" stroke-width="0" fill="${col}" />`
+    );
+}
+
+
+
 function get_seeds(nb,w,h){
     let res = []
     for(let i = 0;i<nb; i++){
@@ -54,6 +62,29 @@ function get_best_sample(seeds,samples,w,h,walls=false){
         }
         if(walls){
             seeds_cost.push(walls_distance(samples[i],w,h))
+        }
+        const min_dist = Math.min(...seeds_cost)
+        if(min_dist > biggest_min){
+            best_index = i
+            biggest_min = min_dist
+        }
+    }
+    //console.log(`biggest_min = ${biggest_min}`)
+    return samples[best_index]
+}
+
+function get_best_path_sample(seeds,samples,path_points){
+    let best_index = 0
+    let biggest_min = 0
+    for(let i=0;i<samples.length;i++){
+        let seeds_cost = []
+        for(let j= 0;j<seeds.length;j++){
+            const d = distance(samples[i],seeds[j])
+            seeds_cost.push(d)
+        }
+        for(let j= 0;j<path_points.length;j++){
+            const d = distance(samples[i],path_points[j])
+            seeds_cost.push(d)
         }
         const min_dist = Math.min(...seeds_cost)
         if(min_dist > biggest_min){
@@ -167,27 +198,41 @@ class Voronoi{
             y:best_seed.y
         }
     }
+    get_point_inside(box,path_id){
+        let x,y
+        let max_iter = 100
+        let inside = false
+        while((!inside)&&(max_iter>0)){
+            x = box.x + Math.random()*box.width
+            y = box.y + Math.random()*box.height
+            if(document.elementFromPoint(x, y).id == path_id){
+                inside = true
+            }
+            max_iter--
+        }
+        if(max_iter == 0){
+            console.error(`can't sample in path : max iterations 100 reached`)
+        }
+        return [x,y]
+    }
+    get_samples_inside_path(box){
+        let res = []
+        for(let i=0;i<this.nb_samples;i++){
+            let [x,y] = this.get_point_inside(box,"seeds_area")
+            res.push({x:x,y:y})
+        }
+        return res
+    }
     add_seeds_in_area(nb){
         const box = this.svg.seeds_area.getBoundingClientRect();
         for(let i=0;i<nb;i++){
-            let inside = false
-            let x,y
-            let max_iter = 100
-            while((!inside)&&(max_iter>0)){
-                x = box.x + Math.random()*box.width
-                y = box.y + Math.random()*box.height
-                if(document.elementFromPoint(x, y).id == "seeds_area"){
-                    inside = true
-                }
-                max_iter--
-            }
-            if(max_iter == 0){
-                console.error(`can't sample in path : max iterations 100 reached`)
-            }
+            let samples = this.get_samples_inside_path(box)
+            let best = get_best_path_sample(this.seeds,samples,this.path_points)
+            //check the cost
             const s = {
                 id:i,
-                x:x,
-                y:y
+                x:best.x,
+                y:best.y
             }
             this.seeds.push(s)
         }
@@ -421,6 +466,16 @@ class Voronoi{
         save_json(this.seeds,fileName)
     }
 
+    update_path_points(){
+        const p = this.svg.seeds_area
+        const nb_steps = 20
+        const step = p.getTotalLength() / nb_steps
+        this.path_points = []
+        for(let i=0;i<nb_steps;i++){
+            let dist = step * i
+            this.path_points.push(p.getPointAtLength(dist))
+        }
+    }
     load_dropped_svg(reader){
         console.log("svg dropped")
         let is_valid = false;
@@ -451,6 +506,7 @@ class Voronoi{
                 path.setAttributeNS(null,"fill-opacity",0.2)
                 path.setAttributeNS(null,"fill","#115522")
                 path.id = "seeds_area"
+                vor_context.update_path_points()
             }else{
                 alert(`only supported import of SVG with a single path on the top level`)
             }
