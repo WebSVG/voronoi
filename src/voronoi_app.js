@@ -1,4 +1,4 @@
-import {defined,html,save_json} from "./utils.js"
+import {defined,html} from "./utils.js"
 import {Svg} from "./svg_utils.js"
 import {voronoi_diag} from "./voronoi_diag.js"
 import {Seeds} from "./seeds.js"
@@ -10,7 +10,7 @@ class voronoi_app{
         this.parent = parent
         //const use_storage = false
         let init_needed = false
-        this.version = "34"
+        this.version = "35"
         const config = JSON.parse(localStorage.getItem("voronoi_config"))
         if(config === null){
             console.log("First time usage, no config stored")
@@ -53,10 +53,7 @@ class voronoi_app{
         this.diagram = new voronoi_diag()
         this.seeds = new Seeds()
         if(!init_needed){
-            const seeds_config = JSON.parse(localStorage.getItem("seeds_config"))
-            if(seeds_config != null){
-                this.seeds.config = seeds_config
-            }
+            this.seeds.load_config(JSON.parse(localStorage.getItem("seeds_config")))
         }
 
         this.svg = {}
@@ -167,7 +164,6 @@ class voronoi_app{
 
     load_dropped_svg(reader){
         console.log("svg dropped")
-        let is_valid = false;
         const vor_context = this
         reader.onloadend = function(e) {
             let svg_text = this.result;
@@ -199,7 +195,8 @@ class voronoi_app{
                 path.setAttributeNS(null,"fill-opacity",0.2)
                 path.setAttributeNS(null,"fill","#115522")
                 path.id = "seeds_area"
-                this.seeds.update({path:path,id:"seeds_area"})
+                vor_context.seeds.update({path:path,id:"seeds_area"})
+                vor_context.compute_voronoi()
             }else{
                 alert(`only supported import of SVG with a single path on the top level`)
             }
@@ -224,7 +221,7 @@ class voronoi_app{
             }
             if(is_valid){
                 vor_context.seeds.load(result)
-                this.compute_voronoi()
+                vor_context.compute_voronoi()
             }else{
                 alert(`unsupported seeds format`);
             }
@@ -277,10 +274,15 @@ class voronoi_app{
         })
         $(this.svg.main).on("touchstart",(e)=>{
             console.log()
-            if(this.mouse_action == "move"){
-                this.seeds.move({x:e.touches[0].clientX, y:e.touches[0].clientY})
-                this.compute_voronoi()
+            const [x,y] = [e.touches[0].clientX,e.touches[0].clientY]
+            if(this.mouse_action == "add"){
+                this.seeds.add({x:x, y:y})
+            }else if(this.mouse_action == "move"){
+                this.seeds.move({x:x, y:y})
+            }else if(this.mouse_action == "remove"){
+                this.seeds.remove({x:x, y:y})
             }
+            this.compute_voronoi()
             e.preventDefault()
         })
     }

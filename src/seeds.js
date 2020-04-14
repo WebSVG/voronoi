@@ -1,4 +1,4 @@
-import { defined,html } from "./utils.js"
+import { defined,html,save_json } from "./utils.js"
 import {Svg} from "./svg_utils.js"
 import {Geometry} from "./geometry.js"
 
@@ -114,7 +114,12 @@ class Seeds{
         this.path_svg = null
         this.path_points = []
     }
-
+    load_config(cfg){
+        this.config = cfg
+        if(this.config.area.type == "path"){//not supported
+            this.config.area.type = "rect"
+        }
+    }
 
     get_seed(id,w,h){
         let samples = get_seed_samples(this.config.nb_samples,w,h)
@@ -152,7 +157,7 @@ class Seeds{
         return res
     }
     add_seeds_in_path(nb){
-        const box = this.config.area.path.getBoundingClientRect();
+        const box = this.path_svg.getBoundingClientRect();
         for(let i=0;i<nb;i++){
             let samples = this.get_samples_inside_path(box)
             let best = get_best_path_sample(this.array,samples,this.path_points)
@@ -247,6 +252,9 @@ class Seeds{
         }
         if(defined(params.height)){
             this.config.area.height = params.height
+        }
+        if(defined(params.config)){
+            this.load_config(params.config)
         }
         if(defined(params.path)){
                 this.config.area.type = "path"
