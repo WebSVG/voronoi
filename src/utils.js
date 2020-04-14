@@ -35,10 +35,20 @@ function save_json(object,fileName){
     saveAs(blob, fileName);
 }
 
+function rand_col() {
+    const letters = '0123456789ABCDEF';
+    let color = '#';
+    for (let i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+}
+
 export{
     html,
     br,hr,
     defined,
     Events,
     save_json,
+    rand_col
 }

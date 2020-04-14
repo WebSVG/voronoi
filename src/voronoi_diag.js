@@ -1,4 +1,4 @@
-import {defined,html} from "./utils.js"
+import {defined,html,rand_col} from "./utils.js"
 import {Vector} from "../libs/Vector.js"
 import {Geometry} from "./geometry.js"
 import {Svg} from "./svg_utils.js"
@@ -313,12 +313,12 @@ class voronoi_diag{
         this.type = "wfil"
         this.cells = []
         this.org_cells = []
+        this.edges = []
         if((defined(create))&&(create.type =="rhill")){
             this.from_rhill_diagram(create)
         }
         this.config = {}
         let cfg = this.config
-        this.edge = []
     }
 
     from_rhill_diagram(diag){
@@ -328,10 +328,10 @@ class voronoi_diag{
             this.cells.push(new cell(diag.cells[i]))
         }
         this.cells.forEach((c)=>{this.org_cells.push(c.copy())})
+        this.edges = diag.edges
     }
     
     retract_cells(params,parent){
-        svg.set_parent(parent)
         const dist = parseFloat(params.retraction)
         for(let i=0;i<this.cells.length;i++){
             const is_debug = (params.debug == 0)?false:(params.debug-1 == i)
@@ -347,6 +347,38 @@ class voronoi_diag{
         console.time("post proc")
         this.from_rhill_diagram(vor_result)
         console.timeEnd("post proc")
+    }
+
+    draw_cells(params){
+        svg.set_parent(params.svg)
+        if(this.cells.length>1){//otherwise single cell has no half edges
+            this.retract_cells(params)
+            let group = html(params.svg,"g",/*html*/`<g id="svg_g_bezier_cells"/>`)
+            for(let i=0;i<this.cells.length;i++){
+                //here you can retract or detract small edges before either drawing technique
+                let d
+                if(params.shape == "cubic"){
+                    d = this.cells[i].path_bezier_cubic_filter_no_s(params.min_edge)
+                }else if(params.shape == "quadratic"){
+                    d = this.cells[i].path_bezier_quadratic()
+                }else{
+                    d = this.cells[i].path_edges()
+                }
+                let color = (params.color==true)?rand_col():"#221155"
+                html(group,"path",/*html*/`<path d="${d}" fill="${color}" fill-opacity="0.2"/>`
+                )
+            }
+        }
+    }
+
+    draw_edges(params){
+        svg.set_parent(params.svg)
+        let group = html(params.svg,"g",/*html*/`<g id="svg_g_edges"/>`)
+        let d = ""
+        this.edges.forEach((e)=>{
+            d = d + `M ${e.va.x} ${e.va.y} L ${e.vb.x} ${e.vb.y} `
+        })
+        return html(group,"path",/*html*/`<path id="svg_path_edges" d="${d}" stroke="black" stroke-width="2" />`)
     }
 }
 

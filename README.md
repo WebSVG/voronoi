@@ -78,6 +78,7 @@ The seeds coordinates are what allows to generate again the same voronoig diagra
 * add irregularities to the edges thickness (randomize retraction)
 * vertical mode for longitudinal edits
 * improve error alerts by using boostrap auto vanishing alerts
+* random colors for cells
 
 ## Upcoming feature : Shaped tesselation area
 ### step 1 : sampling

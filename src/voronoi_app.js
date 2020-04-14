@@ -1,5 +1,4 @@
 import {defined,html,save_json} from "./utils.js"
-import * as vor_core from "../libs/rhill-voronoi-core.js"
 import {Svg} from "./svg_utils.js"
 import {voronoi_diag} from "./voronoi_diag.js"
 import {Geometry} from "./geometry.js"
@@ -92,7 +91,7 @@ class voronoi_app{
         this.parent = parent
         //const use_storage = false
         let init_needed = false
-        this.version = "31"
+        this.version = "32"
         const config = JSON.parse(localStorage.getItem("voronoi_config"))
         if(config === null){
             console.log("First time usage, no config stored")
@@ -118,7 +117,6 @@ class voronoi_app{
             this.nb_seeds_gen = 0;
             this.walls_dist = true;
             this.sampling = true;
-            this.path_width = 2;
             this.min_edge = 20
             this.is_color = false//not usable yet as flickers on updates
             this.width = 0
@@ -137,16 +135,14 @@ class voronoi_app{
             this.export_svg = {
                 cells:true,
                 edges:false,
-                seeds:false
+                seeds:false,
+                shape:true
             }
         }
         this.svg = {}
-        this.svg.seeds = []
         this.svg.main = html(parent,"svg",/*html*/`<svg id="main_svg" xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"></svg>`);
         svg.set_parent(this.svg.main)
-        this.svg.path = null;
         this.svg.seeds_area = null;
-        this.svg.cells = [];
 
         this.diagram = new voronoi_diag()
 
@@ -308,56 +304,47 @@ class voronoi_app{
         return false
     }
 
-    draw_seeds(){
-        this.svg.seeds = svg.draw_seeds(this.seeds)
-    }
-
-    draw_path(){
-        console.time("draw path")
-        this.svg.path = svg.draw_path(this.res.edges,this.path_width)
-        console.timeEnd("draw path")
-    }
-
-    set_path_width(width){
-        this.path_width = width
-        this.svg.path.setAttributeNS(null,"stroke-width",width)
-        this.store()
-    }
-
-    draw_cells(){
-        console.time("draw cells")
-        //todo select color checkbox true false
-        const props = {
-            shape:this.cells_shape,
-            color:this.is_color,
-            min_edge:this.min_edge,
-            retraction:this.cells_space,
-            debug:this.seed_debug
+    draw_seeds(params){
+        if(this.seeds.length > 0){
+            let group = html(params.svg,"g",/*html*/`<g id="svg_g_seeds"/>`)
+            for(let i=0;i<this.seeds.length;i++){
+                const s = this.seeds[i]
+                svg.circle_p_id(group,s.x,s.y,`c_${s.id}`)
+            }
         }
-        this.svg.cells = svg.draw_cells(this.diagram,props)
-        console.timeEnd("draw cells")
     }
 
-    clear_svg(){
-        let children = [ ...this.svg.main.children];
+    clear_svg(svg_el){
+        let children = [ ...svg_el.children];
         children.forEach((child)=>{
             child.parentElement.removeChild(child)
         })
     }
 
-    draw(){
-        this.clear_svg()
-        if(this.view_svg.cells){
-            this.draw_cells()
+    draw(svg_el,draw_cfg){
+        this.clear_svg(svg_el)
+        if(draw_cfg.cells){
+            const params = {
+                svg:svg_el,
+                shape:this.cells_shape,
+                color:this.is_color,
+                min_edge:this.min_edge,
+                retraction:this.cells_space,
+                debug:this.seed_debug
+            }
+            this.diagram.draw_cells(params)
         }
-        if(this.view_svg.edges){
-            this.draw_path()
+        if(draw_cfg.edges){
+            this.diagram.draw_edges({svg:svg_el})
         }
-        if(this.view_svg.seeds){
-            this.draw_seeds()
+        if(draw_cfg.seeds){
+            this.draw_seeds({svg:svg_el})
         }
-        if(this.svg.seeds_area != null){
-            this.svg.main.appendChild(this.svg.seeds_area)
+        if(draw_cfg.shape){
+            if(this.svg.seeds_area != null){
+                //cloneNode() and cloneNode(true) do beak the original svg and the app crashes (max 100 iterations)
+                svg_el.appendChild(this.svg.seeds_area)
+            }
         }
         this.store()
     }
@@ -367,7 +354,6 @@ class voronoi_app{
         delete config.parent
         delete config.svg
         delete config.seeds
-        delete config.res
         delete config.diagram
         //console.log(`storing config version ${config.version}`)
         localStorage.setItem("voronoi_config",JSON.stringify(config))
@@ -375,7 +361,7 @@ class voronoi_app{
 
     compute_voronoi(){
         this.diagram.compute(this.seeds,{xl:0, xr:parseFloat(this.width), yt:0, yb:parseFloat(this.height)})
-        this.draw()
+        this.draw(this.svg.main,this.view_svg)
     }
 
     update_size(clear){
@@ -393,24 +379,15 @@ class voronoi_app{
 
 
     save_svg(fileName){
-        this.clear_svg()
-        if(this.export_svg.seeds){
-            this.draw_seeds()
+        let svg_out = this.svg.main.cloneNode()//lazy, just for new svg creation
+        this.draw(svg_out,this.export_svg)
+        svg.save(fileName,svg_out)
+        //due to cloneNode bug, have to give it back to the view svg
+        if(this.view_svg.shape){
+            if(this.svg.seeds_area != null){
+                this.svg.main.appendChild(this.svg.seeds_area)
+            }
         }
-        if(this.export_svg.edges){
-            this.draw_path()
-        }
-        if(this.export_svg.cells){
-            this.draw_cells()
-        }
-        if(this.export_ratio != 1.0){
-            this.svg.main.setAttributeNS(null,"transform",`scale(${this.export_ratio})`)
-        }
-        svg.save(fileName)
-        if(this.export_ratio != 1.0){
-            this.svg.main.setAttributeNS(null,"transform","")
-        }
-        this.draw()
     }
 
     save_seeds(fileName){
@@ -455,6 +432,10 @@ class voronoi_app{
                 //check path inside window
                 //check path closed
                 //check path area min
+                if(vor_context.svg.seeds_area != null){
+                    console.log("svg import, previous path removed")
+                    vor_context.svg.seeds_area.parentElement.removeChild(vor_context.svg.seeds_area)
+                }
                 vor_context.svg.seeds_area = path
                 vor_context.svg.main.appendChild(path)
                 path.setAttributeNS(null,"fill-opacity",0.2)
