@@ -2,10 +2,11 @@ import {defined,html} from "./utils.js"
 import {Vector} from "../libs/Vector.js"
 import {Geometry} from "./geometry.js"
 import {Svg} from "./svg_utils.js"
+import * as vor_core from "../libs/rhill-voronoi-core.js"
 
 let geom = new Geometry()
-
 let svg = new Svg()
+let vor_rhill = new vor_core.Voronoi()
 
 function he_length(he){
     const dx = he.edge.va.x-he.edge.vb.x
@@ -219,9 +220,6 @@ class cell{
         this.edges.splice(i,1)
         this.add_prev_next(this.edges)
     }
-    is_edge_to_be_removed(e){
-
-    }
     check_closed_edges(is_debug){
         let any_edge_removed = false
         let new_edges = []
@@ -315,19 +313,23 @@ class voronoi_diag{
         this.type = "wfil"
         this.cells = []
         this.org_cells = []
-        if(create.type =="rhill"){
-            this.cells      =  this.from_rhill_diagram(create)
+        if((defined(create))&&(create.type =="rhill")){
+            this.from_rhill_diagram(create)
+        }
+        this.config = {}
+        let cfg = this.config
+        this.edge = []
+    }
+
+    from_rhill_diagram(diag){
+        this.cells = []
+        this.org_cells = []
+        for(let i=0;i<diag.cells.length;i++){
+            this.cells.push(new cell(diag.cells[i]))
         }
         this.cells.forEach((c)=>{this.org_cells.push(c.copy())})
-
     }
-    from_rhill_diagram(diag){
-        let res = []
-        for(let i=0;i<diag.cells.length;i++){
-            res.push(new cell(diag.cells[i]))
-        }
-        return res
-    }
+    
     retract_cells(params,parent){
         svg.set_parent(parent)
         const dist = parseFloat(params.retraction)
@@ -335,6 +337,16 @@ class voronoi_diag{
             const is_debug = (params.debug == 0)?false:(params.debug-1 == i)
             this.cells[i].retract(dist,this.org_cells[i],is_debug)
         }
+    }
+
+    compute(seeds,params){
+        console.time("voronoi")
+        let vor_result = vor_rhill.compute(seeds,params)
+        console.timeEnd("voronoi")
+        this.edges = vor_result.edges
+        console.time("post proc")
+        this.from_rhill_diagram(vor_result)
+        console.timeEnd("post proc")
     }
 }
 

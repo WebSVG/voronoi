@@ -2,7 +2,9 @@ import {defined,html,save_json} from "./utils.js"
 import * as vor_core from "../libs/rhill-voronoi-core.js"
 import {Svg} from "./svg_utils.js"
 import {voronoi_diag} from "./voronoi_diag.js"
+import {Geometry} from "./geometry.js"
 
+let geom = new Geometry()
 let svg = new Svg()
 
 function get_seeds(nb,w,h){
@@ -28,32 +30,17 @@ function get_seed_samples(nb,w,h){
     return res
 }
 
-function walls_distance(seed,w,h){
-    let walls_dist = []
-    walls_dist.push(Math.abs(seed.x))
-    walls_dist.push(Math.abs(seed.y))
-    walls_dist.push(Math.abs(w-seed.x))
-    walls_dist.push(Math.abs(h-seed.y))
-    return Math.min(...walls_dist)
-}
-
-function distance(s1,s2){
-    const dx = s1.x-s2.x
-    const dy = s1.y-s2.y
-    return Math.sqrt(dx * dx + dy * dy)
-}
-
 function get_best_sample(seeds,samples,w,h,walls=false){
     let best_index = 0
     let biggest_min = 0
     for(let i=0;i<samples.length;i++){
         let seeds_cost = []
         for(let j= 0;j<seeds.length;j++){
-            const d = distance(samples[i],seeds[j])
+            const d = geom.distance(samples[i],seeds[j])
             seeds_cost.push(d)
         }
         if(walls){
-            seeds_cost.push(walls_distance(samples[i],w,h))
+            seeds_cost.push(geom.walls_distance(samples[i],w,h))
         }
         const min_dist = Math.min(...seeds_cost)
         if(min_dist > biggest_min){
@@ -71,11 +58,11 @@ function get_best_path_sample(seeds,samples,path_points){
     for(let i=0;i<samples.length;i++){
         let seeds_cost = []
         for(let j= 0;j<seeds.length;j++){
-            const d = distance(samples[i],seeds[j])
+            const d = geom.distance(samples[i],seeds[j])
             seeds_cost.push(d)
         }
         for(let j= 0;j<path_points.length;j++){
-            const d = distance(samples[i],path_points[j])
+            const d = geom.distance(samples[i],path_points[j])
             seeds_cost.push(d)
         }
         const min_dist = Math.min(...seeds_cost)
@@ -92,7 +79,7 @@ function get_closest_index(seeds,coord){
     let index_of_closest = 0
     let closest_dist = Number.MAX_VALUE
     for(let i=0;i<seeds.length;i++){
-        const d = distance(coord,seeds[i])
+        const d = geom.distance(coord,seeds[i])
         if(d < closest_dist){
             index_of_closest = i
             closest_dist = d
@@ -156,20 +143,12 @@ class voronoi_app{
         this.svg = {}
         this.svg.seeds = []
         this.svg.main = html(parent,"svg",/*html*/`<svg id="main_svg" xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"></svg>`);
-        //this.svg.main = html(parent,"svg",/*html*/`<svg id="main_svg" xmlns="http://www.w3.org/2000/svg"></svg>`);
         svg.set_parent(this.svg.main)
         this.svg.path = null;
         this.svg.seeds_area = null;
         this.svg.cells = [];
-        //fetch("./media/shape.svg")
-        //.then((resp)=>{
-        //    resp.text()
-        //    .then((svg_text)=>{
-        //        parent.insertAdjacentHTML("beforeend",svg_text);
-        //        let elements = parent.getElementsByTagName("svg");
-        //        let res_svg =  elements[elements.length-1];
-        //    })
-        //})
+
+        this.diagram = new voronoi_diag()
 
         this.init_events()
     }
@@ -395,17 +374,7 @@ class voronoi_app{
     }
 
     compute_voronoi(){
-        console.time("voronoi")
-        let voronoi = new vor_core.Voronoi()
-        this.res = voronoi.compute(this.seeds,{xl:0, xr:parseFloat(this.width), yt:0, yb:parseFloat(this.height)})
-        console.timeEnd("voronoi")
-        console.time("post proc")
-        this.res.type = "rhill"
-        this.diagram = new voronoi_diag(this.res)
-        console.timeEnd("post proc")
-        //console.log(this.res)
-        //console.log(this.diagram)
-        //console.log(`stats : ${res.cells.length} cells , ${res.vertices.length} vertices , ${res.edges.length} edges`)
+        this.diagram.compute(this.seeds,{xl:0, xr:parseFloat(this.width), yt:0, yb:parseFloat(this.height)})
         this.draw()
     }
 
@@ -451,7 +420,7 @@ class voronoi_app{
         save_json(this.seeds,fileName)
     }
 
-    update_path_points(){
+    compute_path_points(){
         const p = this.svg.seeds_area
         const nb_steps = 20
         const step = p.getTotalLength() / nb_steps
@@ -491,7 +460,7 @@ class voronoi_app{
                 path.setAttributeNS(null,"fill-opacity",0.2)
                 path.setAttributeNS(null,"fill","#115522")
                 path.id = "seeds_area"
-                vor_context.update_path_points()
+                vor_context.compute_path_points()
             }else{
                 alert(`only supported import of SVG with a single path on the top level`)
             }

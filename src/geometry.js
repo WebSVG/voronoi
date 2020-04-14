@@ -7,6 +7,15 @@ class Geometry{
         return Math.sqrt(dx * dx + dy * dy)
     }
     
+    walls_distance(point,w,h){
+        let walls_dist = []
+        walls_dist.push(Math.abs(point.x))
+        walls_dist.push(Math.abs(point.y))
+        walls_dist.push(Math.abs(w-point.x))
+        walls_dist.push(Math.abs(h-point.y))
+        return Math.min(...walls_dist)
+    }
+    
     center(va,vb){
         return ({x:(va.x+vb.x)/2,y:(va.y+vb.y)/2})
     }
