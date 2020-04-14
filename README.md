@@ -115,8 +115,6 @@ node dependencies are not required to serve the project locally, but only to ref
 * to be replaced with 'a' download attribute : https://www.w3schools.com/tags/att_a_download.asp
 
 # References
-
-## js voronoi SVG
 * 'stg' voronoi SVG vectorisation : 
   * also baed on [gorhill](https://github.com/gorhill/Javascript-Voronoi)'s library
   * [github stg repo](https://github.com/stg/SVoronoiG)
@@ -124,11 +122,9 @@ node dependencies are not required to serve the project locally, but only to ref
 * http://alexbeutel.com/webgl/voronoi.html
 * http://cfbrasz.github.io/VoronoiColoring.html
 * https://www.jasondavies.com/maps/voronoi/
-
-## lines intersection
 * [wikipedia - lines intersection](https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection)
-
 <img src="./media/intersection_formula.svg">
 
-## Bezier curves
-* https://pomax.github.io/bezierinfo/
+* Bezier curves https://pomax.github.io/bezierinfo/
+* Closest point on path approximation : https://bl.ocks.org/mbostock/8027637
+
