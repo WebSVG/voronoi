@@ -328,7 +328,7 @@ class voronoi_diag{
         this.edges = diag.edges
     }
     
-    retract_cells(params,parent){
+    retract_cells(params){
         const dist = parseFloat(params.retraction)
         for(let i=0;i<this.cells.length;i++){
             const is_debug = (params.debug == 0)?false:(params.debug-1 == i)
@@ -380,7 +380,4 @@ class voronoi_diag{
 }
 
 
-export{
-    voronoi_diag,
-    cell
-}
+export{voronoi_diag}
