@@ -1,17 +1,10 @@
 import {defined,html,save_json} from "./utils.js"
-import * as vor_core from "../libs/rhill-voronoi-core.js"
 import {Svg} from "./svg_utils.js"
-import {diagram} from "./voronoi_geometry.js"
+import {voronoi_diag} from "./voronoi_diag.js"
+import {Geometry} from "./geometry.js"
 
+let geom = new Geometry()
 let svg = new Svg()
-
-function circ(parent,point,col){
-    return html(parent,"circle",
-    /*html*/`<circle cx=${point.x} cy=${point.y} r="2" stroke="black" stroke-width="0" fill="${col}" />`
-    );
-}
-
-
 
 function get_seeds(nb,w,h){
     let res = []
@@ -36,32 +29,17 @@ function get_seed_samples(nb,w,h){
     return res
 }
 
-function walls_distance(seed,w,h){
-    let walls_dist = []
-    walls_dist.push(Math.abs(seed.x))
-    walls_dist.push(Math.abs(seed.y))
-    walls_dist.push(Math.abs(w-seed.x))
-    walls_dist.push(Math.abs(h-seed.y))
-    return Math.min(...walls_dist)
-}
-
-function distance(s1,s2){
-    const dx = s1.x-s2.x
-    const dy = s1.y-s2.y
-    return Math.sqrt(dx * dx + dy * dy)
-}
-
 function get_best_sample(seeds,samples,w,h,walls=false){
     let best_index = 0
     let biggest_min = 0
     for(let i=0;i<samples.length;i++){
         let seeds_cost = []
         for(let j= 0;j<seeds.length;j++){
-            const d = distance(samples[i],seeds[j])
+            const d = geom.distance(samples[i],seeds[j])
             seeds_cost.push(d)
         }
         if(walls){
-            seeds_cost.push(walls_distance(samples[i],w,h))
+            seeds_cost.push(geom.walls_distance(samples[i],w,h))
         }
         const min_dist = Math.min(...seeds_cost)
         if(min_dist > biggest_min){
@@ -79,11 +57,11 @@ function get_best_path_sample(seeds,samples,path_points){
     for(let i=0;i<samples.length;i++){
         let seeds_cost = []
         for(let j= 0;j<seeds.length;j++){
-            const d = distance(samples[i],seeds[j])
+            const d = geom.distance(samples[i],seeds[j])
             seeds_cost.push(d)
         }
         for(let j= 0;j<path_points.length;j++){
-            const d = distance(samples[i],path_points[j])
+            const d = geom.distance(samples[i],path_points[j])
             seeds_cost.push(d)
         }
         const min_dist = Math.min(...seeds_cost)
@@ -100,7 +78,7 @@ function get_closest_index(seeds,coord){
     let index_of_closest = 0
     let closest_dist = Number.MAX_VALUE
     for(let i=0;i<seeds.length;i++){
-        const d = distance(coord,seeds[i])
+        const d = geom.distance(coord,seeds[i])
         if(d < closest_dist){
             index_of_closest = i
             closest_dist = d
@@ -108,12 +86,12 @@ function get_closest_index(seeds,coord){
     }
     return index_of_closest
 }
-class Voronoi{
+class voronoi_app{
     constructor(parent,w,h){
         this.parent = parent
         //const use_storage = false
         let init_needed = false
-        this.version = "31"
+        this.version = "32"
         const config = JSON.parse(localStorage.getItem("voronoi_config"))
         if(config === null){
             console.log("First time usage, no config stored")
@@ -139,7 +117,6 @@ class Voronoi{
             this.nb_seeds_gen = 0;
             this.walls_dist = true;
             this.sampling = true;
-            this.path_width = 2;
             this.min_edge = 20
             this.is_color = false//not usable yet as flickers on updates
             this.width = 0
@@ -158,25 +135,16 @@ class Voronoi{
             this.export_svg = {
                 cells:true,
                 edges:false,
-                seeds:false
+                seeds:false,
+                shape:true
             }
         }
         this.svg = {}
-        this.svg.seeds = []
         this.svg.main = html(parent,"svg",/*html*/`<svg id="main_svg" xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"></svg>`);
-        //this.svg.main = html(parent,"svg",/*html*/`<svg id="main_svg" xmlns="http://www.w3.org/2000/svg"></svg>`);
-        this.svg.path = null;
+        svg.set_parent(this.svg.main)
         this.svg.seeds_area = null;
-        this.svg.cells = [];
-        //fetch("./media/shape.svg")
-        //.then((resp)=>{
-        //    resp.text()
-        //    .then((svg_text)=>{
-        //        parent.insertAdjacentHTML("beforeend",svg_text);
-        //        let elements = parent.getElementsByTagName("svg");
-        //        let res_svg =  elements[elements.length-1];
-        //    })
-        //})
+
+        this.diagram = new voronoi_diag()
 
         this.init_events()
     }
@@ -237,7 +205,6 @@ class Voronoi{
             this.seeds.push(s)
         }
     }
-
     add_seeds_sampling(nb){
         const prev_nb = this.seeds.length
         for(let i=0;i<nb;i++){
@@ -246,7 +213,6 @@ class Voronoi{
             this.seeds.push(s)
         }
     }
-
     add_seeds_random(nb){
         const prev_nb = this.seeds.length
         const new_seeds = get_seeds(nb,this.width,this.height)
@@ -256,118 +222,13 @@ class Voronoi{
             this.seeds.push({id:new_id,x:s.x,y:s.y})
         }
     }
-
-    draw_seeds(){
-        this.svg.seeds = svg.draw_seeds(this.svg.main,this.seeds)
-    }
-
-    draw_path(){
-        console.time("draw path")
-        this.svg.path = svg.draw_path(this.svg.main,this.res.edges,this.path_width)
-        console.timeEnd("draw path")
-    }
-
-    set_path_width(width){
-        this.path_width = width
-        this.svg.path.setAttributeNS(null,"stroke-width",width)
-        this.store()
-    }
-
-    draw_cells(){
-        console.time("draw cells")
-        //todo select color checkbox true false
-        const props = {
-            shape:this.cells_shape,
-            color:this.is_color,
-            min_edge:this.min_edge,
-            retraction:this.cells_space,
-            debug:this.seed_debug
-        }
-        //this.svg.cells = svg.draw_cells_deprecated(this.svg.main,this.res.cells,props)
-        this.svg.cells = svg.draw_cells(this.svg.main,this.diagram,props)
-        console.timeEnd("draw cells")
-    }
-
-    clear_svg(){
-        let children = [ ...this.svg.main.children];
-        children.forEach((child)=>{
-            child.parentElement.removeChild(child)
-        })
-    }
-
-    draw(){
-        this.clear_svg()
-        if(this.view_svg.cells){
-            this.draw_cells()
-        }
-        if(this.view_svg.edges){
-            this.draw_path()
-        }
-        if(this.view_svg.seeds){
-            this.draw_seeds()
-        }
-        if(this.svg.seeds_area != null){
-            this.svg.main.appendChild(this.svg.seeds_area)
-        }
-        this.store()
-    }
-
-    store(){
-        let config = Object.assign({},this)
-        delete config.parent
-        delete config.svg
-        delete config.seeds
-        delete config.res
-        delete config.diagram
-        //console.log(`storing config version ${config.version}`)
-        localStorage.setItem("voronoi_config",JSON.stringify(config))
-    }
-
-    compute_voronoi(){
-        console.time("voronoi")
-        let voronoi = new vor_core.Voronoi()
-        this.res = voronoi.compute(this.seeds,{xl:0, xr:parseFloat(this.width), yt:0, yb:parseFloat(this.height)})
-        console.timeEnd("voronoi")
-        console.time("post proc")
-        this.res.type = "rhill"
-        this.diagram = new diagram(this.res)
-        console.timeEnd("post proc")
-        //console.log(this.res)
-        //console.log(this.diagram)
-        //console.log(`stats : ${res.cells.length} cells , ${res.vertices.length} vertices , ${res.edges.length} edges`)
-        this.draw()
-    }
-
-    update_size(clear){
-        this.max_width = this.svg.main.clientWidth
-        this.max_height = this.svg.main.clientHeight
-        if((this.width == 0) || (this.width > this.max_width)){
-            this.width = this.max_width
-        }
-        if((this.height == 0) || (this.height > this.max_height)){
-            this.height = this.max_height
-        }
-        console.log(`set svg ( ${this.width} , ${this.height} )`)
-        this.update_seeds(clear)
-    }
-
-    outside(coord){
-        if(coord.x > this.width){
-            return true
-        }
-        if(coord.y > this.height){
-            return true
-        }
-        return false
-    }
-
     update_seeds(clear=false){
         console.time("update_seeds")
         if(clear===true){
             this.seeds = []
         }else{
             for(let i=0;i<this.seeds.length;i++){
-                if(this.outside(this.seeds[i])){
+                if(this.seed_outside(this.seeds[i])){
                     this.seeds.splice(i,1)
                     i--
                 }
@@ -408,27 +269,23 @@ class Voronoi{
         console.timeEnd("update_seeds")
         this.compute_voronoi()
     }
-
     set_seeds(seeds){
         this.seeds = seeds
         this.nb_seeds = this.seeds.length
         this.compute_voronoi()
     }
-
     add_seed(coord){
         const new_id = this.seeds[this.seeds.length-1].id + 1
         let s = {x:coord.x, y:coord.y, id:new_id}
         this.seeds.push(s)
         this.compute_voronoi()
     }
-
     remove_seed(coord){
         const closest = get_closest_index(this.seeds,coord)
         const seed_id = this.seeds[closest].id
         this.seeds.splice(closest,1)
         this.compute_voronoi()
     }
-
     move_seed(coord){
         const closest_index = get_closest_index(this.seeds,coord)
         let closest_seed = this.seeds[closest_index]
@@ -437,26 +294,104 @@ class Voronoi{
         const seed_id = this.seeds[closest_index].id
         this.compute_voronoi()
     }
+    seed_outside(coord){
+        if(coord.x > this.width){
+            return true
+        }
+        if(coord.y > this.height){
+            return true
+        }
+        return false
+    }
+
+    draw_seeds(params){
+        if(this.seeds.length > 0){
+            let group = html(params.svg,"g",/*html*/`<g id="svg_g_seeds"/>`)
+            for(let i=0;i<this.seeds.length;i++){
+                const s = this.seeds[i]
+                svg.circle_p_id(group,s.x,s.y,`c_${s.id}`)
+            }
+        }
+    }
+
+    clear_svg(svg_el){
+        let children = [ ...svg_el.children];
+        children.forEach((child)=>{
+            child.parentElement.removeChild(child)
+        })
+    }
+
+    draw_svg(svg_el,draw_cfg){
+        this.clear_svg(svg_el)
+        if(draw_cfg.cells){
+            const params = {
+                svg:svg_el,
+                shape:this.cells_shape,
+                color:this.is_color,
+                min_edge:this.min_edge,
+                retraction:this.cells_space,
+                debug:this.seed_debug
+            }
+            this.diagram.draw_cells(params)
+        }
+        if(draw_cfg.edges){
+            this.diagram.draw_edges({svg:svg_el})
+        }
+        if(draw_cfg.seeds){
+            this.draw_seeds({svg:svg_el})
+        }
+        if(draw_cfg.shape){
+            if(this.svg.seeds_area != null){
+                //cloneNode() and cloneNode(true) do beak the original svg and the app crashes (max 100 iterations)
+                svg_el.appendChild(this.svg.seeds_area)
+            }
+        }
+        this.store()
+    }
+
+    draw(){
+        this.draw_svg(this.svg.main,this.view_svg)
+    }
+
+    store(){
+        let config = Object.assign({},this)
+        delete config.parent
+        delete config.svg
+        delete config.seeds
+        delete config.diagram
+        //console.log(`storing config version ${config.version}`)
+        localStorage.setItem("voronoi_config",JSON.stringify(config))
+    }
+
+    compute_voronoi(){
+        this.diagram.compute(this.seeds,{xl:0, xr:parseFloat(this.width), yt:0, yb:parseFloat(this.height)})
+        this.draw()
+    }
+
+    update_size(clear){
+        this.max_width = this.svg.main.clientWidth
+        this.max_height = this.svg.main.clientHeight
+        if((this.width == 0) || (this.width > this.max_width)){
+            this.width = this.max_width
+        }
+        if((this.height == 0) || (this.height > this.max_height)){
+            this.height = this.max_height
+        }
+        console.log(`set svg ( ${this.width} , ${this.height} )`)
+        this.update_seeds(clear)
+    }
+
 
     save_svg(fileName){
-        this.clear_svg()
-        if(this.export_svg.seeds){
-            this.draw_seeds()
+        let svg_out = this.svg.main.cloneNode()//lazy, just for new svg creation
+        this.draw_svg(svg_out,this.export_svg)
+        svg.save(fileName,svg_out)
+        //due to cloneNode bug, have to give it back to the view svg
+        if(this.view_svg.shape){
+            if(this.svg.seeds_area != null){
+                this.svg.main.appendChild(this.svg.seeds_area)
+            }
         }
-        if(this.export_svg.edges){
-            this.draw_path()
-        }
-        if(this.export_svg.cells){
-            this.draw_cells()
-        }
-        if(this.export_ratio != 1.0){
-            this.svg.main.setAttributeNS(null,"transform",`scale(${this.export_ratio})`)
-        }
-        svg.save(this.svg.main,fileName)
-        if(this.export_ratio != 1.0){
-            this.svg.main.setAttributeNS(null,"transform","")
-        }
-        this.draw()
     }
 
     save_seeds(fileName){
@@ -466,7 +401,7 @@ class Voronoi{
         save_json(this.seeds,fileName)
     }
 
-    update_path_points(){
+    compute_path_points(){
         const p = this.svg.seeds_area
         const nb_steps = 20
         const step = p.getTotalLength() / nb_steps
@@ -501,12 +436,16 @@ class Voronoi{
                 //check path inside window
                 //check path closed
                 //check path area min
+                if(vor_context.svg.seeds_area != null){
+                    console.log("svg import, previous path removed")
+                    vor_context.svg.seeds_area.parentElement.removeChild(vor_context.svg.seeds_area)
+                }
                 vor_context.svg.seeds_area = path
                 vor_context.svg.main.appendChild(path)
                 path.setAttributeNS(null,"fill-opacity",0.2)
                 path.setAttributeNS(null,"fill","#115522")
                 path.id = "seeds_area"
-                vor_context.update_path_points()
+                vor_context.compute_path_points()
             }else{
                 alert(`only supported import of SVG with a single path on the top level`)
             }
@@ -573,4 +512,4 @@ class Voronoi{
 }
 
 
-export {Voronoi};
+export {voronoi_app};
