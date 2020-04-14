@@ -1,97 +1,16 @@
 import {defined,html,save_json} from "./utils.js"
 import {Svg} from "./svg_utils.js"
 import {voronoi_diag} from "./voronoi_diag.js"
-import {Geometry} from "./geometry.js"
+import {Seeds} from "./seeds.js"
 
-let geom = new Geometry()
 let svg = new Svg()
 
-function get_seeds(nb,w,h){
-    let res = []
-    for(let i = 0;i<nb; i++){
-        res.push({
-            id:i,
-            x:Math.random()*w,
-            y:Math.random()*h
-        })
-    }
-    return res
-}
-
-function get_seed_samples(nb,w,h){
-    let res = []
-    for(let i = 0;i<nb; i++){
-        res.push({
-            x:Math.random()*w,
-            y:Math.random()*h
-        })
-    }
-    return res
-}
-
-function get_best_sample(seeds,samples,w,h,walls=false){
-    let best_index = 0
-    let biggest_min = 0
-    for(let i=0;i<samples.length;i++){
-        let seeds_cost = []
-        for(let j= 0;j<seeds.length;j++){
-            const d = geom.distance(samples[i],seeds[j])
-            seeds_cost.push(d)
-        }
-        if(walls){
-            seeds_cost.push(geom.walls_distance(samples[i],w,h))
-        }
-        const min_dist = Math.min(...seeds_cost)
-        if(min_dist > biggest_min){
-            best_index = i
-            biggest_min = min_dist
-        }
-    }
-    //console.log(`biggest_min = ${biggest_min}`)
-    return samples[best_index]
-}
-
-function get_best_path_sample(seeds,samples,path_points){
-    let best_index = 0
-    let biggest_min = 0
-    for(let i=0;i<samples.length;i++){
-        let seeds_cost = []
-        for(let j= 0;j<seeds.length;j++){
-            const d = geom.distance(samples[i],seeds[j])
-            seeds_cost.push(d)
-        }
-        for(let j= 0;j<path_points.length;j++){
-            const d = geom.distance(samples[i],path_points[j])
-            seeds_cost.push(d)
-        }
-        const min_dist = Math.min(...seeds_cost)
-        if(min_dist > biggest_min){
-            best_index = i
-            biggest_min = min_dist
-        }
-    }
-    //console.log(`biggest_min = ${biggest_min}`)
-    return samples[best_index]
-}
-
-function get_closest_index(seeds,coord){
-    let index_of_closest = 0
-    let closest_dist = Number.MAX_VALUE
-    for(let i=0;i<seeds.length;i++){
-        const d = geom.distance(coord,seeds[i])
-        if(d < closest_dist){
-            index_of_closest = i
-            closest_dist = d
-        }
-    }
-    return index_of_closest
-}
 class voronoi_app{
     constructor(parent,w,h){
         this.parent = parent
         //const use_storage = false
         let init_needed = false
-        this.version = "32"
+        this.version = "34"
         const config = JSON.parse(localStorage.getItem("voronoi_config"))
         if(config === null){
             console.log("First time usage, no config stored")
@@ -108,16 +27,8 @@ class voronoi_app{
         }
 
         if(init_needed){
-            this.seeds = []
-            this.nb_seeds = 30;
-            this.max_seeds = 50;
-            this.seed_debug = 0;
-            this.nb_samples = 10;
-            this.gen_surface = 800*600;
-            this.nb_seeds_gen = 0;
-            this.walls_dist = true;
-            this.sampling = true;
-            this.min_edge = 20
+            this.cell_debug = 0;
+            this.min_edge = 8
             this.is_color = false//not usable yet as flickers on updates
             this.width = 0
             this.height = 0
@@ -139,12 +50,20 @@ class voronoi_app{
                 shape:true
             }
         }
+        this.diagram = new voronoi_diag()
+        this.seeds = new Seeds()
+        if(!init_needed){
+            const seeds_config = JSON.parse(localStorage.getItem("seeds_config"))
+            if(seeds_config != null){
+                this.seeds.config = seeds_config
+            }
+        }
+
         this.svg = {}
         this.svg.main = html(parent,"svg",/*html*/`<svg id="main_svg" xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"></svg>`);
         svg.set_parent(this.svg.main)
         this.svg.seeds_area = null;
 
-        this.diagram = new voronoi_diag()
 
         this.init_events()
     }
@@ -154,164 +73,6 @@ class voronoi_app{
         new_parent.appendChild(this.svg.main)
         this.svg.main.setAttributeNS(null,"width",width)
         this.svg.main.setAttributeNS(null,"height",height)
-    }
-
-    get_seed(id,w,h){
-        let samples = get_seed_samples(this.nb_samples,w,h)
-        //console.log(samples)
-        const best_seed = get_best_sample(this.seeds,samples,w,h,this.walls_dist)
-        return {
-            id:id,
-            x:best_seed.x,
-            y:best_seed.y
-        }
-    }
-    get_point_inside(box,path_id){
-        let x,y
-        let max_iter = 100
-        let inside = false
-        while((!inside)&&(max_iter>0)){
-            x = box.x + Math.random()*box.width
-            y = box.y + Math.random()*box.height
-            if(document.elementFromPoint(x, y).id == path_id){
-                inside = true
-            }
-            max_iter--
-        }
-        if(max_iter == 0){
-            console.error(`can't sample in path : max iterations 100 reached`)
-        }
-        return [x,y]
-    }
-    get_samples_inside_path(box){
-        let res = []
-        for(let i=0;i<this.nb_samples;i++){
-            let [x,y] = this.get_point_inside(box,"seeds_area")
-            res.push({x:x,y:y})
-        }
-        return res
-    }
-    add_seeds_in_area(nb){
-        const box = this.svg.seeds_area.getBoundingClientRect();
-        for(let i=0;i<nb;i++){
-            let samples = this.get_samples_inside_path(box)
-            let best = get_best_path_sample(this.seeds,samples,this.path_points)
-            //check the cost
-            const s = {
-                id:i,
-                x:best.x,
-                y:best.y
-            }
-            this.seeds.push(s)
-        }
-    }
-    add_seeds_sampling(nb){
-        const prev_nb = this.seeds.length
-        for(let i=0;i<nb;i++){
-            const new_id = prev_nb+i
-            const s = this.get_seed(new_id,this.width,this.height)
-            this.seeds.push(s)
-        }
-    }
-    add_seeds_random(nb){
-        const prev_nb = this.seeds.length
-        const new_seeds = get_seeds(nb,this.width,this.height)
-        for(let i=0;i<nb;i++){
-            const s = new_seeds[i]
-            const new_id = prev_nb+i
-            this.seeds.push({id:new_id,x:s.x,y:s.y})
-        }
-    }
-    update_seeds(clear=false){
-        console.time("update_seeds")
-        if(clear===true){
-            this.seeds = []
-        }else{
-            for(let i=0;i<this.seeds.length;i++){
-                if(this.seed_outside(this.seeds[i])){
-                    this.seeds.splice(i,1)
-                    i--
-                }
-            }
-        }
-        if(this.nb_seeds < this.seeds.length){
-            const nb_pop = this.seeds.length - this.nb_seeds
-            for(let i=0;i<nb_pop;i++){
-                this.seeds.pop()
-            }
-        }else if(this.nb_seeds > this.seeds.length){
-            const nd_seeds_to_add = this.nb_seeds - this.seeds.length
-            if(this.svg.seeds_area != null){
-                this.add_seeds_in_area(nd_seeds_to_add)
-            }else{
-                if(this.sampling){
-                    this.add_seeds_sampling(nd_seeds_to_add)
-                }else{
-                    this.add_seeds_random(nd_seeds_to_add)
-                }
-            }
-        }
-        const new_gen_surface = this.width * this.height
-        const win_seeds = Math.round((this.nb_seeds * (((new_gen_surface-this.gen_surface) / this.gen_surface))))
-        //console.log(`won seeds ${win_seeds} (${new_gen_surface} / ${this.gen_surface})`)
-        if(clear){
-            this.gen_surface = this.width * this.height
-            this.nb_seeds_gen = this.nb_seeds
-        }else{
-            //if((win_seeds>0)&&(Math.abs(win_seeds) < this.nb_seeds * 2)){
-            if(Math.abs(win_seeds) < this.nb_seeds){
-                    //this.nb_seeds = this.nb_seeds_gen + win_seeds
-            }
-        }
-        for(let i=0;i<this.seeds.length;i++){
-            this.seeds[i].id = i
-            }
-        console.timeEnd("update_seeds")
-        this.compute_voronoi()
-    }
-    set_seeds(seeds){
-        this.seeds = seeds
-        this.nb_seeds = this.seeds.length
-        this.compute_voronoi()
-    }
-    add_seed(coord){
-        const new_id = this.seeds[this.seeds.length-1].id + 1
-        let s = {x:coord.x, y:coord.y, id:new_id}
-        this.seeds.push(s)
-        this.compute_voronoi()
-    }
-    remove_seed(coord){
-        const closest = get_closest_index(this.seeds,coord)
-        const seed_id = this.seeds[closest].id
-        this.seeds.splice(closest,1)
-        this.compute_voronoi()
-    }
-    move_seed(coord){
-        const closest_index = get_closest_index(this.seeds,coord)
-        let closest_seed = this.seeds[closest_index]
-        closest_seed.x = coord.x
-        closest_seed.y = coord.y
-        const seed_id = this.seeds[closest_index].id
-        this.compute_voronoi()
-    }
-    seed_outside(coord){
-        if(coord.x > this.width){
-            return true
-        }
-        if(coord.y > this.height){
-            return true
-        }
-        return false
-    }
-
-    draw_seeds(params){
-        if(this.seeds.length > 0){
-            let group = html(params.svg,"g",/*html*/`<g id="svg_g_seeds"/>`)
-            for(let i=0;i<this.seeds.length;i++){
-                const s = this.seeds[i]
-                svg.circle_p_id(group,s.x,s.y,`c_${s.id}`)
-            }
-        }
     }
 
     clear_svg(svg_el){
@@ -330,7 +91,7 @@ class voronoi_app{
                 color:this.is_color,
                 min_edge:this.min_edge,
                 retraction:this.cells_space,
-                debug:this.seed_debug
+                debug:this.cell_debug
             }
             this.diagram.draw_cells(params)
         }
@@ -338,7 +99,7 @@ class voronoi_app{
             this.diagram.draw_edges({svg:svg_el})
         }
         if(draw_cfg.seeds){
-            this.draw_seeds({svg:svg_el})
+            this.seeds.draw({svg:svg_el})
         }
         if(draw_cfg.shape){
             if(this.svg.seeds_area != null){
@@ -361,10 +122,11 @@ class voronoi_app{
         delete config.diagram
         //console.log(`storing config version ${config.version}`)
         localStorage.setItem("voronoi_config",JSON.stringify(config))
+        localStorage.setItem("seeds_config",JSON.stringify(this.seeds.config))
     }
 
     compute_voronoi(){
-        this.diagram.compute(this.seeds,{xl:0, xr:parseFloat(this.width), yt:0, yb:parseFloat(this.height)})
+        this.diagram.compute(this.seeds.get_seeds(),{xl:0, xr:parseFloat(this.width), yt:0, yb:parseFloat(this.height)})
         this.draw()
     }
 
@@ -378,7 +140,7 @@ class voronoi_app{
             this.height = this.max_height
         }
         console.log(`set svg ( ${this.width} , ${this.height} )`)
-        this.update_seeds(clear)
+        this.update_seeds({clear:clear,width:this.width,height:this.height})
     }
 
 
@@ -394,23 +156,15 @@ class voronoi_app{
         }
     }
 
-    save_seeds(fileName){
-        this.seeds.forEach((s)=>{
-            delete s.voronoiId
-        })
-        save_json(this.seeds,fileName)
+    update_seeds(params){
+        this.seeds.update(params)
+        this.compute_voronoi()
     }
 
-    compute_path_points(){
-        const p = this.svg.seeds_area
-        const nb_steps = 20
-        const step = p.getTotalLength() / nb_steps
-        this.path_points = []
-        for(let i=0;i<nb_steps;i++){
-            let dist = step * i
-            this.path_points.push(p.getPointAtLength(dist))
-        }
+    save_seeds(fileName){
+        this.seeds.save(fileName)
     }
+
     load_dropped_svg(reader){
         console.log("svg dropped")
         let is_valid = false;
@@ -445,7 +199,7 @@ class voronoi_app{
                 path.setAttributeNS(null,"fill-opacity",0.2)
                 path.setAttributeNS(null,"fill","#115522")
                 path.id = "seeds_area"
-                vor_context.compute_path_points()
+                this.seeds.update({path:path,id:"seeds_area"})
             }else{
                 alert(`only supported import of SVG with a single path on the top level`)
             }
@@ -469,7 +223,8 @@ class voronoi_app{
                 }
             }
             if(is_valid){
-                vor_context.set_seeds(result)
+                vor_context.seeds.load(result)
+                this.compute_voronoi()
             }else{
                 alert(`unsupported seeds format`);
             }
@@ -491,22 +246,42 @@ class voronoi_app{
     init_events(){
         $(this.svg.main).click((e)=>{
             if(this.mouse_action == "add"){
-                this.add_seed({x:e.clientX, y:e.clientY})
+                this.seeds.add({x:e.clientX, y:e.clientY})
+                this.compute_voronoi()
             }else if(this.mouse_action == "remove"){
-                this.remove_seed({x:e.clientX, y:e.clientY})
+                this.seeds.remove({x:e.clientX, y:e.clientY})
+                this.compute_voronoi()
             }
         })
         $(this.svg.main).mousemove((e)=>{
             if(this.mouse_action == "move"){
                 if(e.buttons == 1){
-                    this.move_seed({x:e.clientX, y:e.clientY})
+                    this.seeds.move({x:e.clientX, y:e.clientY})
+                    this.compute_voronoi()
                 }
             }
         })
-        $(this.svg.main).mousedown((e)=>{
+        $(this.svg.main).on("touchmove",(e)=>{
+            console.log(e.target.tagName)
             if(this.mouse_action == "move"){
-                this.move_seed({x:e.clientX, y:e.clientY})
+                this.seeds.move({x:e.touches[0].clientX, y:e.touches[0].clientY})
+                this.compute_voronoi()
             }
+        })
+        $(this.svg.main).mousedown((e)=>{
+            console.log("mouse down")
+            if(this.mouse_action == "move"){
+                this.seeds.move({x:e.clientX, y:e.clientY})
+                this.compute_voronoi()
+            }
+        })
+        $(this.svg.main).on("touchstart",(e)=>{
+            console.log()
+            if(this.mouse_action == "move"){
+                this.seeds.move({x:e.touches[0].clientX, y:e.touches[0].clientY})
+                this.compute_voronoi()
+            }
+            e.preventDefault()
         })
     }
 }

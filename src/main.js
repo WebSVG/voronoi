@@ -84,7 +84,7 @@ function menu_shape_space_min(parent){
     rg_groups.forEach((el)=>{
         $(el).change((e)=>{
             vor.cells_shape = e.target.getAttribute("data-label")
-            vor.update_seeds()
+            vor.draw()
             if(vor.cells_shape == "cubic"){
                 in_label.style.visibility = "visible"
                 rg_min_edge.style.visibility = "visible"
@@ -106,7 +106,7 @@ function menu_shape_space_min(parent){
         vor.draw()
     })
     $(rg_debug).on("input",(e)=>{
-        vor.seed_debug = rg_debug.value
+        vor.cell_debug = rg_debug.value
         vor.draw()
     })
 }
@@ -119,59 +119,51 @@ function menu_generate_view(parent){
                             vor.draw()
                         })
     $(btn_seeds).click((e)=>{
-        vor.update_seeds(true)//clear = true
+        vor.update_seeds({clear:true})//clear = true
     })
 
 }
 
 function menu_nb_seeds(parent){
+    let scfg = vor.seeds.config
     html(parent,"a",/*html*/`<a style="margin:10px">Seeds Number</a>`)
-    let in_nb_seeds = bs.input_text(parent,"in_nb_seed",`${vor.nb_seeds} seeds`,"w-100");
-    let rg_nb_seeds = bs.input_range(parent,vor.max_seeds)
-    rg_nb_seeds.value = vor.nb_seeds
-    let in_max_seeds = bs.input_text(parent,"in_max_seed",`enter max seeds, current ${vor.max_seeds}`,"w-100");
+    let in_nb_seeds = bs.input_text(parent,"in_nb_seed",`${scfg.nb_seeds} seeds`,"w-100");
+    let rg_nb_seeds = bs.input_range(parent,scfg.max_seeds)
+    rg_nb_seeds.value = scfg.nb_seeds
+    let in_max_seeds = bs.input_text(parent,"in_max_seed",`enter max seeds, current ${scfg.max_seeds}`,"w-100");
 
     let toggle_walls = bs.toggle(parent,"walls away","walls stick")
-    toggle_walls.checked = vor.walls_dist
-    let toggle_alg   = bs.toggle(parent,"Sampling","Single")
-    toggle_alg.checked = vor.sampling
-    let in_sampling  = bs.input_text(parent,"in_nb_samples",`${vor.nb_samples} samples`);
+    toggle_walls.checked = scfg.walls_dist
+    let in_sampling  = bs.input_text(parent,"in_nb_samples",`${scfg.nb_samples} samples`);
 
     $(rg_nb_seeds).on("input",(e)=>{
         in_nb_seeds.value = rg_nb_seeds.value
-        vor.nb_seeds = rg_nb_seeds.value
-        vor.update_seeds(false)
+        vor.update_seeds({nb_seeds:rg_nb_seeds.value})
     })
 
     $(in_nb_seeds).change(()=>{
-        if(in_nb_seeds.value > vor.max_seeds){
-            vor.max_seeds = in_nb_seeds.value
-            rg_nb_seeds.max = vor.max_seeds
-            in_max_seeds.setAttribute("placeholder",`max seeds ${vor.max_seeds}`)
+        let update = {}
+        if(in_nb_seeds.value > scfg.max_seeds){
+            rg_nb_seeds.max = in_nb_seeds.value
+            rg_nb_seeds.value = in_nb_seeds.value
+            update.max_seeds = in_nb_seeds.value
+            in_max_seeds.setAttribute("placeholder",`max seeds ${update.max_seeds}`)
             in_max_seeds.value = null
         }
         rg_nb_seeds.value = in_nb_seeds.value
-        vor.nb_seeds = rg_nb_seeds.value
-        vor.update_seeds()
+        update.nb_seeds = rg_nb_seeds.value
+        vor.update_seeds(update)
     })
     $(in_max_seeds).change(()=>{
         rg_nb_seeds.max = in_max_seeds.value
-        vor.max_seeds = in_max_seeds.value
-        vor.store()
+        vor.update_seeds({max_seeds:in_max_seeds.value})
     })
 
     $(toggle_walls).change(()=>{
-        vor.walls_dist = toggle_walls.checked
-        vor.update_seeds(true)//clear = true
-    })
-    $(toggle_alg).change(()=>{
-        vor.sampling = toggle_alg.checked
-        in_sampling.style.visibility = toggle_alg.checked?"visible":"hidden"
-        vor.update_seeds(true)//clear = true
+        vor.update_seeds({clear:true,walls_dist:toggle_walls.checked})
     })
     $(in_sampling).change(()=>{
-        vor.nb_samples = in_sampling.value
-        vor.update_seeds(true)//clear = true
+        vor.update_seeds({clear:true,nb_samples:in_sampling.value})
     })
 
 }
