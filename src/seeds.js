@@ -5,19 +5,6 @@ import {Geometry} from "./geometry.js"
 let geom = new Geometry()
 let svg = new Svg()
 
-
-function get_seeds(nb,w,h){
-    let res = []
-    for(let i = 0;i<nb; i++){
-        res.push({
-            id:i,
-            x:Math.random()*w,
-            y:Math.random()*h
-        })
-    }
-    return res
-}
-
 function get_seed_samples(nb,w,h){
     let res = []
     for(let i = 0;i<nb; i++){
