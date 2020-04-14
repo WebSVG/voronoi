@@ -5,7 +5,7 @@ import {Geometry} from "./geometry.js"
 let geom = new Geometry()
 let svg = new Svg()
 
-function get_seed_samples(nb,w,h){
+function samples_in_rect(nb,w,h){
     let res = []
     for(let i = 0;i<nb; i++){
         res.push({
@@ -16,7 +16,7 @@ function get_seed_samples(nb,w,h){
     return res
 }
 
-function get_best_sample(seeds,samples,w,h,walls=false){
+function best_seed_in_rect(seeds,samples,w,h,walls=false){
     let best_index = 0
     let biggest_min = 0
     for(let i=0;i<samples.length;i++){
@@ -38,7 +38,7 @@ function get_best_sample(seeds,samples,w,h,walls=false){
     return samples[best_index]
 }
 
-function get_best_path_sample(seeds,samples,path_points){
+function best_seed_in_path(seeds,samples,path_points){
     let best_index = 0
     let biggest_min = 0
     for(let i=0;i<samples.length;i++){
@@ -108,17 +108,7 @@ class Seeds{
         }
     }
 
-    get_seed(id,w,h){
-        let samples = get_seed_samples(this.config.nb_samples,w,h)
-        //console.log(samples)
-        const best_seed = get_best_sample(this.array,samples,w,h,this.config.walls_dist)
-        return {
-            id:id,
-            x:best_seed.x,
-            y:best_seed.y
-        }
-    }
-    get_point_inside(box,path_id){
+    try_sample_in_path(box,path_id){
         let x,y
         let max_iter = 100
         let inside = false
@@ -135,10 +125,10 @@ class Seeds{
         }
         return [x,y]
     }
-    get_samples_inside_path(box){
+    samples_in_path(box){
         let res = []
         for(let i=0;i<this.config.nb_samples;i++){
-            let [x,y] = this.get_point_inside(box,this.path_id)
+            let [x,y] = this.try_sample_in_path(box,this.path_id)
             res.push({x:x,y:y})
         }
         return res
@@ -146,8 +136,8 @@ class Seeds{
     add_seeds_in_path(nb){
         const box = this.path_svg.getBoundingClientRect();
         for(let i=0;i<nb;i++){
-            let samples = this.get_samples_inside_path(box)
-            let best = get_best_path_sample(this.array,samples,this.path_points)
+            let samples = this.samples_in_path(box)
+            let best = best_seed_in_path(this.array,samples,this.path_points)
             //check the cost
             const s = {
                 id:i,
@@ -157,11 +147,21 @@ class Seeds{
             this.array.push(s)
         }
     }
+    get_best_seed_in_rect(id,w,h){
+        let samples = samples_in_rect(this.config.nb_samples,w,h)
+        //console.log(samples)
+        const best_seed = best_seed_in_rect(this.array,samples,w,h,this.config.walls_dist)
+        return {
+            id:id,
+            x:best_seed.x,
+            y:best_seed.y
+        }
+    }
     add_seeds_in_rect(nb){
         const prev_nb = this.array.length
         for(let i=0;i<nb;i++){
             const new_id = prev_nb+i
-            const s = this.get_seed(new_id,this.config.area.width,this.config.area.height)
+            const s = this.get_best_seed_in_rect(new_id,this.config.area.width,this.config.area.height)
             this.array.push(s)
         }
     }
