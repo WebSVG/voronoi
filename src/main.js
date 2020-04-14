@@ -70,7 +70,7 @@ function menu_shape_space_min(parent){
     let rg_min_edge = bs.input_range(parent,max_min_cell_edge)
     rg_min_edge.value = vor.min_edge
 
-    let rg_debug = bs.input_range(parent,vor.nb_seeds)
+    let rg_debug = bs.input_range(parent,vor.seeds.config.nb_seeds)
     rg_debug.value = 0
 
     if(vor.cells_shape == "cubic"){
