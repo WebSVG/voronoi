@@ -1,9 +1,9 @@
 import {hr,html, br,} from "./utils.js"
 import {Bootstrap} from "./bs_utils.js"
-import {Voronoi} from "./voronoi_svg.js"
+import {voronoi_app} from "./voronoi_app.js"
 
 const b = document.body
-let vor = new Voronoi(b,"100%","60%")
+let vor = new voronoi_app(b,"100%","60%")
 let bs = new Bootstrap()
 
 function menu_export(parent){

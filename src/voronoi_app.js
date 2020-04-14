@@ -1,17 +1,9 @@
 import {defined,html,save_json} from "./utils.js"
 import * as vor_core from "../libs/rhill-voronoi-core.js"
 import {Svg} from "./svg_utils.js"
-import {diagram} from "./voronoi_geometry.js"
+import {voronoi_diag} from "./voronoi_diag.js"
 
 let svg = new Svg()
-
-function circ(parent,point,col){
-    return html(parent,"circle",
-    /*html*/`<circle cx=${point.x} cy=${point.y} r="2" stroke="black" stroke-width="0" fill="${col}" />`
-    );
-}
-
-
 
 function get_seeds(nb,w,h){
     let res = []
@@ -108,7 +100,7 @@ function get_closest_index(seeds,coord){
     }
     return index_of_closest
 }
-class Voronoi{
+class voronoi_app{
     constructor(parent,w,h){
         this.parent = parent
         //const use_storage = false
@@ -165,6 +157,7 @@ class Voronoi{
         this.svg.seeds = []
         this.svg.main = html(parent,"svg",/*html*/`<svg id="main_svg" xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"></svg>`);
         //this.svg.main = html(parent,"svg",/*html*/`<svg id="main_svg" xmlns="http://www.w3.org/2000/svg"></svg>`);
+        svg.set_parent(this.svg.main)
         this.svg.path = null;
         this.svg.seeds_area = null;
         this.svg.cells = [];
@@ -237,7 +230,6 @@ class Voronoi{
             this.seeds.push(s)
         }
     }
-
     add_seeds_sampling(nb){
         const prev_nb = this.seeds.length
         for(let i=0;i<nb;i++){
@@ -246,7 +238,6 @@ class Voronoi{
             this.seeds.push(s)
         }
     }
-
     add_seeds_random(nb){
         const prev_nb = this.seeds.length
         const new_seeds = get_seeds(nb,this.width,this.height)
@@ -256,14 +247,95 @@ class Voronoi{
             this.seeds.push({id:new_id,x:s.x,y:s.y})
         }
     }
+    update_seeds(clear=false){
+        console.time("update_seeds")
+        if(clear===true){
+            this.seeds = []
+        }else{
+            for(let i=0;i<this.seeds.length;i++){
+                if(this.seed_outside(this.seeds[i])){
+                    this.seeds.splice(i,1)
+                    i--
+                }
+            }
+        }
+        if(this.nb_seeds < this.seeds.length){
+            const nb_pop = this.seeds.length - this.nb_seeds
+            for(let i=0;i<nb_pop;i++){
+                this.seeds.pop()
+            }
+        }else if(this.nb_seeds > this.seeds.length){
+            const nd_seeds_to_add = this.nb_seeds - this.seeds.length
+            if(this.svg.seeds_area != null){
+                this.add_seeds_in_area(nd_seeds_to_add)
+            }else{
+                if(this.sampling){
+                    this.add_seeds_sampling(nd_seeds_to_add)
+                }else{
+                    this.add_seeds_random(nd_seeds_to_add)
+                }
+            }
+        }
+        const new_gen_surface = this.width * this.height
+        const win_seeds = Math.round((this.nb_seeds * (((new_gen_surface-this.gen_surface) / this.gen_surface))))
+        //console.log(`won seeds ${win_seeds} (${new_gen_surface} / ${this.gen_surface})`)
+        if(clear){
+            this.gen_surface = this.width * this.height
+            this.nb_seeds_gen = this.nb_seeds
+        }else{
+            //if((win_seeds>0)&&(Math.abs(win_seeds) < this.nb_seeds * 2)){
+            if(Math.abs(win_seeds) < this.nb_seeds){
+                    //this.nb_seeds = this.nb_seeds_gen + win_seeds
+            }
+        }
+        for(let i=0;i<this.seeds.length;i++){
+            this.seeds[i].id = i
+            }
+        console.timeEnd("update_seeds")
+        this.compute_voronoi()
+    }
+    set_seeds(seeds){
+        this.seeds = seeds
+        this.nb_seeds = this.seeds.length
+        this.compute_voronoi()
+    }
+    add_seed(coord){
+        const new_id = this.seeds[this.seeds.length-1].id + 1
+        let s = {x:coord.x, y:coord.y, id:new_id}
+        this.seeds.push(s)
+        this.compute_voronoi()
+    }
+    remove_seed(coord){
+        const closest = get_closest_index(this.seeds,coord)
+        const seed_id = this.seeds[closest].id
+        this.seeds.splice(closest,1)
+        this.compute_voronoi()
+    }
+    move_seed(coord){
+        const closest_index = get_closest_index(this.seeds,coord)
+        let closest_seed = this.seeds[closest_index]
+        closest_seed.x = coord.x
+        closest_seed.y = coord.y
+        const seed_id = this.seeds[closest_index].id
+        this.compute_voronoi()
+    }
+    seed_outside(coord){
+        if(coord.x > this.width){
+            return true
+        }
+        if(coord.y > this.height){
+            return true
+        }
+        return false
+    }
 
     draw_seeds(){
-        this.svg.seeds = svg.draw_seeds(this.svg.main,this.seeds)
+        this.svg.seeds = svg.draw_seeds(this.seeds)
     }
 
     draw_path(){
         console.time("draw path")
-        this.svg.path = svg.draw_path(this.svg.main,this.res.edges,this.path_width)
+        this.svg.path = svg.draw_path(this.res.edges,this.path_width)
         console.timeEnd("draw path")
     }
 
@@ -283,8 +355,7 @@ class Voronoi{
             retraction:this.cells_space,
             debug:this.seed_debug
         }
-        //this.svg.cells = svg.draw_cells_deprecated(this.svg.main,this.res.cells,props)
-        this.svg.cells = svg.draw_cells(this.svg.main,this.diagram,props)
+        this.svg.cells = svg.draw_cells(this.diagram,props)
         console.timeEnd("draw cells")
     }
 
@@ -330,7 +401,7 @@ class Voronoi{
         console.timeEnd("voronoi")
         console.time("post proc")
         this.res.type = "rhill"
-        this.diagram = new diagram(this.res)
+        this.diagram = new voronoi_diag(this.res)
         console.timeEnd("post proc")
         //console.log(this.res)
         //console.log(this.diagram)
@@ -351,92 +422,6 @@ class Voronoi{
         this.update_seeds(clear)
     }
 
-    outside(coord){
-        if(coord.x > this.width){
-            return true
-        }
-        if(coord.y > this.height){
-            return true
-        }
-        return false
-    }
-
-    update_seeds(clear=false){
-        console.time("update_seeds")
-        if(clear===true){
-            this.seeds = []
-        }else{
-            for(let i=0;i<this.seeds.length;i++){
-                if(this.outside(this.seeds[i])){
-                    this.seeds.splice(i,1)
-                    i--
-                }
-            }
-        }
-        if(this.nb_seeds < this.seeds.length){
-            const nb_pop = this.seeds.length - this.nb_seeds
-            for(let i=0;i<nb_pop;i++){
-                this.seeds.pop()
-            }
-        }else if(this.nb_seeds > this.seeds.length){
-            const nd_seeds_to_add = this.nb_seeds - this.seeds.length
-            if(this.svg.seeds_area != null){
-                this.add_seeds_in_area(nd_seeds_to_add)
-            }else{
-                if(this.sampling){
-                    this.add_seeds_sampling(nd_seeds_to_add)
-                }else{
-                    this.add_seeds_random(nd_seeds_to_add)
-                }
-            }
-        }
-        const new_gen_surface = this.width * this.height
-        const win_seeds = Math.round((this.nb_seeds * (((new_gen_surface-this.gen_surface) / this.gen_surface))))
-        //console.log(`won seeds ${win_seeds} (${new_gen_surface} / ${this.gen_surface})`)
-        if(clear){
-            this.gen_surface = this.width * this.height
-            this.nb_seeds_gen = this.nb_seeds
-        }else{
-            //if((win_seeds>0)&&(Math.abs(win_seeds) < this.nb_seeds * 2)){
-            if(Math.abs(win_seeds) < this.nb_seeds){
-                    //this.nb_seeds = this.nb_seeds_gen + win_seeds
-            }
-        }
-        for(let i=0;i<this.seeds.length;i++){
-            this.seeds[i].id = i
-            }
-        console.timeEnd("update_seeds")
-        this.compute_voronoi()
-    }
-
-    set_seeds(seeds){
-        this.seeds = seeds
-        this.nb_seeds = this.seeds.length
-        this.compute_voronoi()
-    }
-
-    add_seed(coord){
-        const new_id = this.seeds[this.seeds.length-1].id + 1
-        let s = {x:coord.x, y:coord.y, id:new_id}
-        this.seeds.push(s)
-        this.compute_voronoi()
-    }
-
-    remove_seed(coord){
-        const closest = get_closest_index(this.seeds,coord)
-        const seed_id = this.seeds[closest].id
-        this.seeds.splice(closest,1)
-        this.compute_voronoi()
-    }
-
-    move_seed(coord){
-        const closest_index = get_closest_index(this.seeds,coord)
-        let closest_seed = this.seeds[closest_index]
-        closest_seed.x = coord.x
-        closest_seed.y = coord.y
-        const seed_id = this.seeds[closest_index].id
-        this.compute_voronoi()
-    }
 
     save_svg(fileName){
         this.clear_svg()
@@ -452,7 +437,7 @@ class Voronoi{
         if(this.export_ratio != 1.0){
             this.svg.main.setAttributeNS(null,"transform",`scale(${this.export_ratio})`)
         }
-        svg.save(this.svg.main,fileName)
+        svg.save(fileName)
         if(this.export_ratio != 1.0){
             this.svg.main.setAttributeNS(null,"transform","")
         }
@@ -573,4 +558,4 @@ class Voronoi{
 }
 
 
-export {Voronoi};
+export {voronoi_app};

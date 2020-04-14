@@ -1,45 +1,11 @@
 import {defined,html} from "./utils.js"
-
 import {Vector} from "../libs/Vector.js"
+import {Geometry} from "./geometry.js"
+import {Svg} from "./svg_utils.js"
 
-let svg = null
+let geom = new Geometry()
 
-function line(l,col){
-    let d = `M ${l.p1.x} ${l.p1.y} L ${l.p2.x} ${l.p2.y} `
-    return html(svg,"path",
-    /*html*/`<path d="${d}" stroke="${col}" stroke-width="2" />`
-    )
-}
-
-function eline(e,col){
-    let d = `M ${e.v1.x} ${e.v1.y} L ${e.v2.x} ${e.v2.y} `
-    return html(svg,"path",
-    /*html*/`<path d="${d}" stroke="${col}" stroke-width="2" />`
-    )
-}
-
-function pline(v1,v2,col){
-    let d = `M ${v1.x} ${v1.y} L ${v2.x} ${v2.y} `
-    return html(svg,"path",
-    /*html*/`<path d="${d}" stroke="${col}" stroke-width="1" />`
-    )
-}
-
-function circ(point,col){
-    return html(svg,"circle",
-    /*html*/`<circle cx=${point.x} cy=${point.y} r="2" stroke="black" stroke-width="0" fill="${col}" />`
-    );
-}
-
-function points_dist(va,vb){
-    const dx = va.x-vb.x
-    const dy = va.y-vb.y
-    return Math.sqrt(dx * dx + dy * dy)
-}
-
-function center(va,vb){
-    return ({x:(va.x+vb.x)/2,y:(va.y+vb.y)/2})
-}
+let svg = new Svg()
 
 function he_length(he){
     const dx = he.edge.va.x-he.edge.vb.x
@@ -64,21 +30,6 @@ function ccw_vertices(he){
     }
 }
 
-function intersect(e1,e2){
-    const x1 = e1.v1.x
-    const y1 = e1.v1.y
-    const x2 = e1.v2.x
-    const y2 = e1.v2.y
-    const x3 = e2.v1.x
-    const y3 = e2.v1.y
-    const x4 = e2.v2.x
-    const y4 = e2.v2.y
-    const x1_y2_m_y1_x2 = (x1*y2 - y1*x2)
-    const x3_y4_m_y3_x4 = (x3*y4 - y3*x4)
-    const denominator = ((x1-x2)*(y3-y4) - (y1-y2)*(x3-x4))
-    return {x:(x1_y2_m_y1_x2*(x3-x4) - (x1-x2)*x3_y4_m_y3_x4) / denominator,
-            y:(x1_y2_m_y1_x2*(y3-y4) - (y1-y2)*x3_y4_m_y3_x4) / denominator}
-}
 class cell{
     constructor(create){
         if(defined(create.site)){
@@ -125,7 +76,7 @@ class cell{
             let [v1,v2] = ccw_vertices(he)
             let edge = {v1:v1,v2:v2}
             edge.l = he_length(he)
-            edge.c = center(edge.v1,edge.v2)
+            edge.c = geom.center(edge.v1,edge.v2)
             edge.a = c.halfedges[i].angle
             this.edges.push(edge)
         }
@@ -278,16 +229,16 @@ class cell{
             if(is_debug)console.log(`processing edge (${i}) / (${this.edges.length})`)
             let this_edge_removed = false
             const e = this.edges[i]
-            const l_int = intersect(e,e.prev)
-            const r_int = intersect(e,e.next)
+            const l_int = geom.intersect(e,e.prev)
+            const r_int = geom.intersect(e,e.next)
 
-            const d1l = points_dist(e.v1,l_int)
-            const d1r = points_dist(e.v1,r_int)
+            const d1l = geom.distance(e.v1,l_int)
+            const d1r = geom.distance(e.v1,r_int)
             if(d1l >= d1r){
                 this_edge_removed = true
             }
-            const d2r = points_dist(e.v2,r_int)
-            const d2l = points_dist(e.v2,l_int)
+            const d2r = geom.distance(e.v2,r_int)
+            const d2l = geom.distance(e.v2,l_int)
             if(d2r >= d2l){
                 this_edge_removed = true
             }
@@ -307,9 +258,9 @@ class cell{
                 //updates for edges only to be performed after the loop as original values still being used
                 let new_edge = {}
                 new_edge.v1 = new_v1
-                new_edge.c = center(new_v1,new_v2)
+                new_edge.c = geom.center(new_v1,new_v2)
                 new_edge.v2 = new_v2
-                new_edge.l = points_dist(new_v1,new_v2)
+                new_edge.l = geom.distance(new_v1,new_v2)
                 new_edge.index = i
                 new_edges.push(new_edge)
             }
@@ -348,18 +299,18 @@ class cell{
             removed = this.check_closed_edges(is_debug)
         }
         //one last pass after removal of last edge to correct neighbors
-        //not efficient but has to calculate intersections anyway
+        //not efficient but has to calculate geom.intersections anyway
         this.check_closed_edges(is_debug)
         if(is_debug){
             for(let i=0;i<this.edges.length;i++){
                 let p = this.edges[i].v1
-                html(svg,"text",/*html*/`<text x="${p.x}" y="${p.y}">${i}</text>`)
+                svg.text(p.x,p.y,i)
             }
         }
     }
 }
 
-class diagram{
+class voronoi_diag{
     constructor(create){
         this.type = "wfil"
         this.cells = []
@@ -378,7 +329,7 @@ class diagram{
         return res
     }
     retract_cells(params,parent){
-        svg = parent
+        svg.set_parent(parent)
         const dist = parseFloat(params.retraction)
         for(let i=0;i<this.cells.length;i++){
             const is_debug = (params.debug == 0)?false:(params.debug-1 == i)
@@ -389,6 +340,6 @@ class diagram{
 
 
 export{
-    diagram,
+    voronoi_diag,
     cell
 }
