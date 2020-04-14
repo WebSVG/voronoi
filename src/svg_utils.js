@@ -15,7 +15,7 @@ class Svg{
     }
 
     text(x,y,str){
-        html(svg,"text",/*html*/`<text x="${x}" y="${y}">${str}</text>`)
+        html(this.el,"text",/*html*/`<text x="${x}" y="${y}">${str}</text>`)
     }
 
     circle(x,y,params={}){

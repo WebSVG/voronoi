@@ -321,7 +321,7 @@ class voronoi_app{
         })
     }
 
-    draw(svg_el,draw_cfg){
+    draw_svg(svg_el,draw_cfg){
         this.clear_svg(svg_el)
         if(draw_cfg.cells){
             const params = {
@@ -349,6 +349,10 @@ class voronoi_app{
         this.store()
     }
 
+    draw(){
+        this.draw_svg(this.svg.main,this.view_svg)
+    }
+
     store(){
         let config = Object.assign({},this)
         delete config.parent
@@ -361,7 +365,7 @@ class voronoi_app{
 
     compute_voronoi(){
         this.diagram.compute(this.seeds,{xl:0, xr:parseFloat(this.width), yt:0, yb:parseFloat(this.height)})
-        this.draw(this.svg.main,this.view_svg)
+        this.draw()
     }
 
     update_size(clear){
@@ -380,7 +384,7 @@ class voronoi_app{
 
     save_svg(fileName){
         let svg_out = this.svg.main.cloneNode()//lazy, just for new svg creation
-        this.draw(svg_out,this.export_svg)
+        this.draw_svg(svg_out,this.export_svg)
         svg.save(fileName,svg_out)
         //due to cloneNode bug, have to give it back to the view svg
         if(this.view_svg.shape){

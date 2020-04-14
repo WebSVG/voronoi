@@ -249,7 +249,7 @@ class cell{
                 //has to remove the edge immidetaly so that the lopp continues with correct edges
                 this.remove_edge(i)
                 i--
-                if(is_debug)eline(e,"red")
+                if(is_debug)svg.eline(e,"red")
                 if(is_debug)console.log(`   reset to (${i})`)
                 any_edge_removed = true
             }else{
@@ -287,10 +287,7 @@ class cell{
             n.c = Vector.add(e.c,inside)
             n.v1=Vector.add(e.v1,inside)
             n.v2=Vector.add(e.v2,inside)
-            if(is_debug){
-                eline(n,"blue")
-                //circ(n.v1,"red")
-            }
+            if(is_debug){svg.eline(n,"blue")}
         }
         let removed = true;
         while((this.edges.length>3)&&(removed==true)){
