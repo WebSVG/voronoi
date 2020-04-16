@@ -101,7 +101,13 @@ class voronoi_app{
         if(draw_cfg.shape){
             if(this.svg.seeds_area != null){
                 //cloneNode() and cloneNode(true) do beak the original svg and the app crashes (max 100 iterations)
-                svg_el.appendChild(this.svg.seeds_area)
+                //svg_el.appendChild(this.svg.seeds_area)
+                html(svg_el,"path",/*html*/`
+                    <defs>
+                        <clipPath id="cut-off-cells">
+                            ${this.svg_string}
+                        </clipPath>
+                    </defs>`)
             }
         }
         this.store()
@@ -125,6 +131,14 @@ class voronoi_app{
     compute_voronoi(){
         this.diagram.compute(this.seeds.get_seeds(),{xl:0, xr:parseFloat(this.width), yt:0, yb:parseFloat(this.height)})
         this.draw()
+    }
+
+    update(params){
+        this.diagram.update(params)
+        this.seeds.update(params)
+        if(defined(params.cell_debug)){
+            this.draw()
+        }
     }
 
     update_size(clear){
@@ -192,10 +206,13 @@ class voronoi_app{
                 }
                 vor_context.svg.seeds_area = path
                 vor_context.svg.main.appendChild(path)
+                let s = new XMLSerializer();
+                vor_context.svg_string = s.serializeToString(path);
                 path.setAttributeNS(null,"fill-opacity",0.2)
                 path.setAttributeNS(null,"fill","#115522")
                 path.id = "seeds_area"
                 vor_context.seeds.update({path:path,id:"seeds_area"})
+                vor_context.diagram.update({path:path,id:"seeds_area"})
                 vor_context.compute_voronoi()
             }else{
                 alert(`only supported import of SVG with a single path on the top level`)

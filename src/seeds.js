@@ -74,16 +74,6 @@ function get_closest_index(seeds,coord){
     return index_of_closest
 }
 
-function compute_path_points(path){
-    let res = []
-    const nb_steps = 20
-    const step = path.getTotalLength() / nb_steps
-    for(let i=0;i<nb_steps;i++){
-        let dist = step * i
-        res.push(path.getPointAtLength(dist))
-    }
-    return res
-}
 
 class Seeds{
     constructor(){
@@ -97,6 +87,8 @@ class Seeds{
         this.config.area = {type:"rect",width:400,height:200}
         this.config.nb_samples = 10
         this.config.walls_dist = true
+        this.config.path_debug = false
+
 
         this.path_svg = null
         this.path_points = []
@@ -247,16 +239,21 @@ class Seeds{
                 this.config.area.type = "path"
             this.path_svg = params.path
             this.path_id = params.id
-            this.path_points = compute_path_points(this.path_svg)
+            this.path_points = geom.compute_path_points(this.path_svg,20)
             //clear to restart a new sampling on the new path
             this.array = []
+        }
+        if(defined(params.cell_debug)){
+            this.config.path_debug = (params.cell_debug!=0)
         }
         if(this.config.area.type == "rect"){//should only be done on resize
             this.check_seeds_in_rect()
         }
         this.adjust_seeds_number()
         this.reset_seeds_id()
-        return (Date.now()-start)
+        let time = (Date.now()-start)
+        console.log(`seeds_update: ${time.toFixed(3)} ms`)
+        return time
     }
 
     draw(params){
@@ -267,6 +264,11 @@ class Seeds{
                 const s = this.array[i]
                 svg.circle_p_id(group,s.x,s.y,`c_${s.id}`)
             }
+        }
+        if((this.config.path_debug) && (this.config.area.type == "path")){
+            this.path_points.forEach((p)=>{
+                //html(svg.el,"circle",/*html*/`<circle cx=${p.x} cy=${p.y} r="2" fill="green" />`)
+            })
         }
     }
     save(fileName){
