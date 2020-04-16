@@ -20,7 +20,7 @@ function menu_export(parent){
     let btn_save_data = bs.button(ecol0,"btn_save",`export seeds coordinates`);
 
     const export_states = [vor.export_svg.cells,vor.export_svg.edges,vor.export_svg.seeds]
-    bs.checkbox_group(ecol1,"cbx_export",["cells","edges","seeds"],export_states,(e)=>{
+    bs.checkbox_group(ecol1,"cbx_export",["cells","edges","seeds","shape"],export_states,(e)=>{
                             vor.export_svg[e.target.getAttribute("data-name")] = e.target.checked
                         })
     //html(ecol2,"a",/*html*/`<a style="margin:10px">Drag and drop 'seeds.json' to import</p>`)
@@ -33,6 +33,22 @@ function menu_export(parent){
         </p>
     </a>`)
     html(ecol2,"p",/*html*/`<p align="center">v14.04.2020</p>`)
+
+
+    const rg_list = vor.shape.cells_action_list
+    const sact_index = rg_list.findIndex((shape)=>{return (shape == vor.shape.config.cells_action)})
+    let rg_groups = bs.radio_group(ecol3,"rgg_shapes",rg_list,sact_index)
+    rg_groups.forEach((el)=>{
+        $(el).change((e)=>{
+            vor.update({shape_cells:e.target.getAttribute("data-label")})
+        })
+    })
+
+    bs.checkbox_group(ecol3,"cbx_shape",["debug"],[vor.shape.config.debug],(e)=>{
+                            let msg = {}
+                            msg[e.target.getAttribute("data-name")] = e.target.checked
+                            vor.update(msg)
+                        })
 
 
     $(btn_save_svg).click(()=>{
@@ -113,7 +129,7 @@ function menu_shape_space_min(parent){
 function menu_generate_view(parent){
     let btn_seeds = bs.button(parent,"btn_seed",`generate seeds`);
     const view_states = [vor.view_svg.cells,vor.view_svg.edges,vor.view_svg.seeds]
-    bs.checkbox_group(parent,"cbx_view",["cells","edges","seeds"],view_states,(e)=>{
+    bs.checkbox_group(parent,"cbx_view",["cells","edges","seeds","shape"],view_states,(e)=>{
                             vor.view_svg[e.target.getAttribute("data-name")] = e.target.checked
                             vor.draw()
                         })

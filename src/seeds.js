@@ -76,7 +76,8 @@ function get_closest_index(seeds,coord){
 
 
 class Seeds{
-    constructor(){
+    constructor(shape){
+        this.shape = shape
         this.array = []
 
         this.config = {}
@@ -100,14 +101,14 @@ class Seeds{
         }
     }
 
-    try_sample_in_path(box,path_id){
+    try_sample_in_path(box){
         let x,y
         let max_iter = 100
         let inside = false
         while((!inside)&&(max_iter>0)){
             x = box.x + Math.random()*box.width
             y = box.y + Math.random()*box.height
-            if(document.elementFromPoint(x, y).id == path_id){
+            if(document.elementFromPoint(x, y).id == this.shape.svg_path.id){
                 inside = true
             }
             max_iter--
@@ -120,16 +121,17 @@ class Seeds{
     samples_in_path(box){
         let res = []
         for(let i=0;i<this.config.nb_samples;i++){
-            let [x,y] = this.try_sample_in_path(box,this.path_id)
+            let [x,y] = this.try_sample_in_path(box)
             res.push({x:x,y:y})
         }
         return res
     }
     add_seeds_in_path(nb){
-        const box = this.path_svg.getBoundingClientRect();
+        this.shape.append()
+        const box = this.shape.svg_path.getBoundingClientRect();
         for(let i=0;i<nb;i++){
             let samples = this.samples_in_path(box)
-            let best = best_seed_in_path(this.array,samples,this.path_points)
+            let best = best_seed_in_path(this.array,samples,this.shape.path_points)
             //check the cost
             const s = {
                 id:i,
@@ -138,6 +140,7 @@ class Seeds{
             }
             this.array.push(s)
         }
+        this.shape.remove()
     }
     get_best_seed_in_rect(id,w,h){
         let samples = samples_in_rect(this.config.nb_samples,w,h)
@@ -182,7 +185,7 @@ class Seeds{
             }
         }else if(this.config.nb_seeds > this.array.length){
             const nb_seeds_to_add = this.config.nb_seeds - this.array.length
-            if(this.config.area.type == "path"){
+            if(this.shape.sample_inside()){
                 this.add_seeds_in_path(nb_seeds_to_add)
             }else{
                 this.add_seeds_in_rect(nb_seeds_to_add)
@@ -197,6 +200,7 @@ class Seeds{
 
 
     //-----------------------------------------------------------------------------------------------
+    //user add is not filtered
     add(coord){
         const new_id = this.array[this.array.length-1].id + 1
         let s = {x:coord.x, y:coord.y, id:new_id}
@@ -235,14 +239,6 @@ class Seeds{
         if(defined(params.config)){
             this.load_config(params.config)
         }
-        if(defined(params.path)){
-                this.config.area.type = "path"
-            this.path_svg = params.path
-            this.path_id = params.id
-            this.path_points = geom.compute_path_points(this.path_svg,20)
-            //clear to restart a new sampling on the new path
-            this.array = []
-        }
         if(defined(params.cell_debug)){
             this.config.path_debug = (params.cell_debug!=0)
         }
@@ -260,15 +256,21 @@ class Seeds{
         svg.set_parent(params.svg)
         if(this.array.length > 0){
             let group = html(params.svg,"g",/*html*/`<g id="svg_g_seeds"/>`)
-            for(let i=0;i<this.array.length;i++){
-                const s = this.array[i]
-                svg.circle_p_id(group,s.x,s.y,`c_${s.id}`)
+            if(this.shape.show_inside()){
+                this.shape.append()
+                for(let i=0;i<this.array.length;i++){
+                    const s = this.array[i]
+                    if(document.elementFromPoint(s.x, s.y).id == this.shape.svg_path.id){
+                        svg.circle_p_id(group,s.x,s.y,`c_${s.id}`)
+                    }
+                }
+                this.shape.remove()
+            }else{
+                for(let i=0;i<this.array.length;i++){
+                    const s = this.array[i]
+                    svg.circle_p_id(group,s.x,s.y,`c_${s.id}`)
+                }
             }
-        }
-        if((this.config.path_debug) && (this.config.area.type == "path")){
-            this.path_points.forEach((p)=>{
-                //html(svg.el,"circle",/*html*/`<circle cx=${p.x} cy=${p.y} r="2" fill="green" />`)
-            })
         }
     }
     save(fileName){

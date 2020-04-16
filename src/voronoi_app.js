@@ -2,6 +2,7 @@ import {defined,html} from "./utils.js"
 import {Svg} from "./svg_utils.js"
 import {voronoi_diag} from "./voronoi_diag.js"
 import {Seeds} from "./seeds.js"
+import { Shape } from "./shape.js"
 
 let svg = new Svg()
 
@@ -10,7 +11,7 @@ class voronoi_app{
         this.parent = parent
         //const use_storage = false
         let init_needed = false
-        this.version = "35"
+        this.version = "38"
         const config = JSON.parse(localStorage.getItem("voronoi_config"))
         if(config === null){
             console.log("First time usage, no config stored")
@@ -50,15 +51,18 @@ class voronoi_app{
                 shape:true
             }
         }
-        this.diagram = new voronoi_diag()
-        this.seeds = new Seeds()
+        this.shape = new Shape()
+        this.diagram = new voronoi_diag(this.shape)
+        this.seeds = new Seeds(this.shape)
         if(!init_needed){
             this.seeds.load_config(JSON.parse(localStorage.getItem("seeds_config")))
+            this.shape.config = JSON.parse(localStorage.getItem("shape_config"))
         }
 
         this.svg = {}
         this.svg.main = html(parent,"svg",/*html*/`<svg id="main_svg" xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"></svg>`);
         svg.set_parent(this.svg.main)
+        this.shape.update({parent:this.svg.main})
         this.svg.seeds_area = null;
 
 
@@ -99,16 +103,7 @@ class voronoi_app{
             this.seeds.draw({svg:svg_el})
         }
         if(draw_cfg.shape){
-            if(this.svg.seeds_area != null){
-                //cloneNode() and cloneNode(true) do beak the original svg and the app crashes (max 100 iterations)
-                //svg_el.appendChild(this.svg.seeds_area)
-                html(svg_el,"path",/*html*/`
-                    <defs>
-                        <clipPath id="cut-off-cells">
-                            ${this.svg_string}
-                        </clipPath>
-                    </defs>`)
-            }
+            this.shape.draw(svg_el)
         }
         this.store()
     }
@@ -123,9 +118,11 @@ class voronoi_app{
         delete config.svg
         delete config.seeds
         delete config.diagram
+        delete config.shape
         //console.log(`storing config version ${config.version}`)
         localStorage.setItem("voronoi_config",JSON.stringify(config))
         localStorage.setItem("seeds_config",JSON.stringify(this.seeds.config))
+        localStorage.setItem("shape_config",JSON.stringify(this.shape.config))
     }
 
     compute_voronoi(){
@@ -136,7 +133,14 @@ class voronoi_app{
     update(params){
         this.diagram.update(params)
         this.seeds.update(params)
+        this.shape.update(params)
         if(defined(params.cell_debug)){
+            this.draw()
+        }
+        if(defined(params.debug)){
+            this.draw()
+        }
+        if(defined(params.shape_cells)){
             this.draw()
         }
     }
@@ -159,12 +163,6 @@ class voronoi_app{
         let svg_out = this.svg.main.cloneNode()//lazy, just for new svg creation
         this.draw_svg(svg_out,this.export_svg)
         svg.save(fileName,svg_out)
-        //due to cloneNode bug, have to give it back to the view svg
-        if(this.view_svg.shape){
-            if(this.svg.seeds_area != null){
-                this.svg.main.appendChild(this.svg.seeds_area)
-            }
-        }
     }
 
     update_seeds(params){
@@ -180,42 +178,9 @@ class voronoi_app{
         console.log("svg dropped")
         const vor_context = this
         reader.onloadend = function(e) {
-            let svg_text = this.result;
-            vor_context.parent.insertAdjacentHTML("beforeend",svg_text);
-            let elements = vor_context.parent.getElementsByTagName("svg");
-            let res_svg =  elements[elements.length-1];
-            vor_context.parent.removeChild(res_svg);
-            let children = [...res_svg.childNodes];
-            let nb_paths = 0
-            let path = null
-            children.forEach((c)=>{
-                if(c.nodeType != Node.TEXT_NODE){
-                    if(c.tagName == "path"){
-                        nb_paths++
-                        path = c
-                    }
-                }
-            })
-            if(nb_paths == 1){
-                //check path inside window
-                //check path closed
-                //check path area min
-                if(vor_context.svg.seeds_area != null){
-                    console.log("svg import, previous path removed")
-                    vor_context.svg.seeds_area.parentElement.removeChild(vor_context.svg.seeds_area)
-                }
-                vor_context.svg.seeds_area = path
-                vor_context.svg.main.appendChild(path)
-                let s = new XMLSerializer();
-                vor_context.svg_string = s.serializeToString(path);
-                path.setAttributeNS(null,"fill-opacity",0.2)
-                path.setAttributeNS(null,"fill","#115522")
-                path.id = "seeds_area"
-                vor_context.seeds.update({path:path,id:"seeds_area"})
-                vor_context.diagram.update({path:path,id:"seeds_area"})
+            let is_taken = vor_context.shape.load(this.result);
+            if(is_taken){
                 vor_context.compute_voronoi()
-            }else{
-                alert(`only supported import of SVG with a single path on the top level`)
             }
         };
     }

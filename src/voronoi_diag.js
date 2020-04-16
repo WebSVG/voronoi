@@ -306,14 +306,12 @@ class cell{
 }
 
 class voronoi_diag{
-    constructor(create){
+    constructor(shape){
+        this.shape = shape
         this.type = "wfil"
         this.cells = []
         this.org_cells = []
         this.edges = []
-        if((defined(create))&&(create.type =="rhill")){
-            this.from_rhill_diagram(create)
-        }
         this.config = {}
         let cfg = this.config
         cfg.area = {type:"rect"}
@@ -366,20 +364,27 @@ class voronoi_diag{
         if(this.cells.length>1){//otherwise single cell has no half edges
             this.retract_cells(params)
             let group = html(params.svg,"g",/*html*/`<g id="svg_g_bezier_cells"/>`)
+            this.shape.append()
             for(let i=0;i<this.cells.length;i++){
+                const c = this.cells[i]
                 //here you can retract or detract small edges before either drawing technique
-                let d
-                if(params.shape == "cubic"){
-                    d = this.cells[i].path_bezier_cubic_filter_no_s(params.min_edge)
-                }else if(params.shape == "quadratic"){
-                    d = this.cells[i].path_bezier_quadratic()
-                }else{
-                    d = this.cells[i].path_edges()
+                let draw_cell = (!this.shape.enabled)||(this.shape.show_inside() && (document.elementFromPoint(c.seed.x, c.seed.y).id == this.shape.svg_path.id))
+                if(draw_cell){
+                    let d
+                    if(params.shape == "cubic"){
+                        d = c.path_bezier_cubic_filter_no_s(params.min_edge)
+                    }else if(params.shape == "quadratic"){
+                        d = c.path_bezier_quadratic()
+                    }else{
+                        d = c.path_edges()
+                    }
+                    let color = (params.color==true)?rand_col():"#221155"
+                    let conditional_clip_path = (this.shape.config.cells_action == "cut_off")?'clip-path="url(#cut-off-cells)"':''
+                    html(group,"path",/*html*/`<path d="${d}" fill="${color}" fill-opacity="0.2" ${conditional_clip_path} />`
+                    )
                 }
-                let color = (params.color==true)?rand_col():"#221155"
-                html(group,"path",/*html*/`<path d="${d}" fill="${color}" fill-opacity="0.2" clip-path="url(#cut-off-cells)"/>`
-                )
             }
+            this.shape.remove()
         }
         if(this.config.cell_debug != 0){
             this.draw_path_debug()
