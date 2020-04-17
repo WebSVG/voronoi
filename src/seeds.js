@@ -274,7 +274,7 @@ class Seeds{
         svg.set_parent(params.svg)
         if(this.array.length > 0){
             let group = html(params.svg,"g",/*html*/`<g id="svg_g_seeds"/>`)
-            if(!this.shape.show_all()){
+            if(this.shape.enabled && !this.shape.show_all()){
                 this.shape.append()
                 for(let i=0;i<this.array.length;i++){
                     const s = this.array[i]

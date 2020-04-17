@@ -42,6 +42,37 @@ The seeds coordinates are what allows to generate again the same voronoig diagra
 * clean way would require ignoring the corresponding site completely and extend the left edges till the small edge is nullified, thus reducing the total number of sides of the cell
 * therfore, in order to keep shapes tangent to the sides, min edge ignore is only implemented in quadratic bezier.
 
+## Shaped tesselation area
+### step 1 : sampling
+the shape is approximated with a set of linear interpolation points along the path
+<img src="./media/area_sampling.gif"  width=600>
+
+## step 2 : cells isolation 
+### the naive (and not so nice) way
+```javascript
+    <defs>
+        <clipPath id="cut-off-cells">
+            <path xmlns="http://www.w3.org/2000/svg" d=${path} fill="#991155" fill-opacity="0.9"></path>
+        </clipPath>
+    </defs>
+
+```
+this applies an svg mask, with the SVG `clipPath` function, it would result in this
+<img src="./media/cut_outs.gif"  width=600>
+
+* First issue, Fusion360 as example does not support `clipPath`
+* Second issue, the cut is very sharp and breaks the bezier shape of the cells
+
+### the nicer way
+<img src="./media/shape_inside_cells.png" width=600>
+
+Before explaining how this works, let's inspect that the voronoi cells are natually alligned along the custom path we provided as input
+
+Below is the revealed secret. There are seeds actually being sampled outside the path area for the sole purpose of giving support to the inside cells not to expand till the external frame. Also important that the cells are not just simply randomly sampled inside and outside the area, they are rather avoiding the path with a distance cost factor, that prevents cells from cutting the edges to a certain extent.
+
+<img src="./media/shape_seeds.png" width=400>
+<img src="./media/shape_all_cells.png" width=400>
+
 # Features details
 * Generate Voronoi Diagram
 * Export to SVG file
@@ -53,6 +84,8 @@ The seeds coordinates are what allows to generate again the same voronoig diagra
   * Optionally include distance from walls to the sampling selection cost
 * Range slider with interactive update for adding and removing seeds to and out of existing set
 * rearrange seeds when modifying window size
+* Shaped tesselation area
+  * sampling points inside an SVG path with `document.elementFromPoint(x, y);`
 
   ## cells
 * different cells types
@@ -60,15 +93,17 @@ The seeds coordinates are what allows to generate again the same voronoig diagra
   * bezier cubic
   * simple geometric edges
 * cells edges retraction. Not cells scale but edges parallel rertraction with handling of closed edges discard
+* Shaped tesselation area
+  * display of cells which seeds are within an SVG path
+  * the option is available to simply cut cells with an SVG mask
   ## gui
 * Show/hide (cells, edges, seeds) and independently configure the SVG export
 * Browser local storage of config parameters (No storage of SVG nor seeds as they can be saved separately)
 
 # Planned features
+* vertical mode for longitudinal edits
 * export scale with a ratio (adjusting to a given unit)
   * transform scale possible but Fusion360 ignores the scale transform
-* Shaped tesselation area
-  * sampling points and check if point inside SVG with `document.elementFromPoint(x, y);`
 * Concentration cost map for seeds sampling
 * edges cells filet effect
 * detract quadratic bezier short edges
@@ -76,31 +111,8 @@ The seeds coordinates are what allows to generate again the same voronoig diagra
   * editing singe seed weight
   * cartographic seeds weight
 * add irregularities to the edges thickness (randomize retraction)
-* vertical mode for longitudinal edits
 * improve error alerts by using boostrap auto vanishing alerts
 * random colors for cells
-
-## Upcoming feature : Shaped tesselation area
-### step 1 : sampling
-the shape is approximated with a set of linear interpolation points along the path
-<img src="./media/area_sampling.gif">
-
-## step 2 : cells closing
-```javascript
-    <defs>
-        <clipPath id="cut-off-cells">
-            <path xmlns="http://www.w3.org/2000/svg" d=${path} stroke="red" stroke-width="0" fill="#991155" fill-opacity="0.9"></path>
-        </clipPath>
-    </defs>
-
-```
-a trivial technique could be to apply an svg mask, with the SVG `clipPath` function, it would result in this
-<img src="./media/cut_outs.gif">
-
-* First issue, Fusion360 as example does not support `clipPath`
-* Second issue, the cut is very sharp and breaks the bezier shape of the cells
-* So if not full exact intersection path, then a certain number of interpolated points along the intersection path could help
-* The idea would then be to adjust the number of interpolated intersection points to the size of the inner cell edges
 
 # License
 MIT
