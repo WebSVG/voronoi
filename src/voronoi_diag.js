@@ -160,7 +160,7 @@ class cell{
         for(let i=0;(i<this.edges.length)&&(!found);i++){
             let e = this.edges[i]
             if(e.l > min_edge){
-                d = d + `S${e.v1.x},${e.v1.y} ${e.c.x},${e.c.y} `
+                d = d + `C${e.v1.x},${e.v1.y} ${e.v1.x},${e.v1.y} ${e.c.x},${e.c.y} `
                 found = true
             }
         }
@@ -306,16 +306,16 @@ class cell{
 }
 
 class voronoi_diag{
-    constructor(create){
+    constructor(shape){
+        this.shape = shape
         this.type = "wfil"
         this.cells = []
         this.org_cells = []
         this.edges = []
-        if((defined(create))&&(create.type =="rhill")){
-            this.from_rhill_diagram(create)
-        }
         this.config = {}
         let cfg = this.config
+        cfg.area = {type:"rect"}
+        cfg.cell_debug = 0
     }
 
     from_rhill_diagram(diag){
@@ -328,10 +328,10 @@ class voronoi_diag{
         this.edges = diag.edges
     }
     
-    retract_cells(params,parent){
+    retract_cells(params){
         const dist = parseFloat(params.retraction)
         for(let i=0;i<this.cells.length;i++){
-            const is_debug = (params.debug == 0)?false:(params.debug-1 == i)
+            const is_debug = (this.config.cell_debug == 0)?false:(this.config.cell_debug-1 == i)
             this.cells[i].retract(dist,this.org_cells[i],is_debug)
         }
     }
@@ -346,25 +346,48 @@ class voronoi_diag{
         console.timeEnd("post proc")
     }
 
+    update(params){
+        if(defined(params.path)){
+            this.config.area.type = "path"
+            this.path_svg = params.path
+            this.path_id = params.id
+            this.path_points = geom.compute_path_points(this.path_svg,20)
+            //clear to restart a new sampling on the new path
+        }
+        if(defined(params.cell_debug)){
+            this.config.cell_debug = params.cell_debug
+        }
+    }
+
     draw_cells(params){
         svg.set_parent(params.svg)
         if(this.cells.length>1){//otherwise single cell has no half edges
             this.retract_cells(params)
             let group = html(params.svg,"g",/*html*/`<g id="svg_g_bezier_cells"/>`)
+            this.shape.append()
             for(let i=0;i<this.cells.length;i++){
+                const c = this.cells[i]
                 //here you can retract or detract small edges before either drawing technique
-                let d
-                if(params.shape == "cubic"){
-                    d = this.cells[i].path_bezier_cubic_filter_no_s(params.min_edge)
-                }else if(params.shape == "quadratic"){
-                    d = this.cells[i].path_bezier_quadratic()
-                }else{
-                    d = this.cells[i].path_edges()
+                let draw_cell = (!this.shape.enabled)||(this.shape.show_all()) || (document.elementFromPoint(c.seed.x, c.seed.y).id == this.shape.svg_path.id)
+                if(draw_cell){
+                    let d
+                    if(params.shape == "cubic"){
+                        d = c.path_bezier_cubic_filter_no_s(params.min_edge)
+                    }else if(params.shape == "quadratic"){
+                        d = c.path_bezier_quadratic()
+                    }else{
+                        d = c.path_edges()
+                    }
+                    let color = (params.color==true)?rand_col():"#221155"
+                    let conditional_clip_path = (this.shape.config.cells_action == "cut_off")?'clip-path="url(#cut-off-cells)"':''
+                    html(group,"path",/*html*/`<path d="${d}" fill="${color}" fill-opacity="0.2" ${conditional_clip_path} />`
+                    )
                 }
-                let color = (params.color==true)?rand_col():"#221155"
-                html(group,"path",/*html*/`<path d="${d}" fill="${color}" fill-opacity="0.2"/>`
-                )
             }
+            this.shape.remove()
+        }
+        if(this.config.cell_debug != 0){
+            this.draw_path_debug()
         }
     }
 
@@ -377,10 +400,37 @@ class voronoi_diag{
         })
         return html(group,"path",/*html*/`<path id="svg_path_edges" d="${d}" stroke="black" stroke-width="2" />`)
     }
+
+    draw_path_debug(){
+        let t2p = (text)=>{
+            let [x,y] = text.split(",")
+            return {x:x,y:y}
+        }
+        if(this.config.area.type == "path"){
+            this.path_points.forEach((p)=>{
+                html(svg.el,"circle",/*html*/`<circle cx=${p.x} cy=${p.y} r="2" fill="green" />`)
+            })
+            let d = this.path_svg.getAttribute("d")
+            let commands = d.split(" ")
+            for(let i=0;i<commands.length;i++){
+                let c = commands[i]
+                //console.log(c)
+                if(c.startsWith("M")){
+                    let point = t2p(c.substring(1))
+                    html(svg.el,"circle",/*html*/`<circle cx=${point.x} cy=${point.y} r="4" fill="red" />`)
+                    const c_next = t2p(commands[i+1].substring(1))
+                    svg.pline(point, c_next,"red")
+                }
+                if(c.startsWith("C")){
+                    let point = t2p(commands[i+1])
+                    html(svg.el,"circle",/*html*/`<circle cx=${point.x} cy=${point.y} r="4" fill="black" />`)
+                    svg.pline(point, t2p(commands[i+2]),"black")
+                }
+            }
+            //console.log(commands)
+        }
+    }
 }
 
 
-export{
-    voronoi_diag,
-    cell
-}
+export{voronoi_diag}

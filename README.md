@@ -85,6 +85,23 @@ The seeds coordinates are what allows to generate again the same voronoig diagra
 the shape is approximated with a set of linear interpolation points along the path
 <img src="./media/area_sampling.gif">
 
+## step 2 : cells closing
+```javascript
+    <defs>
+        <clipPath id="cut-off-cells">
+            <path xmlns="http://www.w3.org/2000/svg" d=${path} stroke="red" stroke-width="0" fill="#991155" fill-opacity="0.9"></path>
+        </clipPath>
+    </defs>
+
+```
+a trivial technique could be to apply an svg mask, with the SVG `clipPath` function, it would result in this
+<img src="./media/cut_outs.gif">
+
+* First issue, Fusion360 as example does not support `clipPath`
+* Second issue, the cut is very sharp and breaks the bezier shape of the cells
+* So if not full exact intersection path, then a certain number of interpolated points along the intersection path could help
+* The idea would then be to adjust the number of interpolated intersection points to the size of the inner cell edges
+
 # License
 MIT
 

@@ -5,20 +5,7 @@ import {Geometry} from "./geometry.js"
 let geom = new Geometry()
 let svg = new Svg()
 
-
-function get_seeds(nb,w,h){
-    let res = []
-    for(let i = 0;i<nb; i++){
-        res.push({
-            id:i,
-            x:Math.random()*w,
-            y:Math.random()*h
-        })
-    }
-    return res
-}
-
-function get_seed_samples(nb,w,h){
+function samples_in_rect(nb,w,h){
     let res = []
     for(let i = 0;i<nb; i++){
         res.push({
@@ -29,7 +16,7 @@ function get_seed_samples(nb,w,h){
     return res
 }
 
-function get_best_sample(seeds,samples,w,h,walls=false){
+function best_seed_in_rect(seeds,samples,w,h,walls=false){
     let best_index = 0
     let biggest_min = 0
     for(let i=0;i<samples.length;i++){
@@ -51,7 +38,7 @@ function get_best_sample(seeds,samples,w,h,walls=false){
     return samples[best_index]
 }
 
-function get_best_path_sample(seeds,samples,path_points){
+function best_seed_path_dist(seeds,samples,path_points){
     let best_index = 0
     let biggest_min = 0
     for(let i=0;i<samples.length;i++){
@@ -87,19 +74,10 @@ function get_closest_index(seeds,coord){
     return index_of_closest
 }
 
-function compute_path_points(path){
-    let res = []
-    const nb_steps = 20
-    const step = path.getTotalLength() / nb_steps
-    for(let i=0;i<nb_steps;i++){
-        let dist = step * i
-        res.push(path.getPointAtLength(dist))
-    }
-    return res
-}
 
 class Seeds{
-    constructor(){
+    constructor(shape){
+        this.shape = shape
         this.array = []
 
         this.config = {}
@@ -110,6 +88,8 @@ class Seeds{
         this.config.area = {type:"rect",width:400,height:200}
         this.config.nb_samples = 10
         this.config.walls_dist = true
+        this.config.path_debug = false
+
 
         this.path_svg = null
         this.path_points = []
@@ -121,24 +101,14 @@ class Seeds{
         }
     }
 
-    get_seed(id,w,h){
-        let samples = get_seed_samples(this.config.nb_samples,w,h)
-        //console.log(samples)
-        const best_seed = get_best_sample(this.array,samples,w,h,this.config.walls_dist)
-        return {
-            id:id,
-            x:best_seed.x,
-            y:best_seed.y
-        }
-    }
-    get_point_inside(box,path_id){
+    try_sample_in_path(box){
         let x,y
         let max_iter = 100
         let inside = false
         while((!inside)&&(max_iter>0)){
             x = box.x + Math.random()*box.width
             y = box.y + Math.random()*box.height
-            if(document.elementFromPoint(x, y).id == path_id){
+            if(document.elementFromPoint(x, y).id == this.shape.svg_path.id){
                 inside = true
             }
             max_iter--
@@ -148,19 +118,20 @@ class Seeds{
         }
         return [x,y]
     }
-    get_samples_inside_path(box){
+    samples_in_path(box){
         let res = []
         for(let i=0;i<this.config.nb_samples;i++){
-            let [x,y] = this.get_point_inside(box,this.path_id)
+            let [x,y] = this.try_sample_in_path(box)
             res.push({x:x,y:y})
         }
         return res
     }
     add_seeds_in_path(nb){
-        const box = this.path_svg.getBoundingClientRect();
+        this.shape.append()
+        const box = this.shape.svg_path.getBoundingClientRect();
         for(let i=0;i<nb;i++){
-            let samples = this.get_samples_inside_path(box)
-            let best = get_best_path_sample(this.array,samples,this.path_points)
+            let samples = this.samples_in_path(box)
+            let best = best_seed_path_dist(this.array,samples,this.shape.path_points)
             //check the cost
             const s = {
                 id:i,
@@ -169,12 +140,38 @@ class Seeds{
             }
             this.array.push(s)
         }
+        this.shape.remove()
+    }
+    add_seeds_away_from_path(nb){
+        this.shape.append()
+        for(let i=0;i<nb;i++){
+            let samples = samples_in_rect(this.config.nb_samples,this.config.area.width,this.config.area.height)
+            let best = best_seed_path_dist(this.array,samples,this.shape.path_points)
+            //check the cost
+            const s = {
+                id:i,
+                x:best.x,
+                y:best.y
+            }
+            this.array.push(s)
+        }
+        this.shape.remove()
+    }
+    get_best_seed_in_rect(id,w,h){
+        let samples = samples_in_rect(this.config.nb_samples,w,h)
+        //console.log(samples)
+        const best_seed = best_seed_in_rect(this.array,samples,w,h,this.config.walls_dist)
+        return {
+            id:id,
+            x:best_seed.x,
+            y:best_seed.y
+        }
     }
     add_seeds_in_rect(nb){
         const prev_nb = this.array.length
         for(let i=0;i<nb;i++){
             const new_id = prev_nb+i
-            const s = this.get_seed(new_id,this.config.area.width,this.config.area.height)
+            const s = this.get_best_seed_in_rect(new_id,this.config.area.width,this.config.area.height)
             this.array.push(s)
         }
     }
@@ -203,8 +200,11 @@ class Seeds{
             }
         }else if(this.config.nb_seeds > this.array.length){
             const nb_seeds_to_add = this.config.nb_seeds - this.array.length
-            if(this.config.area.type == "path"){
+            if(this.shape.sample_inside()){
                 this.add_seeds_in_path(nb_seeds_to_add)
+            }else if(this.shape.sample_avoid_path()){
+                this.add_seeds_away_from_path(nb_seeds_to_add)
+            }else if(this.shape.sample_symmetric()){
             }else{
                 this.add_seeds_in_rect(nb_seeds_to_add)
             }
@@ -218,6 +218,7 @@ class Seeds{
 
 
     //-----------------------------------------------------------------------------------------------
+    //user add is not filtered
     add(coord){
         const new_id = this.array[this.array.length-1].id + 1
         let s = {x:coord.x, y:coord.y, id:new_id}
@@ -256,29 +257,37 @@ class Seeds{
         if(defined(params.config)){
             this.load_config(params.config)
         }
-        if(defined(params.path)){
-                this.config.area.type = "path"
-            this.path_svg = params.path
-            this.path_id = params.id
-            this.path_points = compute_path_points(this.path_svg)
-            //clear to restart a new sampling on the new path
-            this.array = []
+        if(defined(params.cell_debug)){
+            this.config.path_debug = (params.cell_debug!=0)
         }
         if(this.config.area.type == "rect"){//should only be done on resize
             this.check_seeds_in_rect()
         }
         this.adjust_seeds_number()
         this.reset_seeds_id()
-        return (Date.now()-start)
+        let time = (Date.now()-start)
+        console.log(`seeds_update: ${time.toFixed(3)} ms`)
+        return time
     }
 
     draw(params){
         svg.set_parent(params.svg)
         if(this.array.length > 0){
             let group = html(params.svg,"g",/*html*/`<g id="svg_g_seeds"/>`)
-            for(let i=0;i<this.array.length;i++){
-                const s = this.array[i]
-                svg.circle_p_id(group,s.x,s.y,`c_${s.id}`)
+            if(!this.shape.show_all()){
+                this.shape.append()
+                for(let i=0;i<this.array.length;i++){
+                    const s = this.array[i]
+                    if(document.elementFromPoint(s.x, s.y).id == this.shape.svg_path.id){
+                        svg.circle_p_id(group,s.x,s.y,`c_${s.id}`)
+                    }
+                }
+                this.shape.remove()
+            }else{
+                for(let i=0;i<this.array.length;i++){
+                    const s = this.array[i]
+                    svg.circle_p_id(group,s.x,s.y,`c_${s.id}`)
+                }
             }
         }
     }

@@ -35,6 +35,17 @@ class Geometry{
         return {x:(x1_y2_m_y1_x2*(x3-x4) - (x1-x2)*x3_y4_m_y3_x4) / denominator,
                 y:(x1_y2_m_y1_x2*(y3-y4) - (y1-y2)*x3_y4_m_y3_x4) / denominator}
     }
+    compute_path_points(path,step_size){
+        let res = []
+        const path_lenght = path.getTotalLength()
+        const nb_steps = Math.round(path_lenght / step_size)
+        for(let i=0;i<nb_steps;i++){
+            let dist = step_size * i
+            res.push(path.getPointAtLength(dist))
+        }
+        console.log(`path length: ${path_lenght.toFixed(1)} , step:${step_size} , nb:${nb_steps}`)
+        return res
+    }
 }
 
 export{Geometry}

@@ -8,32 +8,53 @@ let bs = new Bootstrap()
 
 function menu_export(parent){
     br(parent)
-    let [ecol0,ecol1,ecol2,ecol3] = bs.cols(parent,4,["col-3","col-2","col-3","col"])
+    let [ecol0,ecol1,ecol2,ecol3,ecol4] = bs.cols(parent,5,["col-3","col-1","col-2","col-2","col"])
     let btn_save_svg = bs.button(ecol0,"btn_save",`export SVG`);
 
-    let in_export_ratio = bs.input_text(ecol0,"in_export_ratio",`${vor.export_ratio}`,"w-50");
-    in_export_ratio.style.visibility = "hidden"
-    if(vor.export_ratio == 1.0){
-        in_export_ratio.value = null
-        in_export_ratio.setAttribute("placeholder",`1 unit = 1 pixel`)
-    }
+    //let in_export_ratio = bs.input_text(ecol0,"in_export_ratio",`${vor.export_ratio}`,"w-50");
+    //in_export_ratio.style.visibility = "hidden"
+    //if(vor.export_ratio == 1.0){
+    //    in_export_ratio.value = null
+    //    in_export_ratio.setAttribute("placeholder",`1 unit = 1 pixel`)
+    //}
+    let btn_save_data = bs.button(ecol0,"btn_save",`export seeds coordinates`);
 
+    html(ecol1,"p",/*html*/`<p align="center">Export</p>`)
     const export_states = [vor.export_svg.cells,vor.export_svg.edges,vor.export_svg.seeds]
     bs.checkbox_group(ecol1,"cbx_export",["cells","edges","seeds"],export_states,(e)=>{
                             vor.export_svg[e.target.getAttribute("data-name")] = e.target.checked
                         })
-    let btn_save_data = bs.button(ecol2,"btn_save",`export seeds coordinates`);
-    html(ecol2,"p",/*html*/`<p align="center">v14.04.2020</p>`)
     //html(ecol2,"a",/*html*/`<a style="margin:10px">Drag and drop 'seeds.json' to import</p>`)
 
-    html(ecol3,"a",/*html*/`<a>
+
+
+    html(ecol2,"p",/*html*/`<p align="center">Shape Cells</p>`)
+    let rg_list = vor.shape.cells_action_list
+    let sact_index = rg_list.findIndex((shape)=>{return (shape == vor.shape.config.cells_action)})
+    let rg_cells = bs.radio_group(ecol2,"rgg_shape_cells",rg_list,sact_index)
+    rg_cells.forEach((el)=>{$(el).change((e)=>{vor.update({shape_cells:e.target.getAttribute("data-label")})})})
+
+    html(ecol3,"p",/*html*/`<p align="center">Seeds Sampling</p>`)
+    rg_list = vor.shape.seeds_action_list
+    sact_index = rg_list.findIndex((shape)=>{return (shape == vor.shape.config.seeds_action)})
+    let rg_seeds = bs.radio_group(ecol3,"rgg_shpae_seeds",rg_list,sact_index)
+    rg_seeds.forEach((el)=>{$(el).change((e)=>{vor.update({shape_seeds:e.target.getAttribute("data-label")})})})
+
+    bs.checkbox_group(ecol2,"cbx_shape",["debug"],[vor.shape.config.debug],(e)=>{
+                            let msg = {}
+                            msg[e.target.getAttribute("data-name")] = e.target.checked
+                            vor.update(msg)
+                        })
+
+
+    html(ecol4,"a",/*html*/`<a>
         <p align="center">
             <a href="https://github.com/WebSVG/voronoi" target="_blank">
             <img src=./media/github.png width=40 href="https://github.com/WebSVG/voronoi">
             <p align="center">User Guide and Source Code</p>
         </p>
     </a>`)
-
+    html(ecol4,"p",/*html*/`<p align="center">v14.04.2020</p>`)
 
     $(btn_save_svg).click(()=>{
         vor.save_svg("voronoi_svg_export.svg")
@@ -42,17 +63,17 @@ function menu_export(parent){
     $(btn_save_data).click(()=>{
         vor.save_seeds("seeds.json")
     })
-    $(in_export_ratio).change((e)=>{
-        vor.export_ratio = in_export_ratio.value
-        if(vor.export_ratio == 1.0){
-            in_export_ratio.value = null
-            in_export_ratio.setAttribute("placeholder",`1 unit = 1 pixel`)
-        }
-    })
-    $(in_export_ratio).dblclick((e)=>{
-        vor.export_ratio = (1425.0 / 377.031)
-        in_export_ratio.value = vor.export_ratio
-    })
+    //$(in_export_ratio).change((e)=>{
+    //    vor.export_ratio = in_export_ratio.value
+    //    if(vor.export_ratio == 1.0){
+    //        in_export_ratio.value = null
+    //        in_export_ratio.setAttribute("placeholder",`1 unit = 1 pixel`)
+    //    }
+    //})
+    //$(in_export_ratio).dblclick((e)=>{
+    //    vor.export_ratio = (1425.0 / 377.031)
+    //    in_export_ratio.value = vor.export_ratio
+    //})
 }
 
 function menu_shape_space_min(parent){
@@ -106,8 +127,7 @@ function menu_shape_space_min(parent){
         vor.draw()
     })
     $(rg_debug).on("input",(e)=>{
-        vor.cell_debug = rg_debug.value
-        vor.draw()
+        vor.update({cell_debug:rg_debug.value})
     })
 }
 
