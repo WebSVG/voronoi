@@ -38,7 +38,7 @@ function best_seed_in_rect(seeds,samples,w,h,walls=false){
     return samples[best_index]
 }
 
-function best_seed_in_path(seeds,samples,path_points){
+function best_seed_path_dist(seeds,samples,path_points){
     let best_index = 0
     let biggest_min = 0
     for(let i=0;i<samples.length;i++){
@@ -131,7 +131,22 @@ class Seeds{
         const box = this.shape.svg_path.getBoundingClientRect();
         for(let i=0;i<nb;i++){
             let samples = this.samples_in_path(box)
-            let best = best_seed_in_path(this.array,samples,this.shape.path_points)
+            let best = best_seed_path_dist(this.array,samples,this.shape.path_points)
+            //check the cost
+            const s = {
+                id:i,
+                x:best.x,
+                y:best.y
+            }
+            this.array.push(s)
+        }
+        this.shape.remove()
+    }
+    add_seeds_away_from_path(nb){
+        this.shape.append()
+        for(let i=0;i<nb;i++){
+            let samples = samples_in_rect(this.config.nb_samples,this.config.area.width,this.config.area.height)
+            let best = best_seed_path_dist(this.array,samples,this.shape.path_points)
             //check the cost
             const s = {
                 id:i,
@@ -187,6 +202,9 @@ class Seeds{
             const nb_seeds_to_add = this.config.nb_seeds - this.array.length
             if(this.shape.sample_inside()){
                 this.add_seeds_in_path(nb_seeds_to_add)
+            }else if(this.shape.sample_avoid_path()){
+                this.add_seeds_away_from_path(nb_seeds_to_add)
+            }else if(this.shape.sample_symmetric()){
             }else{
                 this.add_seeds_in_rect(nb_seeds_to_add)
             }
@@ -256,7 +274,7 @@ class Seeds{
         svg.set_parent(params.svg)
         if(this.array.length > 0){
             let group = html(params.svg,"g",/*html*/`<g id="svg_g_seeds"/>`)
-            if(this.shape.show_inside()){
+            if(!this.shape.show_all()){
                 this.shape.append()
                 for(let i=0;i<this.array.length;i++){
                     const s = this.array[i]

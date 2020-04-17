@@ -368,7 +368,7 @@ class voronoi_diag{
             for(let i=0;i<this.cells.length;i++){
                 const c = this.cells[i]
                 //here you can retract or detract small edges before either drawing technique
-                let draw_cell = (!this.shape.enabled)||(this.shape.show_inside() && (document.elementFromPoint(c.seed.x, c.seed.y).id == this.shape.svg_path.id))
+                let draw_cell = (!this.shape.enabled)||(this.shape.show_all()) || (document.elementFromPoint(c.seed.x, c.seed.y).id == this.shape.svg_path.id)
                 if(draw_cell){
                     let d
                     if(params.shape == "cubic"){

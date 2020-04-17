@@ -9,12 +9,12 @@ class Shape{
         this.svg_path = null
         this.svg_string = ""
         this.path_points = []
-        this.cells_action_list = ["in_cells","cut_off","none"]
+        this.cells_action_list = ["in_cells","cut_off","all"]
+        this.seeds_action_list = ["inside","avoid_path","ignore"];//"symmetric" might not be necessary
         this.config = {}
         let cfg = this.config
         cfg.cells_action = "cut_off"
-        cfg.seeds_action_list = ["inside","avoid_path","symmetric","none"]
-        cfg.seeds_action = "inside"
+        cfg.seeds_action = "ignore"
         cfg.debug = true
         this.parent = null
     }
@@ -22,13 +22,15 @@ class Shape{
     update(params){
         if(defined(params.shape_cells)){
             this.config.cells_action = params.shape_cells
-            this.enabled = (params.shape_cells != "none")
         }
         if(defined(params.debug)){
             this.config.debug = params.debug
         }
         if(defined(params.parent)){
             this.parent = params.parent
+        }
+        if(defined(params.shape_seeds)){
+            this.config.seeds_action = params.shape_seeds
         }
     }
 
@@ -44,9 +46,15 @@ class Shape{
     sample_inside(){
         return (this.enabled && (this.config.seeds_action=="inside"))
     }
+    sample_avoid_path(){
+        return (this.enabled && (this.config.seeds_action=="avoid_path"))
+    }
+    sample_symmetric(){
+        return (this.enabled && (this.config.seeds_action=="symmetric"))
+    }
 
-    show_inside(){
-        return (this.enabled && (this.config.cells_action!="none"))
+    show_all(){
+        return (this.config.cells_action=="all")
     }
 
     draw(svg_el){
@@ -94,7 +102,7 @@ class Shape{
             //check path inside window
             //check path closed
             //check path area min
-            path.setAttributeNS(null,"fill-opacity",0.1)
+            path.setAttributeNS(null,"fill-opacity",0.0)
             path.setAttributeNS(null,"fill","#115522")
             path.id = "seeds_area"
             this.svg_path = path

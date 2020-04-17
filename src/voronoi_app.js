@@ -11,7 +11,7 @@ class voronoi_app{
         this.parent = parent
         //const use_storage = false
         let init_needed = false
-        this.version = "38"
+        this.version = "40"
         const config = JSON.parse(localStorage.getItem("voronoi_config"))
         if(config === null){
             console.log("First time usage, no config stored")
