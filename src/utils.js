@@ -2,6 +2,16 @@ function defined(obj){
     return (typeof(obj) != "undefined")
 }
 
+function uid(){
+    return Date.now()+"_"+Math.floor(Math.random() * 10000)
+}
+
+function suid(){
+    let date = (Date.now()).toString();
+    const sub = date.substring(date.length-6,date.length-1);
+    return sub+"_"+Math.floor(Math.random() * 10000)
+}
+
 function html(parent,tagName,svg_text){
     parent.insertAdjacentHTML("beforeend",svg_text);
     let elements = parent.getElementsByTagName(tagName);
@@ -15,6 +25,12 @@ function br(parent){
 
 function hr(parent){
     parent.appendChild(document.createElement("hr"))
+}
+
+function image(parent,url){
+    return html(parent,"image",/*html*/`
+        <image x="0" y="0" xlink:href=${url}></image>
+    `)
 }
 
 //mini jQuery like events wrapper
@@ -50,5 +66,8 @@ export{
     defined,
     Events,
     save_json,
-    rand_col
+    rand_col,
+    image,
+    uid,
+    suid
 }

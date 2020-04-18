@@ -85,6 +85,9 @@ class voronoi_app{
 
     draw_svg(svg_el,draw_cfg){
         this.clear_svg(svg_el)
+        if(draw_cfg.shape){
+            this.shape.draw(svg_el)
+        }
         if(draw_cfg.cells){
             const params = {
                 svg:svg_el,
@@ -101,9 +104,6 @@ class voronoi_app{
         }
         if(draw_cfg.seeds){
             this.seeds.draw({svg:svg_el})
-        }
-        if(draw_cfg.shape){
-            this.shape.draw(svg_el)
         }
         this.store()
     }
@@ -138,6 +138,9 @@ class voronoi_app{
             this.draw()
         }
         if(defined(params.debug)){
+            this.draw()
+        }
+        if(defined(params.view_shape)){
             this.draw()
         }
         if(defined(params.shape_cells)){
@@ -198,10 +201,8 @@ class voronoi_app{
         console.log("png dropped")
         const vor_context = this
         reader.onloadend = function(e) {
-            let is_taken = vor_context.shape.load_cost_map(this.result);
-            if(is_taken){
-                vor_context.compute_voronoi()
-            }
+            vor_context.shape.load_cost_map(this.result,
+                ()=>{vor_context.compute_voronoi()});
         };
     }
     load_dropped_seeds(reader){
@@ -234,14 +235,16 @@ class voronoi_app{
         let extension = file.name.split('.').pop();
         if(extension == "json"){
             this.load_dropped_seeds(reader)
+            reader.readAsText(file);
         }else if(extension == "svg"){
             this.load_dropped_svg(reader)
+            reader.readAsText(file);
         }else if(extension == "png"){
             this.load_dropped_png(reader)
+            reader.readAsArrayBuffer(file);
         }else{
             alert(`unsupported file format`);
         }
-        reader.readAsText(file);
     }
 
     init_events(){

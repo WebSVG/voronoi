@@ -60,6 +60,17 @@ class Svg{
         )
     }
 
+    pattern(parent,url,w,h){
+        return html(parent,"rect",/*html*/`
+            <defs>
+                <pattern id="image" x="0" y="0" patternUnits="userSpaceOnUse" height="1" width="1" >
+                    <image x="0" y="0" xlink:href=${url} ></image>
+                </pattern>
+            </defs>
+            <rect width="${w}" height="${h}" fill="url(#image)" fill-opacity="0.1"/>
+        `)
+    }
+
     save(fileName,evg_element=null){
         if(evg_element == null){evg_element = this.el}
         let s = new XMLSerializer();

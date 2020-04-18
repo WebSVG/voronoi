@@ -20,7 +20,8 @@ function menu_export(parent){
     let btn_save_data = bs.button(ecol0,"btn_save",`export seeds coordinates`);
 
     html(ecol1,"p",/*html*/`<p align="center">Export</p>`)
-    const export_states = [vor.export_svg.cells,vor.export_svg.edges,vor.export_svg.seeds]
+    const lst = vor.export_svg
+    const export_states = [lst.cells,lst.edges,lst.seeds]
     bs.checkbox_group(ecol1,"cbx_export",["cells","edges","seeds"],export_states,(e)=>{
                             vor.export_svg[e.target.getAttribute("data-name")] = e.target.checked
                         })
@@ -40,9 +41,10 @@ function menu_export(parent){
     let rg_seeds = bs.radio_group(ecol3,"rgg_shpae_seeds",rg_list,sact_index)
     rg_seeds.forEach((el)=>{$(el).change((e)=>{vor.update({shape_seeds:e.target.getAttribute("data-label")})})})
 
-    bs.checkbox_group(ecol2,"cbx_shape",["debug"],[vor.shape.config.debug],(e)=>{
+    bs.checkbox_group(ecol2,"cbx_shape",["view_shape"],[vor.shape.config.view_shape],(e)=>{
                             let msg = {}
                             msg[e.target.getAttribute("data-name")] = e.target.checked
+                            console.log(msg)
                             vor.update(msg)
                         })
 
@@ -54,7 +56,7 @@ function menu_export(parent){
             <p align="center">User Guide and Source Code</p>
         </p>
     </a>`)
-    html(ecol4,"p",/*html*/`<p align="center">v14.04.2020</p>`)
+    html(ecol4,"p",/*html*/`<p align="center">v18.04.2020</p>`)
 
     $(btn_save_svg).click(()=>{
         vor.save_svg("voronoi_svg_export.svg")
@@ -133,7 +135,8 @@ function menu_shape_space_min(parent){
 
 function menu_generate_view(parent){
     let btn_seeds = bs.button(parent,"btn_seed",`generate seeds`);
-    const view_states = [vor.view_svg.cells,vor.view_svg.edges,vor.view_svg.seeds]
+    const lst = vor.view_svg
+    const view_states = [lst.cells,lst.edges,lst.seeds]
     bs.checkbox_group(parent,"cbx_view",["cells","edges","seeds"],view_states,(e)=>{
                             vor.view_svg[e.target.getAttribute("data-name")] = e.target.checked
                             vor.draw()
