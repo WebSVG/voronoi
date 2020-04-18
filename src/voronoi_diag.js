@@ -363,12 +363,16 @@ class voronoi_diag{
         svg.set_parent(params.svg)
         if(this.cells.length>1){//otherwise single cell has no half edges
             this.retract_cells(params)
-            let group = html(params.svg,"g",/*html*/`<g id="svg_g_bezier_cells"/>`)
-            this.shape.append()
+            let conditional_clip_path = (this.shape.config.cells_action == "cut_off")?'clip-path="url(#cut-off-cells)"':''
+            let group = html(params.svg,"g",/*html*/`<g id="svg_g_bezier_cells" ${conditional_clip_path}/>`)
+            this.shape.append_path()
             for(let i=0;i<this.cells.length;i++){
                 const c = this.cells[i]
                 //here you can retract or detract small edges before either drawing technique
-                let draw_cell = (!this.shape.enabled)||(this.shape.show_all()) || (document.elementFromPoint(c.seed.x, c.seed.y).id == this.shape.svg_path.id)
+                let draw_cell = true
+                if(this.shape.show_inside_path()){
+                    draw_cell = geom.inside_id(c.seed.x, c.seed.y,this.shape.svg_path.id)
+                }
                 if(draw_cell){
                     let d
                     if(params.shape == "cubic"){
@@ -379,12 +383,11 @@ class voronoi_diag{
                         d = c.path_edges()
                     }
                     let color = (params.color==true)?rand_col():"#221155"
-                    let conditional_clip_path = (this.shape.config.cells_action == "cut_off")?'clip-path="url(#cut-off-cells)"':''
-                    html(group,"path",/*html*/`<path d="${d}" fill="${color}" fill-opacity="0.2" ${conditional_clip_path} />`
+                    html(group,"path",/*html*/`<path d="${d}" fill="${color}" fill-opacity="0.2"/>`
                     )
                 }
             }
-            this.shape.remove()
+            this.shape.remove_path()
         }
         if(this.config.cell_debug != 0){
             this.draw_path_debug()
@@ -393,7 +396,8 @@ class voronoi_diag{
 
     draw_edges(params){
         svg.set_parent(params.svg)
-        let group = html(params.svg,"g",/*html*/`<g id="svg_g_edges"/>`)
+        let conditional_clip_path = (this.shape.config.cells_action == "cut_off")?'clip-path="url(#cut-off-cells)"':''
+        let group = html(params.svg,"g",/*html*/`<g id="svg_g_edges" ${conditional_clip_path} />`)
         let d = ""
         this.edges.forEach((e)=>{
             d = d + `M ${e.va.x} ${e.va.y} L ${e.vb.x} ${e.vb.y} `

@@ -46,6 +46,14 @@ class Geometry{
         console.log(`path length: ${path_lenght.toFixed(1)} , step:${step_size} , nb:${nb_steps}`)
         return res
     }
+    inside_id(x,y,id){
+        let res = document.elementFromPoint(x,y)
+        if(res == null){
+            return false
+        }else{
+            return (res.id == id)
+        }
+    }
 }
 
 export{Geometry}

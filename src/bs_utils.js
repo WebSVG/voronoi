@@ -43,6 +43,22 @@ class Bootstrap{
         return cols
     }
     
+    dropdown(parent,dropdown_label,droplist,dropitems,callback){
+        let dropdown = html(parent,"div",/*html*/`<div class="dropdown"></div>`)
+        let button = html(dropdown,"button",/*html*/`
+            <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                ${dropdown_label}
+            </button>`)
+        let dropdown_menu = html(dropdown,"div",/*html*/`<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+        </div>`)
+    
+        for(let i=0;i<droplist.length;i++){
+            let item = html(dropdown_menu,"a",/*html*/`<a class="dropdown-item" data-label="${droplist[i]}">${dropitems[i]}</a>`)
+            $(item).click(callback)
+        }
+        return dropdown
+    }
+    
     //classes : ml-1
     toggle(parent,on="On",off="Off"){
         return html(parent,"input",
