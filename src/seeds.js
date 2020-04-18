@@ -38,6 +38,29 @@ function best_seed_in_rect(seeds,samples,w,h,walls=false){
     return samples[best_index]
 }
 
+function best_seed_with_cost(seeds,samples,shape){
+    let best_index = 0
+    let biggest_min = 0
+    for(let i=0;i<samples.length;i++){
+        let seeds_cost = []
+        for(let j= 0;j<seeds.length;j++){
+            const d = geom.distance(samples[i],seeds[j])
+            seeds_cost.push(d)
+        }
+        const map_cost = shape.get_cost(samples[i])
+        //seeds_cost.push(cost)
+        const min_dist = 0.5*map_cost + Math.min(...seeds_cost)
+        console.log(`cost: ${map_cost} , min_dist = ${min_dist}`)
+        if(min_dist > biggest_min){
+            best_index = i
+            biggest_min = min_dist
+        }
+        console.log(`min_dist = ${min_dist}`)
+    }
+    //console.log(`biggest_min = ${biggest_min}`)
+    return samples[best_index]
+}
+
 function best_seed_path_dist(seeds,samples,path_points){
     let best_index = 0
     let biggest_min = 0
@@ -108,7 +131,7 @@ class Seeds{
         while((!inside)&&(max_iter>0)){
             x = box.x + Math.random()*box.width
             y = box.y + Math.random()*box.height
-            if(document.elementFromPoint(x, y).id == this.shape.svg_path.id){
+            if(geom.inside_id(x, y, this.shape.svg_path.id)){
                 inside = true
             }
             max_iter--
@@ -160,7 +183,12 @@ class Seeds{
     get_best_seed_in_rect(id,w,h){
         let samples = samples_in_rect(this.config.nb_samples,w,h)
         //console.log(samples)
-        const best_seed = best_seed_in_rect(this.array,samples,w,h,this.config.walls_dist)
+        let best_seed
+        if(this.shape.sample_with_cost()){
+            best_seed = best_seed_with_cost(this.array,samples,this.shape)
+        }else{
+            best_seed = best_seed_in_rect(this.array,samples,w,h,this.config.walls_dist)
+        }
         return {
             id:id,
             x:best_seed.x,
@@ -204,7 +232,6 @@ class Seeds{
                 this.add_seeds_in_path(nb_seeds_to_add)
             }else if(this.shape.sample_avoid_path()){
                 this.add_seeds_away_from_path(nb_seeds_to_add)
-            }else if(this.shape.sample_symmetric()){
             }else{
                 this.add_seeds_in_rect(nb_seeds_to_add)
             }
@@ -279,7 +306,7 @@ class Seeds{
                 this.shape.append_path()
                 for(let i=0;i<this.array.length;i++){
                     const s = this.array[i]
-                    if(document.elementFromPoint(s.x, s.y).id == this.shape.svg_path.id){
+                    if(geom.inside_id(s.x, s.y, this.shape.svg_path.id)){
                         svg.circle_p_id(group,s.x,s.y,`c_${s.id}`)
                     }
                 }
