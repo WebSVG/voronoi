@@ -61,21 +61,21 @@ class Shape{
     }
 
     draw_path(svg_el){
+        let group = html(svg_el,"g",/*html*/`<g id="svg_g_shape_path"/>`)
         if(this.config.cells_action == "cut_off"){
-            html(svg_el,"path",/*html*/`
+            html(svg_el,"defs",/*html*/`
             <defs>
                 <clipPath id="cut-off-cells">
                     ${this.svg_string}
                 </clipPath>
             </defs>`)
         }
+        //if the user config is to draw the shape and it's of type "path", then draw it
+        html(group,"path",/*html*/`${this.svg_string}`)
         if(this.config.debug == true){
             this.path_points.forEach((p)=>{
-                html(svg_el,"circle",/*html*/`<circle cx=${p.x} cy=${p.y} r="2" fill="green" />`)
+                html(group,"circle",/*html*/`<circle cx=${p.x} cy=${p.y} r="2" fill="green" />`)
             })
-        }
-        if(this.config.seeds_action == "inside"){
-            html(svg_el,"path",this.svg_string)
         }
     }
     draw_map(svg_el){
@@ -112,7 +112,7 @@ class Shape{
             //check path inside window
             //check path closed
             //check path area min
-            path.setAttributeNS(null,"fill-opacity",0.0)
+            path.setAttributeNS(null,"fill-opacity",0.1)
             path.setAttributeNS(null,"fill","#115522")
             path.id = "seeds_area"
             this.svg_path = path

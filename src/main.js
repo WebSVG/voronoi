@@ -54,7 +54,7 @@ function menu_export(parent){
             <p align="center">User Guide and Source Code</p>
         </p>
     </a>`)
-    html(ecol4,"p",/*html*/`<p align="center">v14.04.2020</p>`)
+    html(ecol4,"p",/*html*/`<p align="center">v18.04.2020</p>`)
 
     $(btn_save_svg).click(()=>{
         vor.save_svg("voronoi_svg_export.svg")
