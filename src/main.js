@@ -142,6 +142,11 @@ function menu_generate_view(parent){
         vor.update_seeds({clear:true})//clear = true
     })
 
+    const list = ["cell","circle","face"]
+    bs.dropdown(parent,"Select Shape",list,list,(e)=>{
+        vor.update({path_file:e.target.getAttribute("data-label")})
+    })
+
 }
 
 function menu_nb_seeds(parent){

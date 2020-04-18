@@ -70,8 +70,14 @@ Before explaining how this works, let's inspect that the voronoi cells are natua
 
 Below is the revealed secret. There are seeds actually being sampled outside the path area for the sole purpose of giving support to the inside cells not to expand till the external frame. Also important that the cells are not just simply randomly sampled inside and outside the area, they are rather avoiding the path with a distance cost factor, that prevents cells from cutting the edges to a certain extent.
 
-<img src="./media/shape_seeds.png" width=400>
-<img src="./media/shape_all_cells.png" width=400>
+<img src="./media/shape_seeds.png" width=350>
+<img src="./media/shape_all_cells.png" width=350>
+
+# Menu commands
+## Seeds generation
+* button "generate seeds" : cleans all seeds array and start generating a new sample set.
+* checkbox group "cells", "edges", "seeds" : display or hide on the monitor window, each of the cells , their edges, and the seeds.
+* input "Seeds Number" : The total number seeds to be visible on the diagram
 
 # Features details
 * Generate Voronoi Diagram

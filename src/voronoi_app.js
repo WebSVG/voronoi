@@ -11,7 +11,7 @@ class voronoi_app{
         this.parent = parent
         //const use_storage = false
         let init_needed = false
-        this.version = "40"
+        this.version = "43"
         const config = JSON.parse(localStorage.getItem("voronoi_config"))
         if(config === null){
             console.log("First time usage, no config stored")
@@ -143,6 +143,16 @@ class voronoi_app{
         if(defined(params.shape_cells)){
             this.draw()
         }
+        if(defined(params.path_file)){
+            fetch(`./data/${params.path_file}.svg`)
+            .then(response => response.text())
+            .then((svg_text) => {
+                let is_taken = this.shape.load_path(svg_text)
+                if(is_taken){
+                    this.compute_voronoi()
+                }
+            })
+        }
     }
 
     update_size(clear){
@@ -178,7 +188,17 @@ class voronoi_app{
         console.log("svg dropped")
         const vor_context = this
         reader.onloadend = function(e) {
-            let is_taken = vor_context.shape.load(this.result);
+            let is_taken = vor_context.shape.load_path(this.result);
+            if(is_taken){
+                vor_context.compute_voronoi()
+            }
+        };
+    }
+    load_dropped_png(reader){
+        console.log("png dropped")
+        const vor_context = this
+        reader.onloadend = function(e) {
+            let is_taken = vor_context.shape.load_cost_map(this.result);
             if(is_taken){
                 vor_context.compute_voronoi()
             }
@@ -216,6 +236,8 @@ class voronoi_app{
             this.load_dropped_seeds(reader)
         }else if(extension == "svg"){
             this.load_dropped_svg(reader)
+        }else if(extension == "png"){
+            this.load_dropped_png(reader)
         }else{
             alert(`unsupported file format`);
         }

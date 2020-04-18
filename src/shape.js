@@ -5,7 +5,7 @@ let geom = new Geometry()
 //let svg = new Svg()
 class Shape{
     constructor(){
-        this.enabled = false
+        this.used = "nothing"
         this.svg_path = null
         this.svg_string = ""
         this.path_points = []
@@ -34,33 +34,33 @@ class Shape{
         }
     }
 
-    append(){
-        if(!this.enabled){return}
+    append_path(){
+        if(this.used != "path"){return}
         this.parent.appendChild(this.svg_path)
     }
-    remove(){
-        if(!this.enabled){return}
-        this.parent.removeChild(this.svg_path)
+    remove_path(){
+        if(this.used != "path"){return}
+        if(this.svg_path.parentElement != null){
+            this.svg_path.parentElement.removeChild(this.svg_path)
+        }
+        //this.parent.removeChild()
     }
 
-    sample_inside(){
-        return (this.enabled && (this.config.seeds_action=="inside"))
+    sample_inside_path(){
+        return ((this.used=="path") && (this.config.seeds_action=="inside"))
     }
     sample_avoid_path(){
-        return (this.enabled && (this.config.seeds_action=="avoid_path"))
+        return ((this.used=="path") && (this.config.seeds_action=="avoid_path"))
     }
     sample_symmetric(){
-        return (this.enabled && (this.config.seeds_action=="symmetric"))
+        return ((this.used=="path") && (this.config.seeds_action=="symmetric"))
     }
 
-    show_all(){
-        return (this.config.cells_action=="all")
+    show_inside_path(){
+        return ((this.used=="path") && (this.config.cells_action=="in_cells" || this.config.cells_action=="but_off"))
     }
 
-    draw(svg_el){
-        if(!this.enabled){
-            return
-        }
+    draw_path(svg_el){
         if(this.config.cells_action == "cut_off"){
             html(svg_el,"path",/*html*/`
             <defs>
@@ -78,8 +78,18 @@ class Shape{
             html(svg_el,"path",this.svg_string)
         }
     }
+    draw_map(svg_el){
 
-    load(svg_file){
+    }
+    draw(svg_el){
+        if(this.used == "path"){
+            this.draw_path(svg_el)
+        }else if(this.used == "map"){
+            this.draw_map(svg_el)
+        }
+    }
+
+    load_path(svg_file){
         let is_taken = false
 
         let template = document.createElement("template")
@@ -113,7 +123,17 @@ class Shape{
         }else{
             alert(`only supported import of SVG with a single path on the top level`)
         }
-        this.enabled = is_taken
+        if(is_taken){
+            this.used = "path"
+        }
+        return is_taken
+    }
+    load_cost_map(png_file){
+        let is_taken = true
+
+        if(is_taken){
+            this.used = "map"
+        }
         return is_taken
     }
 }

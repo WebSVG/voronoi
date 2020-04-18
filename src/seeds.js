@@ -127,7 +127,7 @@ class Seeds{
         return res
     }
     add_seeds_in_path(nb){
-        this.shape.append()
+        this.shape.append_path()
         const box = this.shape.svg_path.getBoundingClientRect();
         for(let i=0;i<nb;i++){
             let samples = this.samples_in_path(box)
@@ -140,10 +140,10 @@ class Seeds{
             }
             this.array.push(s)
         }
-        this.shape.remove()
+        this.shape.remove_path()
     }
     add_seeds_away_from_path(nb){
-        this.shape.append()
+        this.shape.append_path()
         for(let i=0;i<nb;i++){
             let samples = samples_in_rect(this.config.nb_samples,this.config.area.width,this.config.area.height)
             let best = best_seed_path_dist(this.array,samples,this.shape.path_points)
@@ -155,7 +155,7 @@ class Seeds{
             }
             this.array.push(s)
         }
-        this.shape.remove()
+        this.shape.remove_path()
     }
     get_best_seed_in_rect(id,w,h){
         let samples = samples_in_rect(this.config.nb_samples,w,h)
@@ -200,7 +200,7 @@ class Seeds{
             }
         }else if(this.config.nb_seeds > this.array.length){
             const nb_seeds_to_add = this.config.nb_seeds - this.array.length
-            if(this.shape.sample_inside()){
+            if(this.shape.sample_inside_path()){
                 this.add_seeds_in_path(nb_seeds_to_add)
             }else if(this.shape.sample_avoid_path()){
                 this.add_seeds_away_from_path(nb_seeds_to_add)
@@ -273,16 +273,17 @@ class Seeds{
     draw(params){
         svg.set_parent(params.svg)
         if(this.array.length > 0){
-            let group = html(params.svg,"g",/*html*/`<g id="svg_g_seeds"/>`)
-            if(this.shape.enabled && !this.shape.show_all()){
-                this.shape.append()
+            let conditional_clip_path = (this.shape.config.cells_action == "cut_off")?'clip-path="url(#cut-off-cells)"':''
+            let group = html(params.svg,"g",/*html*/`<g id="svg_g_seeds" ${conditional_clip_path}/>`)
+            if(this.shape.show_inside_path()){
+                this.shape.append_path()
                 for(let i=0;i<this.array.length;i++){
                     const s = this.array[i]
                     if(document.elementFromPoint(s.x, s.y).id == this.shape.svg_path.id){
                         svg.circle_p_id(group,s.x,s.y,`c_${s.id}`)
                     }
                 }
-                this.shape.remove()
+                this.shape.remove_path()
             }else{
                 for(let i=0;i<this.array.length;i++){
                     const s = this.array[i]
