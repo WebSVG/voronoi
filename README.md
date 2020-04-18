@@ -64,6 +64,8 @@ this applies an svg mask, with the SVG `clipPath` function, it would result in t
 * Second issue, the cut is very sharp and breaks the bezier shape of the cells
 
 ### the nicer way
+Note : the higher the number of samples per seed, the more the cells will allign the shape's path
+
 <img src="./media/shape_inside_cells.png" width=600>
 
 Before explaining how this works, let's inspect that the voronoi cells are natually alligned along the custom path we provided as input
@@ -72,6 +74,15 @@ Below is the revealed secret. There are seeds actually being sampled outside the
 
 <img src="./media/shape_seeds.png" width=350>
 <img src="./media/shape_all_cells.png" width=350>
+
+## Seeds sampling cost map
+* drag and drop a png file on the editor's window
+* run sampling with preferrably a high sample count (~100 or more)
+
+In all sampling variants, the seeds do have the neighbors distance as cost minimzation factor. Using a shape's path, the cost add up to avoid the path with a distance. Here, a png image gray scale is used as a cost map that is weighted with the neighbors distance.
+
+<img src="./media/horizontal_gradient.png" width=350>
+<img src="./media/cost_map.png" width=350>
 
 # Menu commands
 ## Seeds generation
@@ -92,6 +103,7 @@ Below is the revealed secret. There are seeds actually being sampled outside the
 * rearrange seeds when modifying window size
 * Shaped tesselation area
   * sampling points inside an SVG path with `document.elementFromPoint(x, y);`
+* Concentration cost map for seeds sampling
 
   ## cells
 * different cells types
@@ -107,10 +119,10 @@ Below is the revealed secret. There are seeds actually being sampled outside the
 * Browser local storage of config parameters (No storage of SVG nor seeds as they can be saved separately)
 
 # Planned features
+* use both cost map and tesselation area at the same time
 * vertical mode for longitudinal edits
 * export scale with a ratio (adjusting to a given unit)
   * transform scale possible but Fusion360 ignores the scale transform
-* Concentration cost map for seeds sampling
 * edges cells filet effect
 * detract quadratic bezier short edges
 * edit seed weight to modify cells size (? requires a new engine, or use cells retraction technique)
