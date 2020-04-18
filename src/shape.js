@@ -91,8 +91,8 @@ class Shape{
     }
     draw_map(svg_el){
         let group = html(svg_el,"g",/*html*/`<g id="svg_g_shape_map"/>`)
-        //svg.pattern(svg_el,this.img.url,this.img.el.width,this.img.el.height)
-        image(group,this.img.url)
+        svg.pattern(svg_el,this.img.url,this.img.el.width,this.img.el.height)
+        //image(group,this.img.url)
     }
     draw(svg_el){
         if(this.used == "path"){
@@ -143,9 +143,13 @@ class Shape{
     }
     get_cost(s){
         if(this.used != "map"){
-            return
+            return 0
         }
-        return this.img.canvas.getContext('2d').getImageData(s.x,s.y,1,1).data[0]
+        if((s.x>=this.img.el.width) ||(s.y>=this.img.el.height)){
+            return 10000
+        }
+        let val = this.img.canvas.getContext('2d').getImageData(s.x,s.y,1,1).data[0]
+        return (val / 255.0) 
     }
     load_cost_map(array_buffer,done){
 

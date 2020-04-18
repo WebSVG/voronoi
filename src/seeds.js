@@ -39,25 +39,27 @@ function best_seed_in_rect(seeds,samples,w,h,walls=false){
 }
 
 function best_seed_with_cost(seeds,samples,shape){
-    let best_index = 0
-    let biggest_min = 0
+    let best_index = -1
+    let best_cost = Number.MAX_VALUE;
+    console.log(samples.length)
     for(let i=0;i<samples.length;i++){
-        let seeds_cost = []
+        let seeds_dist = []
         for(let j= 0;j<seeds.length;j++){
             const d = geom.distance(samples[i],seeds[j])
-            seeds_cost.push(d)
+            seeds_dist.push(d)
         }
-        const map_cost = shape.get_cost(samples[i])
-        //seeds_cost.push(cost)
-        const min_dist = 0.5*map_cost + Math.min(...seeds_cost)
-        console.log(`cost: ${map_cost} , min_dist = ${min_dist}`)
-        if(min_dist > biggest_min){
+        const min_dist_to_seeds = Math.min(...seeds_dist)
+        const seeds_distance_cost = (min_dist_to_seeds < 1)?10000:(100.0/min_dist_to_seeds)
+        let map_cost = shape.get_cost(samples[i])
+        const total_cost = 10*Math.pow(map_cost,1) + seeds_distance_cost
+        //console.log(`   min_dist: ${min_dist_to_seeds} , dist_cost = ${seeds_distance_cost} , map_cost = ${map_cost}`)
+        if(total_cost < best_cost){
             best_index = i
-            biggest_min = min_dist
+            best_cost = total_cost
         }
-        console.log(`min_dist = ${min_dist}`)
+        //console.log(`   total_cost = ${total_cost}`)
     }
-    //console.log(`biggest_min = ${biggest_min}`)
+    //console.log(`best_cost = ${best_cost}`)
     return samples[best_index]
 }
 
@@ -165,6 +167,10 @@ class Seeds{
         }
         this.shape.remove_path()
     }
+    best_seed_path_and_cost(){
+        //to combine both path and cost map so that they can be used at the same time
+    }
+
     add_seeds_away_from_path(nb){
         this.shape.append_path()
         for(let i=0;i<nb;i++){
@@ -268,6 +274,9 @@ class Seeds{
         }
         if(defined(params.nb_seeds)){
             this.config.nb_seeds = params.nb_seeds
+        }
+        if(defined(params.nb_samples)){
+            this.config.nb_samples = params.nb_samples
         }
         if(defined(params.max_seeds)){
             this.config.max_seeds = params.max_seeds

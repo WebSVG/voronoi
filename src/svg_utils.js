@@ -67,7 +67,7 @@ class Svg{
                     <image x="0" y="0" xlink:href=${url} ></image>
                 </pattern>
             </defs>
-            <rect width="${w}" height="${h}" fill="url(#image)" fill-opacity="0.9"/>
+            <rect width="${w}" height="${h}" fill="url(#image)" fill-opacity="0.1"/>
         `)
     }
 
