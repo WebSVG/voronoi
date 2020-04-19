@@ -84,11 +84,12 @@ In all sampling variants, the seeds do have the neighbors distance as cost minim
 <img src="./data/grad_hor.png" width=350>
 <img src="./media/cost_map.png" width=350>
 
-# Menu commands
-## Seeds generation
-* button "generate seeds" : cleans all seeds array and start generating a new sample set.
-* checkbox group "cells", "edges", "seeds" : display or hide on the monitor window, each of the cells , their edges, and the seeds.
-* input "Seeds Number" : The total number seeds to be visible on the diagram
+In the animation below, after dropping a spiral cost map, the `Map Cost Vs Dist` slider is moved from 5 to 20 to concentrate the cells in the darker areas.
+
+<img src="./medi/../media/spiral_cost_map.gif" width=700>
+
+## SVG Path Shaped area and png seeds cost map
+<img src="./media/shape_and_map.gif">
 
 # Features details
 * Generate Voronoi Diagram

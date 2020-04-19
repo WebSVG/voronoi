@@ -11,7 +11,7 @@ class voronoi_app{
         this.parent = parent
         //const use_storage = false
         let init_needed = false
-        this.version = "50"
+        this.version = "51"
         const config = JSON.parse(localStorage.getItem("voronoi_config"))
         if(config === null){
             console.log("First time usage, no config stored")
@@ -29,12 +29,12 @@ class voronoi_app{
 
         if(init_needed){
             this.cell_debug = 0;
-            this.min_edge = 8
+            this.min_edge = 6
             this.is_color = false//not usable yet as flickers on updates
             this.width = 0
             this.height = 0
             this.cells_shape = "cubic"
-            this.cells_space = 5
+            this.cells_space = 2
             this.vertical_view = false
             this.view_svg = {
                 cells:true,
