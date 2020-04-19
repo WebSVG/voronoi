@@ -16,76 +16,6 @@ function samples_in_rect(nb,w,h){
     return res
 }
 
-function best_seed_in_rect(seeds,samples,w,h,walls=false){
-    let best_index = 0
-    let biggest_min = 0
-    for(let i=0;i<samples.length;i++){
-        let seeds_cost = []
-        for(let j= 0;j<seeds.length;j++){
-            const d = geom.distance(samples[i],seeds[j])
-            seeds_cost.push(d)
-        }
-        if(walls){
-            seeds_cost.push(geom.walls_distance(samples[i],w,h))
-        }
-        const min_dist = Math.min(...seeds_cost)
-        if(min_dist > biggest_min){
-            best_index = i
-            biggest_min = min_dist
-        }
-    }
-    //console.log(`biggest_min = ${biggest_min}`)
-    return samples[best_index]
-}
-
-function best_seed_with_cost(seeds,samples,shape){
-    let best_index = -1
-    let best_cost = Number.MAX_VALUE;
-    //console.log(samples.length)
-    for(let i=0;i<samples.length;i++){
-        let seeds_dist = []
-        for(let j= 0;j<seeds.length;j++){
-            const d = geom.distance(samples[i],seeds[j])
-            seeds_dist.push(d)
-        }
-        const min_dist_to_seeds = Math.min(...seeds_dist)
-        const seeds_distance_cost = (min_dist_to_seeds < 1)?10000:(100.0/min_dist_to_seeds)
-        let map_cost = shape.get_cost(samples[i])
-        const total_cost = 10*Math.pow(map_cost,1) + seeds_distance_cost
-        //console.log(`   min_dist: ${min_dist_to_seeds} , dist_cost = ${seeds_distance_cost} , map_cost = ${map_cost}`)
-        if(total_cost < best_cost){
-            best_index = i
-            best_cost = total_cost
-        }
-        //console.log(`   total_cost = ${total_cost}`)
-    }
-    //console.log(`best_cost = ${best_cost}`)
-    return samples[best_index]
-}
-
-function best_seed_path_dist(seeds,samples,path_points){
-    let best_index = 0
-    let biggest_min = 0
-    for(let i=0;i<samples.length;i++){
-        let seeds_cost = []
-        for(let j= 0;j<seeds.length;j++){
-            const d = geom.distance(samples[i],seeds[j])
-            seeds_cost.push(d)
-        }
-        for(let j= 0;j<path_points.length;j++){
-            const d = geom.distance(samples[i],path_points[j])
-            seeds_cost.push(d)
-        }
-        const min_dist = Math.min(...seeds_cost)
-        if(min_dist > biggest_min){
-            best_index = i
-            biggest_min = min_dist
-        }
-    }
-    //console.log(`biggest_min = ${biggest_min}`)
-    return samples[best_index]
-}
-
 function get_closest_index(seeds,coord){
     let index_of_closest = 0
     let closest_dist = Number.MAX_VALUE
@@ -123,15 +53,6 @@ function neighbors_walls_cost(sample,seeds,w,h,walls){
         free_dist.push(geom.walls_distance(sample,w,h))
     }
     const min_free_dist = Math.min(...free_dist)
-    return ((min_free_dist < 1)?10000:(100.0/min_free_dist))
-}
-
-function path_cost(sample,path_points){
-    let path_points_dist = []
-    for(let j= 0;j<path_points.length;j++){
-        path_points_dist.push(geom.distance(sample,path_points[j]))
-    }
-    const min_free_dist = Math.min(...path_points_dist)
     return ((min_free_dist < 1)?10000:(100.0/min_free_dist))
 }
 
@@ -176,7 +97,8 @@ class Seeds{
             }
             if(use_cost_map){
                 map_cost = this.shape.get_cost(s)
-                map_cost = 10*Math.pow(map_cost,1)
+                //TODO two sliders one for map vs free_dist, and one for map exponent power
+                map_cost = 4*Math.pow(map_cost,1)
             }else{
                 map_cost = 0
             }
@@ -216,39 +138,6 @@ class Seeds{
         }
         return res
     }
-    //deprecated
-    add_seeds_in_path(nb){
-        this.shape.append_path()
-        const box = this.shape.svg_path.getBoundingClientRect();
-        for(let i=0;i<nb;i++){
-            let samples = this.samples_in_path(box)
-            let best = best_seed_path_dist(this.array,samples,this.shape.path_points)
-            //check the cost
-            const s = {
-                id:i,
-                x:best.x,
-                y:best.y
-            }
-            this.array.push(s)
-        }
-        this.shape.remove_path()
-    }
-    add_seeds_away_from_path(nb){
-        this.shape.append_path()
-        for(let i=0;i<nb;i++){
-            let samples = samples_in_rect(this.config.nb_samples,this.config.area.width,this.config.area.height)
-            let best = best_seed_path_dist(this.array,samples,this.shape.path_points)
-            //check the cost
-            const s = {
-                id:i,
-                x:best.x,
-                y:best.y
-            }
-            this.array.push(s)
-        }
-        this.shape.remove_path()
-    }
-    //only aading function
     add_seeds(nb){
         const w = this.config.area.width
         const h = this.config.area.height

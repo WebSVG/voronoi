@@ -9,7 +9,7 @@ class Shape{
         this.path_used = false
         this.map_used = false
         this.svg_path = null
-        this.img = {url:"",el:null,canvas:null}
+        this.map = {url:"",img:null,canvas:null}
         this.svg_string = ""
         this.path_points = []
         this.cells_action_list = ["in_cells","cut_off","all"]
@@ -38,6 +38,29 @@ class Shape{
         }
         if(defined(params.shape_seeds)){
             this.config.seeds_action = params.shape_seeds
+        }
+        if(defined(params.map)){
+            if(params.map == "clear"){
+                this.clear_map()
+            }else if(params.map == "sine"){
+                //this.sine_map(params.w,params.h)
+            }
+        }
+        if(defined(params.path_file)){
+            if(params.path_file == "clear"){
+                this.clear_path()
+            }else{
+                //fetch(`./data/${params.path_file}.svg`)
+                //.then(response => response.text())
+                //.then((svg_text) => {
+                //    let is_taken = this.load_path(svg_text)
+                //    if(is_taken){
+                //        //TODO switch to event based seeds / voronoi update
+                //        //this.seeds.update({clear:true})
+                //        //this.compute_voronoi()
+                //    }
+                //})
+            }
         }
     }
 
@@ -95,8 +118,8 @@ class Shape{
     }
     draw_map(svg_el){
         let group = html(svg_el,"g",/*html*/`<g id="svg_g_shape_map"/>`)
-        svg.pattern(svg_el,this.img.url,this.img.el.width,this.img.el.height)
-        //image(group,this.img.url)
+        svg.pattern(svg_el,this.map.url,this.map.img.width,this.map.img.height)
+        //image(group,this.map.url)
     }
     draw(svg_el){
         if(this.path_used){
@@ -107,7 +130,17 @@ class Shape{
         }
     }
 
-    load_path(svg_file){
+    clear_map(){
+        this.map_used = false
+        this.map = {url:"",img:null,canvas:null}
+    }
+    clear_path(){
+        this.path_used = false
+        this.svg_path = null
+        this.svg_string = ""
+        this.path_points = []
+    }
+    load_path(svg_file,done){
         let is_taken = false
 
         let template = document.createElement("template")
@@ -143,6 +176,7 @@ class Shape{
         }
         if(is_taken){
             this.path_used = true
+            done()
         }
         return is_taken
     }
@@ -150,27 +184,36 @@ class Shape{
         if(!this.map_used){
             return 0
         }
-        if((s.x>=this.img.el.width) ||(s.y>=this.img.el.height)){
+        if((s.x>=this.map.img.width) ||(s.y>=this.map.img.height)){
             return 10000
         }
-        let val = this.img.canvas.getContext('2d').getImageData(s.x,s.y,1,1).data[0]
+        let val = this.map.canvas.getContext('2d').getImageData(s.x,s.y,1,1).data[0]
         return (val / 255.0) 
     }
+    sine_map(w,h){
+        this.map.img = document.createElement("img");
+        //console.log(`image loaded (${that.map.img.width},${that.map.img.height})`)
+        this.map_used = true
+        let cv = document.createElement('canvas');
+        this.map.canvas = cv
+        cv.width = w;
+        cv.height = h;
+        //cv.getContext('2d').drawImage(that.map.img, 0, 0, cv.width,cv.height);
+    }
     load_cost_map(array_buffer,done){
-
         var blob = new Blob([array_buffer], {type: 'image/png'});
-        this.img.url = URL.createObjectURL(blob);
-        this.img.el = document.createElement("img");
-        this.img.el.setAttribute('src', this.img.url);
+        this.map.url = URL.createObjectURL(blob);
+        this.map.img = document.createElement("img");
+        this.map.img.setAttribute('src', this.map.url);
         let that = this
-        $(this.img.el).on("load",()=>{
-            console.log(`image loaded (${that.img.el.width},${that.img.el.height})`)
+        $(this.map.img).on("load",()=>{
+            console.log(`image loaded (${that.map.img.width},${that.map.img.height})`)
             that.map_used = true
             let cv = document.createElement('canvas');
-            that.img.canvas = cv
-            cv.width = that.img.el.width;
-            cv.height = that.img.el.height;
-            cv.getContext('2d').drawImage(that.img.el, 0, 0, cv.width,cv.height);
+            that.map.canvas = cv
+            cv.width = that.map.img.width;
+            cv.height = that.map.img.height;
+            cv.getContext('2d').drawImage(that.map.img, 0, 0, cv.width,cv.height);
             done()
         })
     }

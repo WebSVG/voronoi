@@ -150,16 +150,40 @@ class voronoi_app{
         if(defined(params.shape_cells)){
             this.draw()
         }
+        if(defined(params.map)){
+            // && (this.shape.map_used)
+            //TODO shall be events based
+            if(params.map == "clear"){
+                this.seeds.update({clear:true})
+                this.compute_voronoi()
+            }else{
+                fetch(`./data/${params.map}.png`)
+                .then(response => response.arrayBuffer())
+                .then((image_buffer) => {
+                    this.shape.load_cost_map(image_buffer,()=>{
+                        this.seeds.update({clear:true})
+                        this.compute_voronoi()
+                    })
+                })
+            }
+        }
         if(defined(params.path_file)){
-            fetch(`./data/${params.path_file}.svg`)
-            .then(response => response.text())
-            .then((svg_text) => {
-                let is_taken = this.shape.load_path(svg_text)
-                if(is_taken){
-                    this.seeds.update({clear:true})
-                    this.compute_voronoi()
-                }
-            })
+            if((params.path_file == "clear")){
+                //if(this.shape.path_used){
+                //TODO cannot be checked so has to happen event based
+                //workaround, keep always resampling even if no path to clear
+                this.seeds.update({clear:true})
+                this.compute_voronoi()
+            }else{
+                fetch(`./data/${params.path_file}.svg`)
+                .then(response => response.text())
+                .then((svg_text) => {
+                    this.shape.load_path(svg_text,()=>{
+                        this.seeds.update({clear:true})
+                        this.compute_voronoi()
+                    })
+                })
+            }
         }
     }
 
@@ -196,12 +220,11 @@ class voronoi_app{
         console.log("svg dropped")
         const vor_context = this
         reader.onloadend = function(e) {
-            let is_taken = vor_context.shape.load_path(this.result);
-            if(is_taken){
+            vor_context.shape.load_path(this.result,()=>{
                 vor_context.seeds.update({clear:true})
                 vor_context.compute_voronoi()
-            }
-        };
+            })
+};
     }
     load_dropped_png(reader){
         console.log("png dropped")

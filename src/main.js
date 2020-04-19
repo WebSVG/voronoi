@@ -56,7 +56,7 @@ function menu_export(parent){
             <p align="center">User Guide and Source Code</p>
         </p>
     </a>`)
-    html(ecol4,"p",/*html*/`<p align="center">v18.04.2020</p>`)
+    html(ecol4,"p",/*html*/`<p align="center">v19.04.2020</p>`)
 
     $(btn_save_svg).click(()=>{
         vor.save_svg("voronoi_svg_export.svg")
@@ -145,9 +145,14 @@ function menu_generate_view(parent){
         vor.update_seeds({clear:true})//clear = true
     })
 
-    const list = ["cell","circle","face"]
+    let list = ["cell","circle","clear"]
     bs.dropdown(parent,"Select Shape",list,list,(e)=>{
         vor.update({path_file:e.target.getAttribute("data-label")})
+    })
+
+    list = ["gradient","sine","clear"]
+    bs.dropdown(parent,"Select Map",list,list,(e)=>{
+        vor.update({map:e.target.getAttribute("data-label"),w:vor.width,h:vor.height})
     })
 
 }
@@ -162,7 +167,7 @@ function menu_nb_seeds(parent){
 
     let toggle_walls = bs.toggle(parent,"walls away","walls stick")
     toggle_walls.checked = scfg.walls_dist
-    let in_sampling  = bs.input_text(parent,"in_nb_samples",`${scfg.nb_samples} samples`);
+    let in_sampling  = bs.input_text(parent,"in_nb_samples",`${scfg.nb_samples} samples`,"w-50");
 
     $(rg_nb_seeds).on("input",(e)=>{
         in_nb_seeds.value = rg_nb_seeds.value
@@ -279,7 +284,7 @@ function main(){
         vor.change_parent(svg_col,"100%","100%")
         exp_col = menu_col
     }else{
-        bs_cols = bs.cols(b,5,["col-2","col-4","col-1","col-2","col"])
+        bs_cols = bs.cols(b,5,["col-2","col-3","col-1","col-2","col"])
         exp_col = b
     }
 

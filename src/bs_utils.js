@@ -46,7 +46,7 @@ class Bootstrap{
     dropdown(parent,dropdown_label,droplist,dropitems,callback){
         let dropdown = html(parent,"div",/*html*/`<div class="dropdown"></div>`)
         let button = html(dropdown,"button",/*html*/`
-            <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <button class="btn btn-primary dropdown-toggle w-100 m-1" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 ${dropdown_label}
             </button>`)
         let dropdown_menu = html(dropdown,"div",/*html*/`<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
@@ -62,7 +62,7 @@ class Bootstrap{
     //classes : ml-1
     toggle(parent,on="On",off="Off"){
         return html(parent,"input",
-        /*html*/`<input type="checkbox" class="ml-1" data-height="20" checked data-toggle="toggle" data-on="${on}" data-off="${off}" >`)
+        /*html*/`<input type="checkbox" class="m-1" data-height="20" checked data-toggle="toggle" data-on="${on}" data-off="${off}" >`)
     }
     
     radio_group(parent,name,labels_list,nb_checked,callback=null){
