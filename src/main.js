@@ -29,13 +29,13 @@ function menu_export(parent){
 
 
 
-    html(ecol2,"p",/*html*/`<p align="center">Shape Cells</p>`)
+    html(ecol2,"p",/*html*/`<p align="center">Shape cells view</p>`)
     let rg_list = vor.shape.cells_action_list
     let sact_index = rg_list.findIndex((shape)=>{return (shape == vor.shape.config.cells_action)})
     let rg_cells = bs.radio_group(ecol2,"rgg_shape_cells",rg_list,sact_index)
     rg_cells.forEach((el)=>{$(el).change((e)=>{vor.update({shape_cells:e.target.getAttribute("data-label")})})})
 
-    html(ecol3,"p",/*html*/`<p align="center">Seeds Sampling</p>`)
+    html(ecol3,"p",/*html*/`<p align="center">Shape seeds sample</p>`)
     rg_list = vor.shape.seeds_action_list
     sact_index = rg_list.findIndex((shape)=>{return (shape == vor.shape.config.seeds_action)})
     let rg_seeds = bs.radio_group(ecol3,"rgg_shpae_seeds",rg_list,sact_index)

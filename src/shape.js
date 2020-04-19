@@ -6,7 +6,8 @@ let geom = new Geometry()
 let svg = new Svg()
 class Shape{
     constructor(){
-        this.used = "nothing"//["nothing","path","map"]
+        this.path_used = false
+        this.map_used = false
         this.svg_path = null
         this.img = {url:"",el:null,canvas:null}
         this.svg_string = ""
@@ -41,11 +42,11 @@ class Shape{
     }
 
     append_path(){
-        if(this.used != "path"){return}
+        if(!this.path_used){return}
         this.parent.appendChild(this.svg_path)
     }
     remove_path(){
-        if(this.used != "path"){return}
+        if(!this.path_used){return}
         if(this.svg_path.parentElement != null){
             this.svg_path.parentElement.removeChild(this.svg_path)
         }
@@ -53,20 +54,23 @@ class Shape{
     }
 
     sample_inside_path(){
-        return ((this.used=="path") && (this.config.seeds_action=="inside"))
+        return ((this.path_used) && (this.config.seeds_action=="inside"))
     }
-    sample_avoid_path(){
-        return ((this.used=="path") && (this.config.seeds_action=="avoid_path"))
+    use_cost_path(){//valid for both "inside" and "avoid_path"
+        return ((this.path_used) && (this.config.seeds_action!="ignore"))
     }
-    sample_symmetric(){
-        return ((this.used=="path") && (this.config.seeds_action=="symmetric"))
-    }
-    sample_with_cost(){
-        return (this.used=="map")
+    //sample_avoid_path(){
+    //    return ((this.path_used) && (this.config.seeds_action=="avoid_path"))
+    //}
+    //sample_symmetric_path(){
+    //    return ((this.path_used) && (this.config.seeds_action=="symmetric"))
+    //}
+    use_cost_map(){
+        return (this.map_used)
     }
 
     show_inside_path(){
-        return ((this.used=="path") && (this.config.cells_action=="in_cells" || this.config.cells_action=="but_off"))
+        return ((this.path_used) && (this.config.cells_action=="in_cells" || this.config.cells_action=="cut_off"))
     }
 
     draw_path(svg_el){
@@ -82,11 +86,11 @@ class Shape{
         //if the user config is to draw the shape and it's of type "path", then draw it
         if(this.config.view_shape){
             html(group,"path",/*html*/`${this.svg_string}`)
-        }
-        if(this.config.debug == true){
-            this.path_points.forEach((p)=>{
-                html(group,"circle",/*html*/`<circle cx=${p.x} cy=${p.y} r="2" fill="green" />`)
-            })
+            if(this.config.debug == true){
+                this.path_points.forEach((p)=>{
+                    html(group,"circle",/*html*/`<circle cx=${p.x} cy=${p.y} r="2" fill="green" />`)
+                })
+            }
         }
     }
     draw_map(svg_el){
@@ -95,9 +99,10 @@ class Shape{
         //image(group,this.img.url)
     }
     draw(svg_el){
-        if(this.used == "path"){
+        if(this.path_used){
             this.draw_path(svg_el)
-        }else if(this.used == "map"){
+        }
+        if(this.map_used){
             this.draw_map(svg_el)
         }
     }
@@ -137,12 +142,12 @@ class Shape{
             alert(`only supported import of SVG with a single path on the top level`)
         }
         if(is_taken){
-            this.used = "path"
+            this.path_used = true
         }
         return is_taken
     }
     get_cost(s){
-        if(this.used != "map"){
+        if(!this.map_used){
             return 0
         }
         if((s.x>=this.img.el.width) ||(s.y>=this.img.el.height)){
@@ -160,7 +165,7 @@ class Shape{
         let that = this
         $(this.img.el).on("load",()=>{
             console.log(`image loaded (${that.img.el.width},${that.img.el.height})`)
-            that.used = "map"
+            that.map_used = true
             let cv = document.createElement('canvas');
             that.img.canvas = cv
             cv.width = that.img.el.width;

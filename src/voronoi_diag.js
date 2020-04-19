@@ -347,13 +347,6 @@ class voronoi_diag{
     }
 
     update(params){
-        if(defined(params.path)){
-            this.config.area.type = "path"
-            this.path_svg = params.path
-            this.path_id = params.id
-            this.path_points = geom.compute_path_points(this.path_svg,20)
-            //clear to restart a new sampling on the new path
-        }
         if(defined(params.cell_debug)){
             this.config.cell_debug = params.cell_debug
         }
@@ -389,9 +382,6 @@ class voronoi_diag{
             }
             this.shape.remove_path()
         }
-        if(this.config.cell_debug != 0){
-            this.draw_path_debug()
-        }
     }
 
     draw_edges(params){
@@ -403,36 +393,6 @@ class voronoi_diag{
             d = d + `M ${e.va.x} ${e.va.y} L ${e.vb.x} ${e.vb.y} `
         })
         return html(group,"path",/*html*/`<path id="svg_path_edges" d="${d}" stroke="black" stroke-width="2" />`)
-    }
-
-    draw_path_debug(){
-        let t2p = (text)=>{
-            let [x,y] = text.split(",")
-            return {x:x,y:y}
-        }
-        if(this.config.area.type == "path"){
-            this.path_points.forEach((p)=>{
-                html(svg.el,"circle",/*html*/`<circle cx=${p.x} cy=${p.y} r="2" fill="green" />`)
-            })
-            let d = this.path_svg.getAttribute("d")
-            let commands = d.split(" ")
-            for(let i=0;i<commands.length;i++){
-                let c = commands[i]
-                //console.log(c)
-                if(c.startsWith("M")){
-                    let point = t2p(c.substring(1))
-                    html(svg.el,"circle",/*html*/`<circle cx=${point.x} cy=${point.y} r="4" fill="red" />`)
-                    const c_next = t2p(commands[i+1].substring(1))
-                    svg.pline(point, c_next,"red")
-                }
-                if(c.startsWith("C")){
-                    let point = t2p(commands[i+1])
-                    html(svg.el,"circle",/*html*/`<circle cx=${point.x} cy=${point.y} r="4" fill="black" />`)
-                    svg.pline(point, t2p(commands[i+2]),"black")
-                }
-            }
-            //console.log(commands)
-        }
     }
 }
 

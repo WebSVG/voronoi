@@ -143,6 +143,10 @@ class voronoi_app{
         if(defined(params.view_shape)){
             this.draw()
         }
+        if(defined(params.shape_seeds)){
+            this.seeds.update({clear:true})
+            this.compute_voronoi()
+        }
         if(defined(params.shape_cells)){
             this.draw()
         }
@@ -152,10 +156,16 @@ class voronoi_app{
             .then((svg_text) => {
                 let is_taken = this.shape.load_path(svg_text)
                 if(is_taken){
+                    this.seeds.update({clear:true})
                     this.compute_voronoi()
                 }
             })
         }
+    }
+
+    update_seeds(params){
+        this.seeds.update(params)
+        this.compute_voronoi()
     }
 
     update_size(clear){
@@ -178,11 +188,6 @@ class voronoi_app{
         svg.save(fileName,svg_out)
     }
 
-    update_seeds(params){
-        this.seeds.update(params)
-        this.compute_voronoi()
-    }
-
     save_seeds(fileName){
         this.seeds.save(fileName)
     }
@@ -193,6 +198,7 @@ class voronoi_app{
         reader.onloadend = function(e) {
             let is_taken = vor_context.shape.load_path(this.result);
             if(is_taken){
+                vor_context.seeds.update({clear:true})
                 vor_context.compute_voronoi()
             }
         };
@@ -202,7 +208,10 @@ class voronoi_app{
         const vor_context = this
         reader.onloadend = function(e) {
             vor_context.shape.load_cost_map(this.result,
-                ()=>{vor_context.compute_voronoi()});
+                ()=>{
+                    vor_context.seeds.update({clear:true})
+                    vor_context.compute_voronoi()
+                });
         };
     }
     load_dropped_seeds(reader){

@@ -41,7 +41,7 @@ function best_seed_in_rect(seeds,samples,w,h,walls=false){
 function best_seed_with_cost(seeds,samples,shape){
     let best_index = -1
     let best_cost = Number.MAX_VALUE;
-    console.log(samples.length)
+    //console.log(samples.length)
     for(let i=0;i<samples.length;i++){
         let seeds_dist = []
         for(let j= 0;j<seeds.length;j++){
@@ -99,6 +99,41 @@ function get_closest_index(seeds,coord){
     return index_of_closest
 }
 
+function neighbors_walls_path_cost(sample,seeds,w,h,walls,path_points){
+    let free_dist = []
+    for(let j= 0;j<seeds.length;j++){
+        free_dist.push(geom.distance(sample,seeds[j]))
+    }
+    if(walls){
+        free_dist.push(geom.walls_distance(sample,w,h))
+    }
+    for(let j= 0;j<path_points.length;j++){
+        free_dist.push(geom.distance(sample,path_points[j]))
+    }
+    const min_free_dist = Math.min(...free_dist)
+    return ((min_free_dist < 1)?10000:(100.0/min_free_dist))
+}
+
+function neighbors_walls_cost(sample,seeds,w,h,walls){
+    let free_dist = []
+    for(let j= 0;j<seeds.length;j++){
+        free_dist.push(geom.distance(sample,seeds[j]))
+    }
+    if(walls){
+        free_dist.push(geom.walls_distance(sample,w,h))
+    }
+    const min_free_dist = Math.min(...free_dist)
+    return ((min_free_dist < 1)?10000:(100.0/min_free_dist))
+}
+
+function path_cost(sample,path_points){
+    let path_points_dist = []
+    for(let j= 0;j<path_points.length;j++){
+        path_points_dist.push(geom.distance(sample,path_points[j]))
+    }
+    const min_free_dist = Math.min(...path_points_dist)
+    return ((min_free_dist < 1)?10000:(100.0/min_free_dist))
+}
 
 class Seeds{
     constructor(shape){
@@ -114,10 +149,6 @@ class Seeds{
         this.config.nb_samples = 10
         this.config.walls_dist = true
         this.config.path_debug = false
-
-
-        this.path_svg = null
-        this.path_points = []
     }
     load_config(cfg){
         this.config = cfg
@@ -125,7 +156,41 @@ class Seeds{
             this.config.area.type = "rect"
         }
     }
-
+    //cost selection
+    best_seed_path_and_cost(samples){
+        const seeds = this.array
+        const w = this.config.area.width
+        const h = this.config.area.height
+        let best_index = -1
+        let best_cost = Number.MAX_VALUE;
+        const use_cost_map = this.shape.use_cost_map()
+        const use_cost_path = this.shape.use_cost_path()
+        //console.log(samples.length)
+        for(let i=0;i<samples.length;i++){
+            let free_dist_cost,map_cost
+            const s = samples[i]
+            if(use_cost_path){
+                free_dist_cost = neighbors_walls_path_cost(s,seeds,w,h,this.config.walls_dist,this.shape.path_points)
+            }else{
+                free_dist_cost = neighbors_walls_cost(s,seeds,w,h,this.config.walls_dist)
+            }
+            if(use_cost_map){
+                map_cost = this.shape.get_cost(s)
+                map_cost = 10*Math.pow(map_cost,1)
+            }else{
+                map_cost = 0
+            }
+            const total_cost = free_dist_cost + map_cost
+            //console.log(`   costs = path:${free_dist_cost.toFixed(2)} , total:${total_cost.toFixed(2)}`)
+            if(total_cost < best_cost){
+                best_index = i
+                best_cost = total_cost
+            }
+        }
+        //console.log(`bset dist = ${best_cost.toFixed(2)}`)
+        return samples[best_index]
+    }
+    //sampling
     try_sample_in_path(box){
         let x,y
         let max_iter = 100
@@ -151,6 +216,7 @@ class Seeds{
         }
         return res
     }
+    //deprecated
     add_seeds_in_path(nb){
         this.shape.append_path()
         const box = this.shape.svg_path.getBoundingClientRect();
@@ -167,10 +233,6 @@ class Seeds{
         }
         this.shape.remove_path()
     }
-    best_seed_path_and_cost(){
-        //to combine both path and cost map so that they can be used at the same time
-    }
-
     add_seeds_away_from_path(nb){
         this.shape.append_path()
         for(let i=0;i<nb;i++){
@@ -186,29 +248,31 @@ class Seeds{
         }
         this.shape.remove_path()
     }
-    get_best_seed_in_rect(id,w,h){
-        let samples = samples_in_rect(this.config.nb_samples,w,h)
-        //console.log(samples)
-        let best_seed
-        if(this.shape.sample_with_cost()){
-            best_seed = best_seed_with_cost(this.array,samples,this.shape)
-        }else{
-            best_seed = best_seed_in_rect(this.array,samples,w,h,this.config.walls_dist)
+    //only aading function
+    add_seeds(nb){
+        const w = this.config.area.width
+        const h = this.config.area.height
+        const inside_path = this.shape.sample_inside_path()
+        let box = null
+        if(inside_path){
+            this.shape.append_path()
+            box = this.shape.svg_path.getBoundingClientRect()
         }
-        return {
-            id:id,
-            x:best_seed.x,
-            y:best_seed.y
-        }
-    }
-    add_seeds_in_rect(nb){
-        const prev_nb = this.array.length
         for(let i=0;i<nb;i++){
-            const new_id = prev_nb+i
-            const s = this.get_best_seed_in_rect(new_id,this.config.area.width,this.config.area.height)
-            this.array.push(s)
+            let samples
+            if(inside_path){
+                samples = this.samples_in_path(box)
+            }else{
+                samples = samples_in_rect(this.config.nb_samples,w,h)
+            }
+            let best_seed = this.best_seed_path_and_cost(samples)
+            this.array.push(best_seed)
+        }
+        if(inside_path){
+            this.shape.remove_path()
         }
     }
+
     seed_outside_rect(coord){
         if(coord.x > this.config.area.width){
             return true
@@ -234,13 +298,7 @@ class Seeds{
             }
         }else if(this.config.nb_seeds > this.array.length){
             const nb_seeds_to_add = this.config.nb_seeds - this.array.length
-            if(this.shape.sample_inside_path()){
-                this.add_seeds_in_path(nb_seeds_to_add)
-            }else if(this.shape.sample_avoid_path()){
-                this.add_seeds_away_from_path(nb_seeds_to_add)
-            }else{
-                this.add_seeds_in_rect(nb_seeds_to_add)
-            }
+            this.add_seeds(nb_seeds_to_add)
         }
     }
     reset_seeds_id(){
