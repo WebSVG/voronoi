@@ -27,9 +27,13 @@ class Bootstrap{
         return input_txt
     }
     
-    input_range(parent,max){
-        return html(parent,"input",
+    input_range(parent,max,value=null){
+        let el = html(parent,"input",
         /*html*/`<input type="range" class="custom-range" max=${max} >`)
+        if(value!=null){
+            el.value = value
+        }
+        return el
     }
     
     cols(parent,nb_cols,props=null){

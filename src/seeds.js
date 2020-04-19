@@ -1,4 +1,4 @@
-import { defined,html,save_json } from "./utils.js"
+import { defined,html,save_json,send} from "./utils.js"
 import {Svg} from "./svg_utils.js"
 import {Geometry} from "./geometry.js"
 
@@ -65,11 +65,15 @@ class Seeds{
         this.config.is_debug = false
         this.config.debug_id = 0
         this.config.nb_seeds = 30
-        this.config.max_seeds = 50
+        this.config.max_seeds = 200
         this.config.area = {type:"rect",width:400,height:200}
         this.config.nb_samples = 10
         this.config.walls_dist = true
         this.config.path_debug = false
+        this.config.map_vs_dist = 10
+        this.config.map_vs_dist_max = 30
+        this.config.map_power = 1
+        this.config.map_power_range = {min:0.1,max:3,step:0.1}
     }
     load_config(cfg){
         this.config = cfg
@@ -97,8 +101,7 @@ class Seeds{
             }
             if(use_cost_map){
                 map_cost = this.shape.get_cost(s)
-                //TODO two sliders one for map vs free_dist, and one for map exponent power
-                map_cost = 4*Math.pow(map_cost,1)
+                map_cost = this.config.map_vs_dist*Math.pow(map_cost,this.config.map_power)
             }else{
                 map_cost = 0
             }
@@ -230,6 +233,14 @@ class Seeds{
         }
         if(defined(params.walls_dist)){
             this.config.walls_dist = params.walls_dist
+        }
+        if(defined(params.map_vs_dist)){
+            this.config.map_vs_dist = params.map_vs_dist
+            send("vor_app",{type:"seeds",context:params.context})
+        }
+        if(defined(params.map_power)){
+            this.config.map_power = params.map_power
+            send("vor_app",{type:"seeds",context:params.context})
         }
         if(defined(params.width)){
             this.config.area.width = params.width

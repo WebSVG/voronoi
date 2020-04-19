@@ -12,6 +12,11 @@ function suid(){
     return sub+"_"+Math.floor(Math.random() * 10000)
 }
 
+function send(event_name,data){
+	var event = new CustomEvent(event_name, {detail:data});
+	window.dispatchEvent(event);
+}
+
 function html(parent,tagName,svg_text){
     parent.insertAdjacentHTML("beforeend",svg_text);
     let elements = parent.getElementsByTagName(tagName);
@@ -69,5 +74,6 @@ export{
     rand_col,
     image,
     uid,
-    suid
+    suid,
+    send
 }

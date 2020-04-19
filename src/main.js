@@ -41,12 +41,6 @@ function menu_export(parent){
     let rg_seeds = bs.radio_group(ecol3,"rgg_shpae_seeds",rg_list,sact_index)
     rg_seeds.forEach((el)=>{$(el).change((e)=>{vor.update({shape_seeds:e.target.getAttribute("data-label")})})})
 
-    bs.checkbox_group(ecol2,"cbx_shape",["view_shape"],[vor.shape.config.view_shape],(e)=>{
-                            let msg = {}
-                            msg[e.target.getAttribute("data-name")] = e.target.checked
-                            console.log(msg)
-                            vor.update(msg)
-                        })
 
 
     html(ecol4,"a",/*html*/`<a>
@@ -145,12 +139,12 @@ function menu_generate_view(parent){
         vor.update_seeds({clear:true})//clear = true
     })
 
-    let list = ["cell","circle","clear"]
+    let list = ["circle","cell","clear"]
     bs.dropdown(parent,"Select Shape",list,list,(e)=>{
         vor.update({path_file:e.target.getAttribute("data-label")})
     })
 
-    list = ["gradient","sine","clear"]
+    list = ["grad_hor","center","grad_vert_up_down","spiral_1","spiral_2","conical","clear"]
     bs.dropdown(parent,"Select Map",list,list,(e)=>{
         vor.update({map:e.target.getAttribute("data-label"),w:vor.width,h:vor.height})
     })
@@ -163,7 +157,7 @@ function menu_nb_seeds(parent){
     let in_nb_seeds = bs.input_text(parent,"in_nb_seed",`${scfg.nb_seeds} seeds`,"w-100");
     let rg_nb_seeds = bs.input_range(parent,scfg.max_seeds)
     rg_nb_seeds.value = scfg.nb_seeds
-    let in_max_seeds = bs.input_text(parent,"in_max_seed",`enter max seeds, current ${scfg.max_seeds}`,"w-100");
+    let in_max_seeds = bs.input_text(parent,"in_max_seed",`set to increase max seeds, ${scfg.max_seeds}`,"w-100");
 
     let toggle_walls = bs.toggle(parent,"walls away","walls stick")
     toggle_walls.checked = scfg.walls_dist
@@ -202,28 +196,41 @@ function menu_nb_seeds(parent){
 }
 
 function menu_svg_size(parent){
-    html(parent,"a",/*html*/`<a style="margin:5px">View width height</a>`)
+    let scfg = vor.seeds.config
+    html(parent,"a",/*html*/`<a style="margin:5px">View width</a>`)
     let in_width = bs.input_text(parent,"in_width",`${vor.max_width} max width`,"w-100");
-    let rg_width = bs.input_range(parent,vor.max_width)
-    rg_width.value = vor.width
     if(vor.width != vor.max_width){
         in_width.value = vor.width
     }
+    html(parent,"a",/*html*/`<a style="margin:5px">View height</a>`)
     let in_height = bs.input_text(parent,"in_height",`${vor.max_height} max height`,"w-100");
-    let rg_height = bs.input_range(parent,vor.max_height)
-    rg_height.value = vor.height
     if(vor.height != vor.max_height){
         in_height.value = vor.height
     }
 
+    let label_cost = html(parent,"a",/*html*/`<a style="margin:5px">Map Cost Vs Dist ${scfg.map_vs_dist}</a>`)
+    let rg_cost = bs.input_range(parent,scfg.map_vs_dist_max,scfg.map_vs_dist)
+    $(rg_cost).on("input",(e)=>{
+        label_cost.innerHTML = `Map Cost Vs Dist ${rg_cost.value}`
+        vor.update({map_vs_dist:rg_cost.value})
+    })
+    //let label_map = html(parent,"a",/*html*/`<a style="margin:5px">Map Power ${scfg.map_power}</a>`)
+    let rg_map = bs.input_range(parent,scfg.map_power_range.max,scfg.map_power)
+    rg_map.min = scfg.map_power_range.min
+    rg_map.step = scfg.map_power_range.step
+    $(rg_map).on("input",(e)=>{
+        //label_map.innerHTML = `Map Power ${rg_map.value}`
+        console.log(`Map Power ${rg_map.value}`)
+        vor.update({map_power:rg_map.value})
+    })
+
+
     $(in_width).change(()=>{
         if(in_width.value <= vor.max_width){
-            rg_width.value = in_width.value
             vor.width = in_width.value
         }
         if(in_width.value >= vor.max_width){
             in_width.value = null
-            rg_width.value = vor.max_width
             vor.width = vor.max_width
         }
         vor.update_size(false)
@@ -231,34 +238,15 @@ function menu_svg_size(parent){
 
     $(in_height).change(()=>{
         if(in_height.value <= vor.max_height){
-            rg_height.value = in_height.value
             vor.height = in_height.value
         }
         if(in_height.value >= vor.max_height){
             in_height.value = null
-            rg_height.value = vor.max_height
             vor.height = vor.max_height
         }
         vor.update_size(false)
     })
 
-    $(rg_width).on("input",(e)=>{
-        in_width.value = rg_width.value
-        vor.width = in_width.value
-        if(rg_width.value == vor.max_width){
-            in_width.value = null
-        }
-        vor.update_size(false)
-    })
-
-    $(rg_height).on("input",(e)=>{
-        in_height.value = rg_height.value
-        vor.height = in_height.value
-        if(rg_height.value == vor.max_height){
-            in_height.value = null
-        }
-        vor.update_size(false)
-    })
 }
 
 function menu_mouse(parent){
@@ -269,24 +257,23 @@ function menu_mouse(parent){
         vor.mouse_action = e.target.getAttribute("data-label")
         vor.store()
     })
+
+    html(parent,"a",/*html*/`<a style="margin:10px">View</a>`)
+    bs.checkbox_group(parent,"cbx_shape",["view_shape"],[vor.shape.config.view_shape],(e)=>{
+        let msg = {}
+        msg[e.target.getAttribute("data-name")] = e.target.checked
+        vor.update(msg)
+    })
+    bs.checkbox_group(parent,"cbx_map",["view_map"],[vor.shape.config.view_map],(e)=>{
+        let msg = {}
+        msg[e.target.getAttribute("data-name")] = e.target.checked
+        vor.update(msg)
+    })
 }
 
 function main(){
 
-    let bs_cols = []
-    let exp_col;
-
-    if(vor.vertical_view){
-        let [svg_col,menu_col] = bs.cols(b,2,["col","col"])
-        let [r1_col1,r1_col2,r1_col3] = bs.cols(menu_col,3,["col-4","col","col-1"])
-        let [r2_col1,r2_col2] = bs.cols(menu_col,2,["col-4","col"])
-        bs_cols = [r1_col1,r1_col2,r1_col3,r2_col1,r2_col2]
-        vor.change_parent(svg_col,"100%","100%")
-        exp_col = menu_col
-    }else{
-        bs_cols = bs.cols(b,5,["col-2","col-3","col-1","col-2","col"])
-        exp_col = b
-    }
+    let bs_cols = bs.cols(b,5,["col-2","col-3","col-2","col-2","col"])
 
     let [col0,col1,col2,col3,col4] = bs_cols
 
@@ -295,7 +282,7 @@ function main(){
     menu_shape_space_min(col4)
     menu_mouse(col2)
 
-    menu_export(exp_col)
+    menu_export(b)
 
     $(document).ready(()=>{
         vor.update_size(true)

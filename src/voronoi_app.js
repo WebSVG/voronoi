@@ -11,7 +11,7 @@ class voronoi_app{
         this.parent = parent
         //const use_storage = false
         let init_needed = false
-        this.version = "43"
+        this.version = "50"
         const config = JSON.parse(localStorage.getItem("voronoi_config"))
         if(config === null){
             console.log("First time usage, no config stored")
@@ -131,6 +131,7 @@ class voronoi_app{
     }
 
     update(params){
+        params.context = this
         this.diagram.update(params)
         this.seeds.update(params)
         this.shape.update(params)
@@ -138,9 +139,6 @@ class voronoi_app{
             this.draw()
         }
         if(defined(params.debug)){
-            this.draw()
-        }
-        if(defined(params.view_shape)){
             this.draw()
         }
         if(defined(params.shape_seeds)){
@@ -161,24 +159,6 @@ class voronoi_app{
                 .then(response => response.arrayBuffer())
                 .then((image_buffer) => {
                     this.shape.load_cost_map(image_buffer,()=>{
-                        this.seeds.update({clear:true})
-                        this.compute_voronoi()
-                    })
-                })
-            }
-        }
-        if(defined(params.path_file)){
-            if((params.path_file == "clear")){
-                //if(this.shape.path_used){
-                //TODO cannot be checked so has to happen event based
-                //workaround, keep always resampling even if no path to clear
-                this.seeds.update({clear:true})
-                this.compute_voronoi()
-            }else{
-                fetch(`./data/${params.path_file}.svg`)
-                .then(response => response.text())
-                .then((svg_text) => {
-                    this.shape.load_path(svg_text,()=>{
                         this.seeds.update({clear:true})
                         this.compute_voronoi()
                     })
@@ -219,12 +199,7 @@ class voronoi_app{
     load_dropped_svg(reader){
         console.log("svg dropped")
         const vor_context = this
-        reader.onloadend = function(e) {
-            vor_context.shape.load_path(this.result,()=>{
-                vor_context.seeds.update({clear:true})
-                vor_context.compute_voronoi()
-            })
-};
+        reader.onloadend = function(e){vor_context.shape.load_path(this.result,vor_context)};
     }
     load_dropped_png(reader){
         console.log("png dropped")
@@ -278,6 +253,19 @@ class voronoi_app{
             alert(`unsupported file format`);
         }
     }
+    vor_app_event(e){
+        const that = e.detail.context
+        if(e.detail.type == "draw"){
+            that.draw()
+        }else if(e.detail.type == "compute"){
+            that.compute_voronoi()
+            //includes draw()
+        }else if(e.detail.type == "seeds"){
+            that.seeds.update({clear:true})
+            that.compute_voronoi()
+            //includes draw()
+        }
+    }
 
     init_events(){
         $(this.svg.main).click((e)=>{
@@ -324,7 +312,10 @@ class voronoi_app{
             this.compute_voronoi()
             e.preventDefault()
         })
+
+        window.addEventListener("vor_app",this.vor_app_event,false)
     }
+    
 }
 
 

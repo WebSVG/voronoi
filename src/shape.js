@@ -1,4 +1,4 @@
-import {html, defined,image} from "./utils.js"
+import {html, defined,image,send} from "./utils.js"
 import {Geometry} from "./geometry.js"
 import {Svg} from "./svg_utils.js"
 
@@ -18,8 +18,9 @@ class Shape{
         let cfg = this.config
         cfg.cells_action = "cut_off"
         cfg.seeds_action = "ignore"
-        cfg.debug = true
+        cfg.debug = false
         cfg.view_shape = true
+        cfg.view_map = true
         this.parent = null
     }
 
@@ -32,6 +33,11 @@ class Shape{
         }
         if(defined(params.view_shape)){
             this.config.view_shape = params.view_shape
+            send("vor_app",{type:"draw",context:params.context})
+        }
+        if(defined(params.view_map)){
+            this.config.view_map = params.view_map
+            send("vor_app",{type:"draw",context:params.context})
         }
         if(defined(params.parent)){
             this.parent = params.parent
@@ -49,17 +55,13 @@ class Shape{
         if(defined(params.path_file)){
             if(params.path_file == "clear"){
                 this.clear_path()
+                send("vor_app",{type:"seeds",context:params.context})
             }else{
-                //fetch(`./data/${params.path_file}.svg`)
-                //.then(response => response.text())
-                //.then((svg_text) => {
-                //    let is_taken = this.load_path(svg_text)
-                //    if(is_taken){
-                //        //TODO switch to event based seeds / voronoi update
-                //        //this.seeds.update({clear:true})
-                //        //this.compute_voronoi()
-                //    }
-                //})
+                fetch(`./data/${params.path_file}.svg`)
+                .then(response => response.text())
+                .then((svg_text) => {
+                    this.load_path(svg_text,params.context)
+                })
             }
         }
     }
@@ -117,16 +119,17 @@ class Shape{
         }
     }
     draw_map(svg_el){
-        let group = html(svg_el,"g",/*html*/`<g id="svg_g_shape_map"/>`)
-        svg.pattern(svg_el,this.map.url,this.map.img.width,this.map.img.height)
-        //image(group,this.map.url)
+        if(this.config.view_map){
+            let group = html(svg_el,"g",/*html*/`<g id="svg_g_shape_map"/>`)
+            image(group,this.map.url)
+        }
     }
     draw(svg_el){
-        if(this.path_used){
-            this.draw_path(svg_el)
-        }
         if(this.map_used){
             this.draw_map(svg_el)
+        }
+        if(this.path_used){
+            this.draw_path(svg_el)
         }
     }
 
@@ -140,7 +143,7 @@ class Shape{
         this.svg_string = ""
         this.path_points = []
     }
-    load_path(svg_file,done){
+    load_path(svg_file,context){
         let is_taken = false
 
         let template = document.createElement("template")
@@ -163,7 +166,7 @@ class Shape{
             //check path inside window
             //check path closed
             //check path area min
-            path.setAttributeNS(null,"fill-opacity",0.1)
+            path.setAttributeNS(null,"fill-opacity",0.2)
             path.setAttributeNS(null,"fill","#115522")
             path.id = "seeds_area"
             this.svg_path = path
@@ -176,7 +179,7 @@ class Shape{
         }
         if(is_taken){
             this.path_used = true
-            done()
+            send("vor_app",{type:"seeds",context:context})
         }
         return is_taken
     }
@@ -185,7 +188,7 @@ class Shape{
             return 0
         }
         if((s.x>=this.map.img.width) ||(s.y>=this.map.img.height)){
-            return 10000
+            return 100
         }
         let val = this.map.canvas.getContext('2d').getImageData(s.x,s.y,1,1).data[0]
         return (val / 255.0) 

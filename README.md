@@ -81,7 +81,7 @@ Below is the revealed secret. There are seeds actually being sampled outside the
 
 In all sampling variants, the seeds do have the neighbors distance as cost minimzation factor. Using a shape's path, the cost add up to avoid the path with a distance. Here, a png image gray scale is used as a cost map that is weighted with the neighbors distance.
 
-<img src="./media/horizontal_gradient.png" width=350>
+<img src="./data/grad_hor.png" width=350>
 <img src="./media/cost_map.png" width=350>
 
 # Menu commands
@@ -93,6 +93,9 @@ In all sampling variants, the seeds do have the neighbors distance as cost minim
 # Features details
 * Generate Voronoi Diagram
 * Export to SVG file
+* Shaped Tesselation area with an SVG path
+* Cost map for Seeds sampling from a png file
+
   ## seeds
 * Edit seeds : add, move, remove
 * Export and import seeds (drag and drop seeds.json) and continue editing of an existing seeds set
@@ -119,8 +122,9 @@ In all sampling variants, the seeds do have the neighbors distance as cost minim
 * Browser local storage of config parameters (No storage of SVG nor seeds as they can be saved separately)
 
 # Planned features
-* use both cost map and tesselation area at the same time
-* vertical mode for longitudinal edits
+* display cost map
+* slider to weight cost map and distance
+* responsive menu areas
 * export scale with a ratio (adjusting to a given unit)
   * transform scale possible but Fusion360 ignores the scale transform
 * edges cells filet effect
