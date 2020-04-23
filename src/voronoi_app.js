@@ -4,8 +4,6 @@ import {voronoi_diag} from "./voronoi_diag.js"
 import {Seeds} from "./seeds.js"
 import { Shape } from "./shape.js"
 
-let svg = new Svg()
-
 class voronoi_app{
     constructor(parent,w,h){
         this.parent = parent
@@ -61,7 +59,6 @@ class voronoi_app{
 
         this.svg = {}
         this.svg.main = html(parent,"svg",/*html*/`<svg id="main_svg" xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"></svg>`);
-        svg.set_parent(this.svg.main)
         this.shape.update({parent:this.svg.main})
         this.svg.seeds_area = null;
 
@@ -189,6 +186,7 @@ class voronoi_app{
     save_svg(fileName){
         let svg_out = this.svg.main.cloneNode()//lazy, just for new svg creation
         this.draw_svg(svg_out,this.export_svg)
+        let svg = new Svg()
         svg.save(fileName,svg_out)
     }
 
@@ -314,9 +312,32 @@ class voronoi_app{
         })
 
         window.addEventListener("vor_app",this.vor_app_event,false)
+
+        document.addEventListener('dragenter', this.onDragEvents, false)
+        document.addEventListener('dragover', this.onDragEvents, false)
+        document.addEventListener('dragleave', this.onDragEvents, false)
+        document.addEventListener('drop', this.onDragEvents, false)
     }
-    
+
+    onDragEvents(event){
+        event.stopPropagation();
+        event.preventDefault();
+        if(event.type == "dragenter"){
+            event.dataTransfer.dropEffect = "copy";
+        }
+        if(event.type == "drop"){
+            if(event.dataTransfer.files.length != 1){
+                alert("only one file allowed");
+                console.log(event.dataTransfer.files);
+                return;
+            }else{
+                this.load_dropped_file(event.dataTransfer.files[0]);
+            }
+        };
+    }
+
 }
+
 
 
 export {voronoi_app};

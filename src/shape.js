@@ -174,6 +174,8 @@ class Shape{
             this.svg_string = s.serializeToString(path);
             is_taken = true
             this.path_points = geom.compute_path_points(path,20)
+            this.path_points.splice(0,1)
+            //console.log(this.path_points)
         }else{
             alert(`only supported import of SVG with a single path on the top level`)
         }
