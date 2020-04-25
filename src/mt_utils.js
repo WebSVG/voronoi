@@ -1,4 +1,4 @@
-import {html} from "./web-js-utils.js"
+import {html,temp} from "./web-js-utils.js"
 
 class Materialize_p{
 
@@ -30,6 +30,12 @@ class Materialize{
             col.appendChild(cols[i])
         }
         return container
+    }
+
+    button(label){
+        return temp(/*html*/`<div class="row center">
+            <a class="btn-large waves-effect waves-light orange">${label}</a>
+        </div>`)
     }
 }
 

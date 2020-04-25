@@ -4,7 +4,7 @@ import {html} from "./web-js-utils.js"
 class Bootstrap{
     button(parent,id,Text){
         return html(parent,
-        /*html*/`<button id=${id} type="button" class="btn btn-primary" style="margin:10px">${Text}</button>`
+        /*html*/`<button id=${id} type="button" class="btn btn-primary w-100" style="margin-bottom:5px;margin-top:5px">${Text}</button>`
         )
     }
     

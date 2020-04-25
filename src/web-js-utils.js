@@ -56,7 +56,7 @@ function hr(parent){
 }
 
 function image(parent,url){
-    return html_tag(parent,"image",/*html*/`
+    return html(parent,/*html*/`
         <image x="0" y="0" xlink:href=${url}></image>
     `)
 }

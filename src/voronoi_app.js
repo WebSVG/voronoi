@@ -11,7 +11,7 @@ class voronoi_app{
         this.parent = parent
         //const use_storage = false
         let init_needed = false
-        this.version = "55"
+        this.version = "56"
         const config = JSON.parse(localStorage.getItem("voronoi_config"))
         if(config === null){
             console.log("First time usage, no config stored")
@@ -31,8 +31,8 @@ class voronoi_app{
             this.cell_debug = 0;
             this.min_edge = 6
             this.is_color = false//not usable yet as flickers on updates
-            this.width = 0
-            this.height = 0
+            this.width = 720
+            this.height = 360
             this.cells_shape = "cubic"
             this.cells_space = 2
             this.vertical_view = false
@@ -73,6 +73,10 @@ class voronoi_app{
         new_parent.appendChild(this.svg.main)
         this.svg.main.setAttributeNS(null,"width",width)
         this.svg.main.setAttributeNS(null,"height",height)
+    }
+
+    set_parent_only(new_parent){
+        new_parent.appendChild(this.svg.main)
     }
 
     element(){
@@ -188,12 +192,10 @@ class voronoi_app{
         this.update_seeds({clear:clear,width:this.width,height:this.height})
     }
     resize(width,height){
-        this.svg.main.setAttributeNS(null,"width",`${width}%`)
-        this.max_width = this.svg.main.clientWidth
-        this.max_height = window.innerHeight * height / 100
-        this.svg.main.setAttributeNS(null,"height",this.max_height)
-        this.width = this.max_width
-        this.height = this.max_height
+        this.svg.main.setAttributeNS(null,"width",width)
+        this.svg.main.setAttributeNS(null,"height",height)
+        this.width = width
+        this.height = height
         console.log(`set svg ( ${this.width} , ${this.height} )`)
         this.update_seeds({clear:false,width:this.width,height:this.height})
     }
@@ -284,17 +286,17 @@ class voronoi_app{
     init_events(){
         $(this.svg.main).click((e)=>{
             if(this.mouse_action == "add"){
-                this.seeds.add({x:e.clientX, y:e.clientY})
+                this.seeds.add({x:e.offsetX, y:e.offsetY})
                 this.compute_voronoi()
             }else if(this.mouse_action == "remove"){
-                this.seeds.remove({x:e.clientX, y:e.clientY})
+                this.seeds.remove({x:e.offsetX, y:e.offsetY})
                 this.compute_voronoi()
             }
         })
         $(this.svg.main).mousemove((e)=>{
             if(this.mouse_action == "move"){
                 if(e.buttons == 1){
-                    this.seeds.move({x:e.clientX, y:e.clientY})
+                    this.seeds.move({x:e.offsetX, y:e.offsetY})
                     this.compute_voronoi()
                 }
             }
@@ -302,20 +304,20 @@ class voronoi_app{
         $(this.svg.main).on("touchmove",(e)=>{
             console.log(e.target.tagName)
             if(this.mouse_action == "move"){
-                this.seeds.move({x:e.touches[0].clientX, y:e.touches[0].clientY})
+                this.seeds.move({x:e.touches[0].offsetX, y:e.touches[0].offsetY})
                 this.compute_voronoi()
             }
         })
         $(this.svg.main).mousedown((e)=>{
             console.log("mouse down")
             if(this.mouse_action == "move"){
-                this.seeds.move({x:e.clientX, y:e.clientY})
+                this.seeds.move({x:e.offsetX, y:e.offsetY})
                 this.compute_voronoi()
             }
         })
         $(this.svg.main).on("touchstart",(e)=>{
             console.log()
-            const [x,y] = [e.touches[0].clientX,e.touches[0].clientY]
+            const [x,y] = [e.touches[0].offsetX,e.touches[0].offsetY]
             if(this.mouse_action == "add"){
                 this.seeds.add({x:x, y:y})
             }else if(this.mouse_action == "move"){
