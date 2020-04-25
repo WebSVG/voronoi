@@ -1,4 +1,4 @@
-import {defined,html,rand_col} from "./utils.js"
+import {defined,html,rand_col} from "./web-js-utils.js"
 import {Vector} from "../libs/Vector.js"
 import {Geometry} from "./geometry.js"
 import {Svg} from "./svg_utils.js"
@@ -357,7 +357,7 @@ class voronoi_diag{
         if(this.cells.length>1){//otherwise single cell has no half edges
             this.retract_cells(params)
             let conditional_clip_path = (this.shape.config.cells_action == "cut_off")?'clip-path="url(#cut-off-cells)"':''
-            let group = html(params.svg,"g",/*html*/`<g id="svg_g_bezier_cells" ${conditional_clip_path}/>`)
+            let group = html(params.svg,/*html*/`<g id="svg_g_bezier_cells" ${conditional_clip_path}/>`)
             this.shape.append_path()
             for(let i=0;i<this.cells.length;i++){
                 const c = this.cells[i]
@@ -376,8 +376,7 @@ class voronoi_diag{
                         d = c.path_edges()
                     }
                     let color = (params.color==true)?rand_col():"#221155"
-                    html(group,"path",/*html*/`<path d="${d}" fill="${color}" fill-opacity="0.2"/>`
-                    )
+                    html(group,/*html*/`<path d="${d}" fill="${color}" fill-opacity="0.2"/>`)
                 }
             }
             this.shape.remove_path()
@@ -387,12 +386,12 @@ class voronoi_diag{
     draw_edges(params){
         svg.set_parent(params.svg)
         let conditional_clip_path = (this.shape.config.cells_action == "cut_off")?'clip-path="url(#cut-off-cells)"':''
-        let group = html(params.svg,"g",/*html*/`<g id="svg_g_edges" ${conditional_clip_path} />`)
+        let group = html(params.svg,/*html*/`<g id="svg_g_edges" ${conditional_clip_path} />`)
         let d = ""
         this.edges.forEach((e)=>{
             d = d + `M ${e.va.x} ${e.va.y} L ${e.vb.x} ${e.vb.y} `
         })
-        return html(group,"path",/*html*/`<path id="svg_path_edges" d="${d}" stroke="black" stroke-width="2" />`)
+        return html(group,/*html*/`<path id="svg_path_edges" d="${d}" stroke="black" stroke-width="2" />`)
     }
 }
 

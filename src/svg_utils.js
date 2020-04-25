@@ -1,4 +1,4 @@
-import {defined,html} from "./utils.js"
+import {defined,html} from "./web-js-utils.js"
 
 class Svg{
     constructor(svg_element){
@@ -9,59 +9,59 @@ class Svg{
     }
     
     path(d,color,opacity){
-        return html(this.el,"path",
+        return html(this.el,
         /*html*/`<path d="${d}" stroke="red" stroke-width="0" fill="${color}" fill-opacity="${opacity}"/>`
         )
     }
 
     text(x,y,str){
-        html(this.el,"text",/*html*/`<text x="${x}" y="${y}">${str}</text>`)
+        html(this.el,/*html*/`<text x="${x}" y="${y}">${str}</text>`)
     }
 
     circle(x,y,params={}){
         //if(!defined(params.parent)){parent=this.el}
         let if_id = (defined(params.id))?`id=${params.id}`:""
-        return html(this.el,"circle",
+        return html(this.el,
         /*html*/`<circle ${if_id} cx=${x} cy=${y} r="3" stroke="black" stroke-width="3" fill="red" />`
         );
     }
 
     circ(x,y){
         //if(parent==null){parent=this.el}
-        return html(this.el,"circle",
+        return html(this.el,
         /*html*/`<circle cx=${x} cy=${y} r="3" stroke="black" stroke-width="3" fill="red" />`
         );
     }
     
     circle_p_id(parent,x,y,id){
-        return html(parent,"circle",
+        return html(parent,
         /*html*/`<circle id=${id} cx=${x} cy=${y} r="3" stroke="black" stroke-width="3" fill="red" />`
         );
     }
     
     eline(e,col){
         let d = `M ${e.v1.x} ${e.v1.y} L ${e.v2.x} ${e.v2.y} `
-        return html(this.el,"path",
+        return html(this.el,
         /*html*/`<path d="${d}" stroke="${col}" stroke-width="2" />`
         )
     }
     
     line(l,col){
         let d = `M ${l.p1.x} ${l.p1.y} L ${l.p2.x} ${l.p2.y} `
-        return html(this.el,"path",
+        return html(this.el,
         /*html*/`<path d="${d}" stroke="${col}" stroke-width="2" />`
         )
     }
     
     pline(v1,v2,col){
         let d = `M ${v1.x} ${v1.y} L ${v2.x} ${v2.y} `
-        return html(this.el,"path",
+        return html(this.el,
         /*html*/`<path d="${d}" stroke="${col}" stroke-width="1" />`
         )
     }
 
     pattern(parent,url,w,h){
-        return html(parent,"rect",/*html*/`
+        return html(parent,/*html*/`
             <defs>
                 <pattern id="image" x="0" y="0" patternUnits="userSpaceOnUse" height="1" width="1" >
                     <image x="0" y="0" xlink:href=${url} ></image>

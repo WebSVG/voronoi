@@ -4,7 +4,7 @@
   "description": "Parametric Voronoi generator with real time editing and SVG export",
   "main": "main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "cp node_modules\\web-js-utils\\index.js ./src/web-js-utils.js"
   },
   "repository": {
     "type": "git",
@@ -23,6 +23,8 @@
   "dependencies": {
     "bootstrap": "^4.4.1",
     "file-saver": "^2.0.2",
-    "matter-js": "^0.14.2"
+    "materialize-css": "^1.0.0",
+    "matter-js": "^0.14.2",
+    "web-js-utils": "^2.1.0"
   }
 }

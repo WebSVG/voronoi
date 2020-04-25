@@ -1,4 +1,4 @@
-import {html, defined,image,send} from "./utils.js"
+import {html, defined,image,send} from "./web-js-utils.js"
 import {Geometry} from "./geometry.js"
 import {Svg} from "./svg_utils.js"
 
@@ -99,9 +99,9 @@ class Shape{
     }
 
     draw_path(svg_el){
-        let group = html(svg_el,"g",/*html*/`<g id="svg_g_shape_path"/>`)
+        let group = html(svg_el,/*html*/`<g id="svg_g_shape_path"/>`)
         if(this.config.cells_action == "cut_off"){
-            html(group,"defs",/*html*/`
+            html(group,/*html*/`
             <defs>
                 <clipPath id="cut-off-cells">
                     ${this.svg_string}
@@ -110,17 +110,17 @@ class Shape{
         }
         //if the user config is to draw the shape and it's of type "path", then draw it
         if(this.config.view_shape){
-            html(group,"path",/*html*/`${this.svg_string}`)
+            html(group,/*html*/`${this.svg_string}`)
             if(this.config.debug == true){
                 this.path_points.forEach((p)=>{
-                    html(group,"circle",/*html*/`<circle cx=${p.x} cy=${p.y} r="2" fill="green" />`)
+                    html(group,/*html*/`<circle cx=${p.x} cy=${p.y} r="2" fill="green" />`)
                 })
             }
         }
     }
     draw_map(svg_el){
         if(this.config.view_map){
-            let group = html(svg_el,"g",/*html*/`<g id="svg_g_shape_map"/>`)
+            let group = html(svg_el,/*html*/`<g id="svg_g_shape_map"/>`)
             image(group,this.map.url)
         }
     }

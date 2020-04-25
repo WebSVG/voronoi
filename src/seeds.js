@@ -1,4 +1,4 @@
-import { defined,html,save_json,send} from "./utils.js"
+import { defined,html,save_json,send} from "./web-js-utils.js"
 import {Svg} from "./svg_utils.js"
 import {Geometry} from "./geometry.js"
 
@@ -268,7 +268,7 @@ class Seeds{
         svg.set_parent(params.svg)
         if(this.array.length > 0){
             let conditional_clip_path = (this.shape.config.cells_action == "cut_off")?'clip-path="url(#cut-off-cells)"':''
-            let group = html(params.svg,"g",/*html*/`<g id="svg_g_seeds" ${conditional_clip_path}/>`)
+            let group = html(params.svg,/*html*/`<g id="svg_g_seeds" ${conditional_clip_path}/>`)
             if(this.shape.show_inside_path()){
                 this.shape.append_path()
                 for(let i=0;i<this.array.length;i++){

@@ -1,9 +1,11 @@
-import {hr,html, br,} from "./utils.js"
+import {hr,html, br,} from "./web-js-utils.js"
 import {Bootstrap} from "./bs_utils.js"
 import {voronoi_app} from "./voronoi_app.js"
 
 const b = document.body
-let vor = new voronoi_app(b,"100%","60%")
+let vor = new voronoi_app()
+vor.set_parent(b,"100%","60%")
+
 let bs = new Bootstrap()
 
 function menu_export(parent){
@@ -19,23 +21,22 @@ function menu_export(parent){
     //}
     let btn_save_data = bs.button(ecol0,"btn_save",`export seeds coordinates`);
 
-    html(ecol1,"p",/*html*/`<p align="center">Export</p>`)
+    html(ecol1,/*html*/`<p align="center">Export</p>`)
     const lst = vor.export_svg
     const export_states = [lst.cells,lst.edges,lst.seeds]
     bs.checkbox_group(ecol1,"cbx_export",["cells","edges","seeds"],export_states,(e)=>{
                             vor.export_svg[e.target.getAttribute("data-name")] = e.target.checked
                         })
-    //html(ecol2,"a",/*html*/`<a style="margin:10px">Drag and drop 'seeds.json' to import</p>`)
 
 
 
-    html(ecol2,"p",/*html*/`<p align="center">Shape cells view</p>`)
+    html(ecol2,/*html*/`<p align="center">Shape cells view</p>`)
     let rg_list = vor.shape.cells_action_list
     let sact_index = rg_list.findIndex((shape)=>{return (shape == vor.shape.config.cells_action)})
     let rg_cells = bs.radio_group(ecol2,"rgg_shape_cells",rg_list,sact_index)
     rg_cells.forEach((el)=>{$(el).change((e)=>{vor.update({shape_cells:e.target.getAttribute("data-label")})})})
 
-    html(ecol3,"p",/*html*/`<p align="center">Shape seeds sample</p>`)
+    html(ecol3,/*html*/`<p align="center">Shape seeds sample</p>`)
     rg_list = vor.shape.seeds_action_list
     sact_index = rg_list.findIndex((shape)=>{return (shape == vor.shape.config.seeds_action)})
     let rg_seeds = bs.radio_group(ecol3,"rgg_shpae_seeds",rg_list,sact_index)
@@ -43,14 +44,14 @@ function menu_export(parent){
 
 
 
-    html(ecol4,"a",/*html*/`<a>
+    html(ecol4,/*html*/`<a>
         <p align="center">
             <a href="https://github.com/WebSVG/voronoi" target="_blank">
             <img src=./media/github.png width=40 href="https://github.com/WebSVG/voronoi">
             <p align="center">User Guide and Source Code</p>
         </p>
     </a>`)
-    html(ecol4,"p",/*html*/`<p align="center">v19.04.2020</p>`)
+    html(ecol4,/*html*/`<p align="center">v19.04.2020</p>`)
 
     $(btn_save_svg).click(()=>{
         vor.save_svg("voronoi_svg_export.svg")
@@ -73,16 +74,16 @@ function menu_export(parent){
 }
 
 function menu_shape_space_min(parent){
-    html(parent,"a",/*html*/`<a style="margin:10px">Cells shape</a>`)
+    html(parent,/*html*/`<a style="margin:10px">Cells shape</a>`)
     const cells_shapes = ["edges","quadratic","cubic"]
     const shape_index = cells_shapes.findIndex((shape)=>{return (shape == vor.cells_shape)})
     let rg_groups = bs.radio_group(parent,"shapes",cells_shapes,shape_index)
 
-    let space_label = html(parent,"a",/*html*/`<a style="margin:10px">Space between cells ${vor.cells_space}</a>`)
+    let space_label = html(parent,/*html*/`<a style="margin:10px">Space between cells ${vor.cells_space}</a>`)
     let rg_space = bs.input_range(parent,30)
     rg_space.step = 0.2
     rg_space.value = vor.cells_space
-    let in_label = html(parent,"a",/*html*/`<a style="margin:10px">min cell edge ${vor.min_edge}</a>`)
+    let in_label = html(parent,/*html*/`<a style="margin:10px">min cell edge ${vor.min_edge}</a>`)
     const max_min_cell_edge = 100
     let rg_min_edge = bs.input_range(parent,max_min_cell_edge)
     rg_min_edge.value = vor.min_edge
@@ -153,7 +154,7 @@ function menu_generate_view(parent){
 
 function menu_nb_seeds(parent){
     let scfg = vor.seeds.config
-    html(parent,"a",/*html*/`<a style="margin:10px">Seeds Number</a>`)
+    html(parent,/*html*/`<a style="margin:10px">Seeds Number</a>`)
     let in_nb_seeds = bs.input_text(parent,"in_nb_seed",`${scfg.nb_seeds} seeds`,"w-100");
     let rg_nb_seeds = bs.input_range(parent,scfg.max_seeds)
     rg_nb_seeds.value = scfg.nb_seeds
@@ -197,29 +198,27 @@ function menu_nb_seeds(parent){
 
 function menu_svg_size(parent){
     let scfg = vor.seeds.config
-    html(parent,"a",/*html*/`<a style="margin:5px">View width</a>`)
+    html(parent,/*html*/`<a style="margin:5px">View width</a>`)
     let in_width = bs.input_text(parent,"in_width",`${vor.max_width} max width`,"w-100");
     if(vor.width != vor.max_width){
         in_width.value = vor.width
     }
-    html(parent,"a",/*html*/`<a style="margin:5px">View height</a>`)
+    html(parent,/*html*/`<a style="margin:5px">View height</a>`)
     let in_height = bs.input_text(parent,"in_height",`${vor.max_height} max height`,"w-100");
     if(vor.height != vor.max_height){
         in_height.value = vor.height
     }
 
-    let label_cost = html(parent,"a",/*html*/`<a style="margin:5px">Map Cost Vs Dist ${scfg.map_vs_dist}</a>`)
+    let label_cost = html(parent,/*html*/`<a style="margin:5px">Map Cost Vs Dist ${scfg.map_vs_dist}</a>`)
     let rg_cost = bs.input_range(parent,scfg.map_vs_dist_max,scfg.map_vs_dist)
     $(rg_cost).on("input",(e)=>{
         label_cost.innerHTML = `Map Cost Vs Dist ${rg_cost.value}`
         vor.update({map_vs_dist:rg_cost.value})
     })
-    //let label_map = html(parent,"a",/*html*/`<a style="margin:5px">Map Power ${scfg.map_power}</a>`)
     let rg_map = bs.input_range(parent,scfg.map_power_range.max,scfg.map_power)
     rg_map.min = scfg.map_power_range.min
     rg_map.step = scfg.map_power_range.step
     $(rg_map).on("input",(e)=>{
-        //label_map.innerHTML = `Map Power ${rg_map.value}`
         console.log(`Map Power ${rg_map.value}`)
         vor.update({map_power:rg_map.value})
     })
@@ -250,7 +249,7 @@ function menu_svg_size(parent){
 }
 
 function menu_mouse(parent){
-    html(parent,"a",/*html*/`<a style="margin:10px">Mouse</a>`)
+    html(parent,/*html*/`<a style="margin:10px">Mouse</a>`)
     const actions_array = ["add","move","remove"]
     const action_index = actions_array.findIndex((action)=>{return (action == vor.mouse_action)})
     bs.radio_group(parent,"actions",actions_array,action_index,(e)=>{
@@ -258,7 +257,7 @@ function menu_mouse(parent){
         vor.store()
     })
 
-    html(parent,"a",/*html*/`<a style="margin:10px">View</a>`)
+    html(parent,/*html*/`<a style="margin:10px">View</a>`)
     bs.checkbox_group(parent,"cbx_shape",["view_shape"],[vor.shape.config.view_shape],(e)=>{
         let msg = {}
         msg[e.target.getAttribute("data-name")] = e.target.checked

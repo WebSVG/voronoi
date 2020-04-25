@@ -1,3 +1,6 @@
+
+let template = document.createElement("template")
+
 function defined(obj){
     return (typeof(obj) != "undefined")
 }
@@ -17,11 +20,31 @@ function send(event_name,data){
 	window.dispatchEvent(event);
 }
 
-function html(parent,tagName,svg_text){
-    parent.insertAdjacentHTML("beforeend",svg_text);
+function temp(html_text){
+    const fragment = document.createRange().createContextualFragment(html_text);
+    template.appendChild(fragment);//this also returns fragment, not the newly created node
+    return template.childNodes[template.childNodes.length-1];
+}
+
+function html(parent,html_text){
+    parent.insertAdjacentHTML("beforeend",html_text);
+    return parent.childNodes[parent.childNodes.length-1];
+}
+
+function htmls(parent,html_text){
+    parent.insertAdjacentHTML("beforeend",html_text);
+    return parent.childNodes;
+}
+
+function html_tag(parent,tagName,html_text){
+    parent.insertAdjacentHTML("beforeend",html_text);
     let elements = parent.getElementsByTagName(tagName);
     let res_svg =  elements[elements.length-1];
     return res_svg;
+}
+
+function css(sheet,text){
+    sheet.insertRule(text);
 }
 
 function br(parent){
@@ -33,7 +56,7 @@ function hr(parent){
 }
 
 function image(parent,url){
-    return html(parent,"image",/*html*/`
+    return html_tag(parent,"image",/*html*/`
         <image x="0" y="0" xlink:href=${url}></image>
     `)
 }
@@ -75,5 +98,9 @@ export{
     image,
     uid,
     suid,
-    send
+    send,
+    temp,
+    css,
+    html_tag,
+    htmls
 }

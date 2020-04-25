@@ -1,15 +1,17 @@
-import {defined,html} from "./utils.js"
+import {defined,html} from "./web-js-utils.js"
 import {Svg} from "./svg_utils.js"
 import {voronoi_diag} from "./voronoi_diag.js"
 import {Seeds} from "./seeds.js"
 import { Shape } from "./shape.js"
 
 class voronoi_app{
-    constructor(parent,w,h){
+    constructor(){
+        let [w,h] = ["100%","100%"]
+        let parent = document.createElement("template")
         this.parent = parent
         //const use_storage = false
         let init_needed = false
-        this.version = "51"
+        this.version = "55"
         const config = JSON.parse(localStorage.getItem("voronoi_config"))
         if(config === null){
             console.log("First time usage, no config stored")
@@ -58,7 +60,7 @@ class voronoi_app{
         }
 
         this.svg = {}
-        this.svg.main = html(parent,"svg",/*html*/`<svg id="main_svg" xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"></svg>`);
+        this.svg.main = html(parent,/*html*/`<svg id="main_svg" xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"></svg>`);
         this.shape.update({parent:this.svg.main})
         this.svg.seeds_area = null;
 
@@ -66,11 +68,15 @@ class voronoi_app{
         this.init_events()
     }
     
-    change_parent(new_parent,width,height){
-        this.svg.main.parentElement.removeChild(this.svg.main)
+    set_parent(new_parent,width,height){
+        //this.svg.main.parentElement.removeChild(this.svg.main)
         new_parent.appendChild(this.svg.main)
         this.svg.main.setAttributeNS(null,"width",width)
         this.svg.main.setAttributeNS(null,"height",height)
+    }
+
+    element(){
+        return this.svg.main
     }
 
     clear_svg(svg_el){
@@ -180,6 +186,16 @@ class voronoi_app{
         }
         console.log(`set svg ( ${this.width} , ${this.height} )`)
         this.update_seeds({clear:clear,width:this.width,height:this.height})
+    }
+    resize(width,height){
+        this.svg.main.setAttributeNS(null,"width",`${width}%`)
+        this.max_width = this.svg.main.clientWidth
+        this.max_height = window.innerHeight * height / 100
+        this.svg.main.setAttributeNS(null,"height",this.max_height)
+        this.width = this.max_width
+        this.height = this.max_height
+        console.log(`set svg ( ${this.width} , ${this.height} )`)
+        this.update_seeds({clear:false,width:this.width,height:this.height})
     }
 
 
@@ -313,28 +329,30 @@ class voronoi_app{
 
         window.addEventListener("vor_app",this.vor_app_event,false)
 
-        document.addEventListener('dragenter', this.onDragEvents, false)
-        document.addEventListener('dragover', this.onDragEvents, false)
-        document.addEventListener('dragleave', this.onDragEvents, false)
-        document.addEventListener('drop', this.onDragEvents, false)
+        let that = this
+        let onDragEvents = function(event){
+            event.stopPropagation();
+            event.preventDefault();
+            if(event.type == "dragenter"){
+                event.dataTransfer.dropEffect = "copy";
+            }
+            if(event.type == "drop"){
+                if(event.dataTransfer.files.length != 1){
+                    alert("only one file allowed");
+                    console.log(event.dataTransfer.files);
+                    return;
+                }else{
+                    that.load_dropped_file(event.dataTransfer.files[0]);
+                }
+            };
+        }
+    
+        document.addEventListener('dragenter', onDragEvents, false)
+        document.addEventListener('dragover',  onDragEvents, false)
+        document.addEventListener('dragleave', onDragEvents, false)
+        document.addEventListener('drop',      onDragEvents, false)
     }
 
-    onDragEvents(event){
-        event.stopPropagation();
-        event.preventDefault();
-        if(event.type == "dragenter"){
-            event.dataTransfer.dropEffect = "copy";
-        }
-        if(event.type == "drop"){
-            if(event.dataTransfer.files.length != 1){
-                alert("only one file allowed");
-                console.log(event.dataTransfer.files);
-                return;
-            }else{
-                this.load_dropped_file(event.dataTransfer.files[0]);
-            }
-        };
-    }
 
 }
 
