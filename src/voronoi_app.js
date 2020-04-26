@@ -11,7 +11,7 @@ class voronoi_app{
         this.parent = parent
         //const use_storage = false
         let init_needed = false
-        this.version = "59"
+        this.version = "61"
         const config = JSON.parse(localStorage.getItem("voronoi_config"))
         if(config === null){
             console.log("First time usage, no config stored")
@@ -31,8 +31,8 @@ class voronoi_app{
             this.cell_debug = 0;
             this.min_edge = 6
             this.is_color = false//not usable yet as flickers on updates
-            this.width = 720
-            this.height = 360
+            this.width = 920
+            this.height = 480
             this.cells_shape = "cubic"
             this.cells_space = 2
             this.vertical_view = false
@@ -197,7 +197,7 @@ class voronoi_app{
         this.width = width
         this.height = height
         console.log(`set svg ( ${this.width} , ${this.height} )`)
-        const clear = defined(params.clear)?params.clear:false
+        const clear = defined(params.clear)?params.clear:true
         this.update_seeds({clear:clear,width:this.width,height:this.height})
     }
 

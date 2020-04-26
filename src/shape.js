@@ -16,8 +16,8 @@ class Shape{
         this.seeds_action_list = ["inside","avoid_path","ignore"];//"symmetric" might not be necessary
         this.config = {}
         let cfg = this.config
-        cfg.cells_action = "cut_off"
-        cfg.seeds_action = "ignore"
+        cfg.cells_action = "in_cells"
+        cfg.seeds_action = "avoid_path"
         cfg.debug = false
         cfg.view_shape = true
         cfg.view_map = true
