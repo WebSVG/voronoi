@@ -10,6 +10,18 @@ let grid = new Grid(b,120)
 let col_svg = null
 let menus = {}
 
+function show_unit(){
+    if(vor.use_unit){
+        const width_unit = vor.width / vor.unit_ratio
+        const height_unit = vor.height / vor.unit_ratio
+        document.getElementById("l_width").innerHTML = `View width (${width_unit.toFixed(2)})`
+        document.getElementById("l_height").innerHTML = `View height (${height_unit.toFixed(2)})`
+    }else{
+        document.getElementById("l_width").innerHTML =  "View width"
+        document.getElementById("l_height").innerHTML = "View height"
+    }
+}
+
 function menu_export(ecol0,ecol1,ecol2,ecol3,ecol4){
     //br(parent)
     //let [ecol0,ecol1,ecol2,ecol3,ecol4] = bs.cols(parent,5,["col-3","col-1","col-2","col-2","col"])
@@ -225,11 +237,13 @@ function menu_svg_size(parent){
     $(in_width).change(()=>{
         vor.resize(in_width.value,in_height.value)
         grid.resize(col_svg,in_width.value,in_height.value)
+        show_unit()
     })
 
     $(in_height).change(()=>{
         vor.resize(in_width.value,in_height.value)
         grid.resize(col_svg,in_width.value,in_height.value)
+        show_unit()
     })
 
     menus.in_width = in_width
@@ -297,20 +311,9 @@ function menu_scale(parent){
     let in_ratio = bs.input_text(parent,"in_ratio","Enter unit ratio","w-100");
     
     in_ratio.value = vor.unit_ratio
-    function show_unit(vis){
-        if(vis){
-            const width_unit = vor.width / vor.unit_ratio
-            const height_unit = vor.height / vor.unit_ratio
-            document.getElementById("l_width").innerHTML = `View width (${width_unit.toFixed(2)})`
-            document.getElementById("l_height").innerHTML = `View height (${height_unit.toFixed(2)})`
-        }else{
-            document.getElementById("l_width").innerHTML =  "View width"
-            document.getElementById("l_height").innerHTML = "View height"
-        }
-    }
     function set_visibility(vis){
         in_ratio.style.visibility = vis?"visible":"hidden"
-        show_unit(vis)
+        show_unit()
     }
     set_visibility(vor.use_unit)
     main_cb_update = (e)=>{
@@ -324,7 +327,7 @@ function menu_scale(parent){
         }
         vor.unit_ratio = in_ratio.value
         vor.store()
-        show_unit(true)
+        show_unit()
     })
 }
 
