@@ -290,12 +290,31 @@ class Seeds{
         this.array.forEach((s)=>{
             delete s.voronoiId
         })
-        save_json(this.array,fileName)
+        const data = {window:{width:this.config.area.width,height:this.config.area.height},seeds:this.array}
+        save_json(data,fileName)
     }
-    load(seeds){
-        this.array = seeds
-        this.config.nb_seeds = this.array.length
-        //laoding seeds ignores current winowd size https://github.com/WebSVG/voronoi/issues/3
+    load(data,params){
+        if(defined(data.window) && defined(data.seeds)){
+            this.array = data.seeds
+            this.config.nb_seeds = this.array.length
+            //this window size will be fed by from the app through window control
+            send("main_window",{type:"resize",width:data.window.width,height:data.window.height})
+            return true
+        }else{
+            if(Array.isArray(data)){
+                if(data.length > 0){
+                    const seed0 = data[0]
+                    if((defined(seed0.x)) && (defined(seed0.y)) &&(defined(seed0.id))){
+                        console.log("file structure - OK")
+                        this.array = data
+                        this.config.nb_seeds = this.array.length
+                        send("vor_app",{type:"seeds",context:params.context})
+                        return true
+                    }
+                }
+            }
+        }
+        return false
     }
     get_seeds(){
         return this.array

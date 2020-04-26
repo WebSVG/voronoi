@@ -8,7 +8,7 @@ let vor = new voronoi_app()
 let bs = new Bootstrap()
 let grid = new Grid(b,120)
 let col_svg = null
-
+let menus = {}
 
 function menu_export(ecol0,ecol1,ecol2,ecol3,ecol4){
     //br(parent)
@@ -53,7 +53,7 @@ function menu_export(ecol0,ecol1,ecol2,ecol3,ecol4){
             <p align="center">User Guide and Source Code</p>
         </p>
     </a>`)
-    html(ecol4,/*html*/`<p align="center">v25.04.2020</p>`)
+    html(ecol4,/*html*/`<p align="center">v26.04.2020</p>`)
 
     $(btn_save_svg).click(()=>{
         vor.save_svg("voronoi_svg_export.svg")
@@ -232,6 +232,8 @@ function menu_svg_size(parent){
         grid.resize(col_svg,in_width.value,in_height.value)
     })
 
+    menus.in_width = in_width
+    menus.in_height = in_height
 }
 
 function menu_mouse(parent){
@@ -282,10 +284,19 @@ function main(){
     menu_export(col5,col6,col7,col8,col9)
 
     vor.set_parent_only(col_svg)
-    vor.update_seeds({clear:true})
+    vor.update_seeds({clear:true,width:vor.width,height:vor.height})
 
+    window.addEventListener("main_window",onMainWindow,false)
 }
 
+function onMainWindow(e){
+    const width = e.detail.width
+    const height = e.detail.height
+    menus.in_width.value = width
+    menus.in_height.value = height
+    vor.resize(width,height,{clear:false})
+    grid.resize(col_svg,width,height)
+}
 
 
 main();

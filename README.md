@@ -100,6 +100,7 @@ In the animation below, after dropping a spiral cost map, the `Map Cost Vs Dist`
   ## seeds
 * Edit seeds : add, move, remove
 * Export and import seeds (drag and drop seeds.json) and continue editing of an existing seeds set
+  * seeds contain window size info since 26.04.2020, prio formats with seeds array only have to have window size adjust manually before import
 * Parametric Seeds generation
   * Controlled seeds spread regularity with multiple sampling and keeping best candidate (farthest from neighbors)
   * Optionally include distance from walls to the sampling selection cost
@@ -119,23 +120,32 @@ In the animation below, after dropping a spiral cost map, the `Map Cost Vs Dist`
   * display of cells which seeds are within an SVG path
   * the option is available to simply cut cells with an SVG mask
   ## gui
+* grid based, responsive svg and menu areas
 * Show/hide (cells, edges, seeds) and independently configure the SVG export
 * Browser local storage of config parameters (No storage of SVG nor seeds as they can be saved separately)
 
+  ## cost map
+* display / hide cost map
+* slider to weight cost map vs distance
+
 # Planned features
-* display cost map
-* slider to weight cost map and distance
-* responsive menu areas
 * export scale with a ratio (adjusting to a given unit)
   * transform scale possible but Fusion360 ignores the scale transform
 * edges cells filet effect
-* detract quadratic bezier short edges
-* edit seed weight to modify cells size (? requires a new engine, or use cells retraction technique)
-  * editing singe seed weight
-  * cartographic seeds weight
 * add irregularities to the edges thickness (randomize retraction)
 * improve error alerts by using boostrap auto vanishing alerts
 * random colors for cells
+
+## discarded features
+* detract quadratic bezier short edges
+
+cells retraction "Space between cells" is providing a good enough short edges removal, combined with space though. It is hard to differentiate the effect of both, and it would break the Voronoi equalities
+
+* edit seed weight to modify cells size (? requires a new engine, or use cells retraction technique)
+  * editing singe seed weight
+  * cartographic seeds weight
+
+Would break the voronoi intuitive equality, and requires a new engine. Also wuold require the user to tweak each cell separately. The cost map is a good solution how to achieve the last point (cartographic seeds weight), as the cells size is a one to one match to the seeds dispertion.
 
 # License
 MIT

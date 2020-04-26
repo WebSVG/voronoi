@@ -11,7 +11,7 @@ class voronoi_app{
         this.parent = parent
         //const use_storage = false
         let init_needed = false
-        this.version = "56"
+        this.version = "59"
         const config = JSON.parse(localStorage.getItem("voronoi_config"))
         if(config === null){
             console.log("First time usage, no config stored")
@@ -191,13 +191,14 @@ class voronoi_app{
         console.log(`set svg ( ${this.width} , ${this.height} )`)
         this.update_seeds({clear:clear,width:this.width,height:this.height})
     }
-    resize(width,height){
+    resize(width,height,params={}){
         this.svg.main.setAttributeNS(null,"width",width)
         this.svg.main.setAttributeNS(null,"height",height)
         this.width = width
         this.height = height
         console.log(`set svg ( ${this.width} , ${this.height} )`)
-        this.update_seeds({clear:false,width:this.width,height:this.height})
+        const clear = defined(params.clear)?params.clear:false
+        this.update_seeds({clear:clear,width:this.width,height:this.height})
     }
 
 
@@ -230,25 +231,11 @@ class voronoi_app{
     }
     load_dropped_seeds(reader){
         console.log("extention check - OK")
-        let is_valid = false;
         const vor_context = this
         reader.onloadend = function(e) {
             var result = JSON.parse(this.result);
-            if(Array.isArray(result)){
-                console.log("array type - OK")
-                if(result.length > 0){
-                    console.log("length - OK")
-                    const seed0 = result[0]
-                    if((defined(seed0.x)) && (defined(seed0.y)) &&(defined(seed0.id))){
-                        console.log("seed structure - OK")
-                        is_valid = true
-                    }
-                }
-            }
-            if(is_valid){
-                vor_context.seeds.load(result)
-                vor_context.compute_voronoi()
-            }else{
+            const is_loaded = vor_context.seeds.load(result,{context:vor_context})
+            if(!is_loaded){
                 alert(`unsupported seeds format`);
             }
         };
