@@ -23,8 +23,9 @@
   "dependencies": {
     "bootstrap": "^4.4.1",
     "file-saver": "^2.0.2",
-    "materialize-css": "^1.0.0",
+    "jquery": "^3.5.0",
     "matter-js": "^0.14.2",
+    "popper": "^1.0.1",
     "scale-grid": "^1.1.0",
     "web-js-utils": "^2.1.0"
   }
