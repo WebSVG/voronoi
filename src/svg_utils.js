@@ -71,6 +71,17 @@ class Svg{
         `)
     }
 
+    filter_turb_disp(parent,params){
+        return html(parent,/*html*/`
+            <filter id="${params.id}">
+            <feTurbulence type="turbulence" baseFrequency="${params.turb_freq}"
+                numOctaves="2" result="turbulence"/>
+            <feDisplacementMap in2="turbulence" in="SourceGraphic"
+                scale="${params.disp_scale}" xChannelSelector="R" yChannelSelector="G"/>
+            </filter>
+      `)
+    }
+
     save(fileName,evg_element=null){
         if(evg_element == null){evg_element = this.el}
         let s = new XMLSerializer();

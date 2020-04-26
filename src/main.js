@@ -200,10 +200,10 @@ function menu_nb_seeds(parent){
 
 function menu_svg_size(parent){
     let scfg = vor.seeds.config
-    html(parent,/*html*/`<a style="margin:5px">View width</a>`)
+    html(parent,/*html*/`<a id="l_width" style="margin:5px">View width</a>`)
     let in_width = bs.input_text(parent,"in_width",`width`,"w-100");
     in_width.value = vor.width
-    html(parent,/*html*/`<a style="margin:5px">View height</a>`)
+    html(parent,/*html*/`<a id="l_height" style="margin:5px">View height</a>`)
     let in_height = bs.input_text(parent,"in_height",`height`,"w-100");
     in_height.value = vor.height
 
@@ -258,6 +258,76 @@ function menu_mouse(parent){
     })
 }
 
+function menu_filters(parent){
+    let diag_cfg = vor.diagram.config
+    let main_cb_update = (e)=>{}
+    bs.checkbox_group(parent,"cbx_filters",["use_filters"],[diag_cfg.use_filters],(e)=>{main_cb_update(e)})
+    let label_disp_scale = html(parent,/*html*/`<a style="margin:5px">Displacement scale ${diag_cfg.disp_scale}</a>`)
+    let rg_disp = bs.input_range(parent,diag_cfg.disp_scale_max,diag_cfg.disp_scale)
+    $(rg_disp).on("input",(e)=>{
+        label_disp_scale.innerHTML = `Displacement scale ${rg_disp.value}`
+        vor.update({displacement:rg_disp.value})
+    })
+
+    let label_freq = html(parent,/*html*/`<a style="margin:5px">Turbulence Frequency ${diag_cfg.turb_freq}</a>`)
+    let rg_freq = bs.input_range(parent,diag_cfg.turb_freq_max,diag_cfg.turb_freq)
+    rg_freq.step = diag_cfg.turb_freq_step
+    $(rg_freq).on("input",(e)=>{
+        label_freq.innerHTML = `Turbulence Frequency ${rg_freq.value}`
+        vor.update({turbulence:rg_freq.value})
+    })
+
+    function set_visibility(vis){
+        label_disp_scale.style.visibility = vis?"visible":"hidden"
+        rg_disp.style.visibility = vis?"visible":"hidden"
+        label_freq.style.visibility = vis?"visible":"hidden"
+        rg_freq.style.visibility = vis?"visible":"hidden"
+    }
+
+    set_visibility(diag_cfg.use_filters)
+    main_cb_update = (e)=>{
+        vor.update({filters:e.target.checked})
+        set_visibility(e.target.checked)
+    }
+}
+
+function menu_scale(parent){
+    let main_cb_update = (e)=>{}
+    bs.checkbox_group(parent,"cbx_scale",["show_unit"],[vor.use_unit],(e)=>{main_cb_update(e)})
+    let in_ratio = bs.input_text(parent,"in_ratio","Enter unit ratio","w-100");
+    
+    in_ratio.value = vor.unit_ratio
+    function show_unit(vis){
+        if(vis){
+            const width_unit = vor.width / vor.unit_ratio
+            const height_unit = vor.height / vor.unit_ratio
+            document.getElementById("l_width").innerHTML = `View width (${width_unit.toFixed(2)})`
+            document.getElementById("l_height").innerHTML = `View height (${height_unit.toFixed(2)})`
+        }else{
+            document.getElementById("l_width").innerHTML =  "View width"
+            document.getElementById("l_height").innerHTML = "View height"
+        }
+    }
+    function set_visibility(vis){
+        in_ratio.style.visibility = vis?"visible":"hidden"
+        show_unit(vis)
+    }
+    set_visibility(vor.use_unit)
+    main_cb_update = (e)=>{
+        vor.use_unit = e.target.checked
+        vor.store()
+        set_visibility(e.target.checked)
+    }
+    $(in_ratio).change((e)=>{
+        if(in_ratio.value == ""){
+            in_ratio.value = vor.unit_ratio_default
+        }
+        vor.unit_ratio = in_ratio.value
+        vor.store()
+        show_unit(true)
+    })
+}
+
 function main(){
 
     col_svg = grid.get_div({width:vor.width,height:vor.height})
@@ -272,6 +342,8 @@ function main(){
     let col7 = grid.get_div({width:120,height:120})
     let col8 = grid.get_div({width:240,height:120})
     let col9 = grid.get_div({width:240,height:120})
+    let col10 = grid.get_div({width:240,height:120})
+    let col11 = grid.get_div({width:240,height:120})
 
     grid.apply()
 
@@ -282,6 +354,9 @@ function main(){
     menu_shape_space_min(col4)
 
     menu_export(col5,col6,col7,col8,col9)
+    menu_filters(col10)
+
+    menu_scale(col11)//after menu_svg_size
 
     vor.set_parent_only(col_svg)
     vor.update_seeds({clear:true,width:vor.width,height:vor.height})

@@ -30,6 +30,7 @@ class Shape{
         }
         if(defined(params.debug)){
             this.config.debug = params.debug
+            send("vor_app",{type:"draw",context:params.context})
         }
         if(defined(params.view_shape)){
             this.config.view_shape = params.view_shape

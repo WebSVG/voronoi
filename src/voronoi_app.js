@@ -11,7 +11,11 @@ class voronoi_app{
         this.parent = parent
         //const use_storage = false
         let init_needed = false
-        this.version = "61"
+        //---------------------------------------------------
+        //---------------------------------------------------
+        this.version = "76"
+        //---------------------------------------------------
+        //---------------------------------------------------
         const config = JSON.parse(localStorage.getItem("voronoi_config"))
         if(config === null){
             console.log("First time usage, no config stored")
@@ -35,7 +39,9 @@ class voronoi_app{
             this.height = 480
             this.cells_shape = "cubic"
             this.cells_space = 2
-            this.vertical_view = false
+            this.use_unit = false
+            this.unit_ratio = 3.7795
+            this.unit_ratio_default = 3.7795
             this.view_svg = {
                 cells:true,
                 edges:false,
@@ -55,8 +61,9 @@ class voronoi_app{
         this.diagram = new voronoi_diag(this.shape)
         this.seeds = new Seeds(this.shape)
         if(!init_needed){
-            this.seeds.load_config(JSON.parse(localStorage.getItem("seeds_config")))
+            this.seeds.config = JSON.parse(localStorage.getItem("seeds_config"))
             this.shape.config = JSON.parse(localStorage.getItem("shape_config"))
+            this.diagram.config = JSON.parse(localStorage.getItem("diag_config"))
         }
 
         this.svg = {}
@@ -120,6 +127,9 @@ class voronoi_app{
     }
 
     store(){
+        localStorage.setItem("seeds_config",JSON.stringify(this.seeds.config))
+        localStorage.setItem("shape_config",JSON.stringify(this.shape.config))
+        localStorage.setItem("diag_config",JSON.stringify(this.diagram.config))
         let config = Object.assign({},this)
         delete config.parent
         delete config.svg
@@ -128,8 +138,6 @@ class voronoi_app{
         delete config.shape
         //console.log(`storing config version ${config.version}`)
         localStorage.setItem("voronoi_config",JSON.stringify(config))
-        localStorage.setItem("seeds_config",JSON.stringify(this.seeds.config))
-        localStorage.setItem("shape_config",JSON.stringify(this.shape.config))
     }
 
     compute_voronoi(){
@@ -142,12 +150,6 @@ class voronoi_app{
         this.diagram.update(params)
         this.seeds.update(params)
         this.shape.update(params)
-        if(defined(params.cell_debug)){
-            this.draw()
-        }
-        if(defined(params.debug)){
-            this.draw()
-        }
         if(defined(params.shape_seeds)){
             this.seeds.update({clear:true})
             this.compute_voronoi()

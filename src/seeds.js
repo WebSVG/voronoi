@@ -66,7 +66,7 @@ class Seeds{
         this.config.debug_id = 0
         this.config.nb_seeds = 30
         this.config.max_seeds = 200
-        this.config.area = {type:"rect",width:400,height:200}
+        this.config.area = {width:400,height:200}
         this.config.nb_samples = 10
         this.config.walls_dist = true
         this.config.path_debug = false
@@ -74,12 +74,6 @@ class Seeds{
         this.config.map_vs_dist_max = 30
         this.config.map_power = 1
         this.config.map_power_range = {min:0.1,max:3,step:0.1}
-    }
-    load_config(cfg){
-        this.config = cfg
-        if(this.config.area.type == "path"){//not supported
-            this.config.area.type = "rect"
-        }
     }
     //cost selection
     best_seed_path_and_cost(samples){
@@ -254,9 +248,7 @@ class Seeds{
         if(defined(params.cell_debug)){
             this.config.path_debug = (params.cell_debug!=0)
         }
-        if(this.config.area.type == "rect"){//should only be done on resize
-            this.check_seeds_in_rect()
-        }
+        this.check_seeds_in_rect()
         this.adjust_seeds_number()
         this.reset_seeds_id()
         let time = (Date.now()-start)

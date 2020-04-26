@@ -70,7 +70,7 @@ class Grid{
     constructor(parent,grid_side,max_sides=2){
         this.sheet = new CSSStyleSheet()
         this.main_div = scale_grid(parent,this.sheet,{grid_side:grid_side,max_sides:max_sides});
-        console.log(JSON.stringify(this.main_div))
+        //console.log(JSON.stringify(this.main_div))
     }
 
     get_div(props){

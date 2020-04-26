@@ -1,4 +1,4 @@
-import {defined,html,rand_col} from "./web-js-utils.js"
+import {defined,html,rand_col, send} from "./web-js-utils.js"
 import {Vector} from "../libs/Vector.js"
 import {Geometry} from "./geometry.js"
 import {Svg} from "./svg_utils.js"
@@ -314,8 +314,13 @@ class voronoi_diag{
         this.edges = []
         this.config = {}
         let cfg = this.config
-        cfg.area = {type:"rect"}
         cfg.cell_debug = 0
+        cfg.use_filters = false
+        cfg.disp_scale = 10
+        cfg.disp_scale_max = 50
+        cfg.turb_freq = 0.05
+        cfg.turb_freq_max = 0.2
+        cfg.turb_freq_step = 0.002
     }
 
     from_rhill_diagram(diag){
@@ -349,15 +354,31 @@ class voronoi_diag{
     update(params){
         if(defined(params.cell_debug)){
             this.config.cell_debug = params.cell_debug
+            send("vor_app",{type:"draw",context:params.context})
+        }
+        if(defined(params.filters)){
+            this.config.use_filters = params.filters
+            send("vor_app",{type:"draw",context:params.context})
+        }
+        if(defined(params.displacement)){
+            this.config.disp_scale = params.displacement
+            send("vor_app",{type:"draw",context:params.context})
+        }
+        if(defined(params.turbulence)){
+            this.config.turb_freq = params.turbulence
+            send("vor_app",{type:"draw",context:params.context})
         }
     }
 
     draw_cells(params){
+        let cfg = this.config
+        
         svg.set_parent(params.svg)
         if(this.cells.length>1){//otherwise single cell has no half edges
             this.retract_cells(params)
             let conditional_clip_path = (this.shape.config.cells_action == "cut_off")?'clip-path="url(#cut-off-cells)"':''
             let group = html(params.svg,/*html*/`<g id="svg_g_bezier_cells" ${conditional_clip_path}/>`)
+            if(cfg.use_filters){svg.filter_turb_disp(group,{id:"f_turb_disp",disp_scale:cfg.disp_scale,turb_freq:cfg.turb_freq})}
             this.shape.append_path()
             for(let i=0;i<this.cells.length;i++){
                 const c = this.cells[i]
@@ -376,7 +397,8 @@ class voronoi_diag{
                         d = c.path_edges()
                     }
                     let color = (params.color==true)?rand_col():"#221155"
-                    html(group,/*html*/`<path d="${d}" fill="${color}" fill-opacity="0.2"/>`)
+                    let filter = (cfg.use_filters)?'filter="url(#f_turb_disp)"':''
+                    html(group,/*html*/`<path d="${d}" fill="${color}" fill-opacity="0.2" ${filter}/>`)
                 }
             }
             this.shape.remove_path()

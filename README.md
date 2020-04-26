@@ -123,29 +123,34 @@ In the animation below, after dropping a spiral cost map, the `Map Cost Vs Dist`
 * grid based, responsive svg and menu areas
 * Show/hide (cells, edges, seeds) and independently configure the SVG export
 * Browser local storage of config parameters (No storage of SVG nor seeds as they can be saved separately)
+* SVG filters for displacement and turbulence, but note that they can only be seen on the browser and they're not supported by tools such as Fusion360
+* display of width and height with unit ratio
+  * transform scale possible but Fusion360 ignores the scale transform
 
   ## cost map
 * display / hide cost map
 * slider to weight cost map vs distance
 
 # Planned features
-* export scale with a ratio (adjusting to a given unit)
-  * transform scale possible but Fusion360 ignores the scale transform
 * edges cells filet effect
 * add irregularities to the edges thickness (randomize retraction)
 * improve error alerts by using boostrap auto vanishing alerts
 * random colors for cells
 
 ## discarded features
+* export scale with a ratio (adjusting to a given unit)
+  * feature brings an ambiguous usage as svg is supposed to be scalable and should not require a fixed scale
+  * extremely difficult, due to dependency to shape input that is svg and which size has to match, could be exported
+  * cost map is png with pixel units, so would also deviate from map view
+  * simple svg scale function not recognised by Fusion360
+  * modifying seeds coordinates to deviate them far away from pixels values might result in floating precision errors, resulting in unhandled voronoi cases
+  * could have been possible to copy all of the cells, edges structures and scale them one by one before export
+  * as a workaround, provided view with ratio unit
 * detract quadratic bezier short edges
+  * cells retraction "Space between cells" is providing a good enough short edges removal, combined with space though. It is hard to differentiate the effect of both, and it would break the Voronoi equalities
 
-cells retraction "Space between cells" is providing a good enough short edges removal, combined with space though. It is hard to differentiate the effect of both, and it would break the Voronoi equalities
-
-* edit seed weight to modify cells size (? requires a new engine, or use cells retraction technique)
-  * editing singe seed weight
-  * cartographic seeds weight
-
-Would break the voronoi intuitive equality, and requires a new engine. Also wuold require the user to tweak each cell separately. The cost map is a good solution how to achieve the last point (cartographic seeds weight), as the cells size is a one to one match to the seeds dispertion.
+* edit seed weight to modify cells size (? requires a new engine, or use cells retraction technique) (editing singe seed weight,cartographic seeds weight)
+  * Would break the voronoi intuitive equality, and requires a new engine. Also wuold require the user to tweak each cell separately. The cost map is a good solution how to achieve the last point (cartographic seeds weight), as the cells size is a one to one match to the seeds dispertion.
 
 # License
 MIT
