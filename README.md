@@ -91,6 +91,12 @@ In the animation below, after dropping a spiral cost map, the `Map Cost Vs Dist`
 ## SVG Path Shaped area and png seeds cost map
 <img src="./media/shape_and_map.gif">
 
+## Filters : Displacement with Turbulence
+warning ! The svg filters effect, though part of the standard and viewable in browsers are not always supported by CAD programs such as Fusion360 !
+
+<img src="./media/filters.gif">
+
+
 # Features details
 * Generate Voronoi Diagram
 * Export to SVG file
@@ -196,8 +202,10 @@ node dependencies are not required to serve the project locally, but only to ref
 * http://cfbrasz.github.io/VoronoiColoring.html
 * https://www.jasondavies.com/maps/voronoi/
 * [wikipedia - lines intersection](https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection)
+
 <img src="./media/intersection_formula.svg">
 
 * Bezier curves https://pomax.github.io/bezierinfo/
 * Closest point on path approximation : https://bl.ocks.org/mbostock/8027637
-
+* https://docs.w3cub.com/svg/
+* [SVG Displacement map](https://docs.w3cub.com/svg/element/fedisplacementmap/)

@@ -35,7 +35,8 @@ function menu_export(ecol0,ecol1,ecol2,ecol3,ecol4){
     //}
     let btn_save_data = bs.button(ecol0,"btn_save",`export seeds coordinates`);
 
-    html(ecol1,/*html*/`<p align="center">Export</p>`)
+    html(ecol1,/*html*/`<h5 style="margin-bottom:5px;color:#1F7BFD">Export</h5>`)
+    //html(ecol1,/*html*/`<p align="center">Export</p>`)
     const lst = vor.export_svg
     const export_states = [lst.cells,lst.edges,lst.seeds]
     bs.checkbox_group(ecol1,"cbx_export",["cells","edges","seeds"],export_states,(e)=>{
@@ -43,14 +44,15 @@ function menu_export(ecol0,ecol1,ecol2,ecol3,ecol4){
                         })
 
 
-
-    html(ecol2,/*html*/`<p align="center">Shape cells view</p>`)
+    html(ecol2,/*html*/`<h5 style="margin-bottom:5px;color:#1F7BFD">Shape</h5>`)
+    //html(ecol2,/*html*/`<p align="center">Shape cells view</p>`)
     let rg_list = vor.shape.cells_action_list
     let sact_index = rg_list.findIndex((shape)=>{return (shape == vor.shape.config.cells_action)})
     let rg_cells = bs.radio_group(ecol2,"rgg_shape_cells",rg_list,sact_index)
     rg_cells.forEach((el)=>{$(el).change((e)=>{vor.update({shape_cells:e.target.getAttribute("data-label")})})})
 
-    html(ecol3,/*html*/`<p align="center">Shape seeds sample</p>`)
+    html(ecol3,/*html*/`<h5 style="margin-bottom:5px;color:#1F7BFD">Map</h5>`)
+    //html(ecol3,/*html*/`<p align="center">Shape seeds sample</p>`)
     rg_list = vor.shape.seeds_action_list
     sact_index = rg_list.findIndex((shape)=>{return (shape == vor.shape.config.seeds_action)})
     let rg_seeds = bs.radio_group(ecol3,"rgg_shpae_seeds",rg_list,sact_index)
@@ -88,21 +90,24 @@ function menu_export(ecol0,ecol1,ecol2,ecol3,ecol4){
 }
 
 function menu_shape_space_min(parent){
-    html(parent,/*html*/`<a style="margin:10px">Cells shape</a>`)
+    html(parent,/*html*/`<h5 style="margin-bottom:5px;color:#1F7BFD">Cells shape</h5>`)
     const cells_shapes = ["edges","quadratic","cubic"]
     const shape_index = cells_shapes.findIndex((shape)=>{return (shape == vor.cells_shape)})
     let rg_groups = bs.radio_group(parent,"shapes",cells_shapes,shape_index)
 
-    let space_label = html(parent,/*html*/`<a style="margin:10px">Space between cells ${vor.cells_space}</a>`)
-    let rg_space = bs.input_range(parent,30)
+    let pr = html(parent,/*html*/`<p style="margin-top:10px"></p>`)
+    let space_label = html(pr,/*html*/`<a style="margin-top:10px">Space between cells ${vor.cells_space}</a>`)
+    let rg_space = bs.input_range(pr,30)
     rg_space.step = 0.2
     rg_space.value = vor.cells_space
-    let in_label = html(parent,/*html*/`<a style="margin:10px">min cell edge ${vor.min_edge}</a>`)
+
+    let pr2 = html(parent,/*html*/`<p style="margin-top:10px"></p>`)
+    let in_label = html(pr2,/*html*/`<a >min cell edge ${vor.min_edge}</a>`)
     const max_min_cell_edge = 100
-    let rg_min_edge = bs.input_range(parent,max_min_cell_edge)
+    let rg_min_edge = bs.input_range(pr2,max_min_cell_edge)
     rg_min_edge.value = vor.min_edge
 
-    let rg_debug = bs.input_range(parent,vor.seeds.config.nb_seeds)
+    let rg_debug = bs.input_range(pr2,vor.seeds.config.nb_seeds)
     rg_debug.value = 0
 
     if(vor.cells_shape == "cubic"){
@@ -168,7 +173,8 @@ function menu_generate_view(parent){
 
 function menu_nb_seeds(parent){
     let scfg = vor.seeds.config
-    html(parent,/*html*/`<a style="margin:10px">Seeds Number</a>`)
+    html(parent,/*html*/`<h5 style="margin-bottom:5px;color:#1F7BFD">Seeds number</h5>`)
+    //html(parent,/*html*/`<a style="margin:10px">Seeds Number</a>`)
     let in_nb_seeds = bs.input_text(parent,"in_nb_seed",`${scfg.nb_seeds} seeds`,"w-100");
     let rg_nb_seeds = bs.input_range(parent,scfg.max_seeds)
     rg_nb_seeds.value = scfg.nb_seeds
@@ -211,11 +217,12 @@ function menu_nb_seeds(parent){
 }
 
 function menu_svg_size(parent){
+    html(parent,/*html*/`<h5 style="margin-bottom:5px;color:#1F7BFD">Size</h5>`)
     let scfg = vor.seeds.config
-    html(parent,/*html*/`<a id="l_width" style="margin:5px">View width</a>`)
+    html(parent,/*html*/`<a id="l_width" style="margin-bottom:5px">View width</a>`)
     let in_width = bs.input_text(parent,"in_width",`width`,"w-100");
     in_width.value = vor.width
-    html(parent,/*html*/`<a id="l_height" style="margin:5px">View height</a>`)
+    html(parent,/*html*/`<a id="l_height" style="margin-bottom:5px">View height</a>`)
     let in_height = bs.input_text(parent,"in_height",`height`,"w-100");
     in_height.value = vor.height
 
@@ -251,7 +258,8 @@ function menu_svg_size(parent){
 }
 
 function menu_mouse(parent){
-    html(parent,/*html*/`<a style="margin:10px">Mouse</a>`)
+    html(parent,/*html*/`<h5 style="margin-bottom:5px;color:#1F7BFD">Mouse</h5>`)
+    //html(parent,/*html*/`<a style="margin:10px">Mouse</a>`)
     const actions_array = ["add","move","remove"]
     const action_index = actions_array.findIndex((action)=>{return (action == vor.mouse_action)})
     bs.radio_group(parent,"actions",actions_array,action_index,(e)=>{

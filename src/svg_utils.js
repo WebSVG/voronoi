@@ -34,8 +34,9 @@ class Svg{
     }
     
     circle_p_id(parent,x,y,id){
+        //
         return html(parent,
-        /*html*/`<circle id=${id} cx=${x} cy=${y} r="3" stroke="black" stroke-width="3" fill="red" />`
+        /*html*/`<circle id=${id} cx=${x} cy=${y} r="3" stroke="black" stroke-width="2" fill="#1F7BFD" />`
         );
     }
     
@@ -77,7 +78,7 @@ class Svg{
             <feTurbulence type="turbulence" baseFrequency="${params.turb_freq}"
                 numOctaves="2" result="turbulence"/>
             <feDisplacementMap in2="turbulence" in="SourceGraphic"
-                scale="${params.disp_scale}" xChannelSelector="R" yChannelSelector="G"/>
+                scale="${params.disp_scale}" xChannelSelector="R" yChannelSelector="A"/>
             </filter>
       `)
     }
