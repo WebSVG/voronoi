@@ -8,7 +8,7 @@ let vor = new voronoi_app()
 let bs = new Bootstrap()
 let grid = new Grid(b,120)
 let col_svg = null
-let menus = {}
+let menu = {}
 
 function show_unit(){
     if(vor.use_unit){
@@ -22,21 +22,93 @@ function show_unit(){
     }
 }
 
-function menu_export(ecol0,ecol1,ecol2,ecol3,ecol4){
-    //br(parent)
-    //let [ecol0,ecol1,ecol2,ecol3,ecol4] = bs.cols(parent,5,["col-3","col-1","col-2","col-2","col"])
+function menu_shape(parent){
+    let [col_sampling,col_display] = bs.cols(parent,2)
+    html(col_sampling,/*html*/`<h5 style="margin-bottom:5px;color:#1F7BFD">Shape</h5>`)
+
+    function view_shape_menu(visible){
+        $("#hd_shape_display")[0].style.visibility = visible?"visible":"hidden"
+        $("#rgg_map")[0].style.visibility = visible?"visible":"hidden"
+        $("#rgg_shape")[0].style.visibility = visible?"visible":"hidden"
+        $("#cbx_shape")[0].style.visibility = visible?"visible":"hidden"
+        grid.resize(parent,visible?240:120,240)
+    }
+
+    let list = ["circle","cell","clear"]
+    bs.dropdown(col_sampling,"Select",list,list,(e)=>{
+        const selected = e.target.getAttribute("data-label")
+        vor.update({path_file:e.target.getAttribute("data-label")})
+        view_shape_menu((selected!="clear"))
+    })
+
+    let rg_list = vor.shape.seeds_action_list
+    let sact_index = rg_list.findIndex((shape)=>{return (shape == vor.shape.config.seeds_action)})
+    let rg_seeds = bs.radio_group(col_sampling,"rgg_map",rg_list,sact_index)
+    rg_seeds.forEach((el)=>{$(el).change((e)=>{vor.update({shape_seeds:e.target.getAttribute("data-label")})})})
+
+    html(col_display,/*html*/`<h5 id="hd_shape_display" style="margin-bottom:5px;color:#1F7BFD">Display</h5>`)
+    rg_list = vor.shape.cells_action_list
+    sact_index = rg_list.findIndex((shape)=>{return (shape == vor.shape.config.cells_action)})
+    let rg_cells = bs.radio_group(col_display,"rgg_shape",rg_list,sact_index)
+    rg_cells.forEach((el)=>{$(el).change((e)=>{vor.update({shape_cells:e.target.getAttribute("data-label")})})})
+
+    bs.checkbox_group(col_sampling,"cbx_shape",["visible"],[vor.shape.config.view_shape],(e)=>{
+        vor.update({view_shape:e.target.checked})
+    })
+    view_shape_menu(false)
+}
+
+function menu_map(parent){
+    let [col_sel,col_cost] = bs.cols(parent,2)
+
+    html(col_sel,/*html*/`<h5 style="margin-bottom:5px;color:#1F7BFD">Map</h5>`)
+
+    function view_map_menu(visible){
+        $("#cbx_map")[0].style.visibility = visible?"visible":"hidden"
+        $("#map_cost_group")[0].style.visibility = visible?"visible":"hidden"
+        grid.resize(parent,visible?360:120,240)
+    }
+
+    let list = ["grad_hor","center","grad_vert_up_down","spiral_1","spiral_2","conical","clear"]
+    bs.dropdown(col_sel,"Select",list,list,(e)=>{
+        const selected = e.target.getAttribute("data-label")
+        vor.update({map:selected,w:vor.width,h:vor.height})
+        view_map_menu((selected!="clear"))
+    })
+
+
+    bs.checkbox_group(col_sel,"cbx_map",["visible"],[vor.shape.config.view_map],(e)=>{
+        vor.update({view_map:e.target.checked})
+    })
+
+
+    let scfg = vor.seeds.config
+    let div_map_cost = html(col_cost,/*html*/`<div id="map_cost_group"></div>`)
+    html(div_map_cost,/*html*/`<h5 style="margin-bottom:5px;color:#1F7BFD">Map Paramters</h5>`)
+    let label_cost = html(div_map_cost,/*html*/`<a style="margin:5px">Cost Vs Dist ${scfg.map_vs_dist}</a>`)
+    let rg_cost = bs.input_range(div_map_cost,scfg.map_vs_dist_max,scfg.map_vs_dist)
+    $(rg_cost).on("input",(e)=>{
+        label_cost.innerHTML = `Map Cost Vs Dist ${rg_cost.value}`
+        vor.update({map_vs_dist:rg_cost.value})
+    })
+    let label_power = html(div_map_cost,/*html*/`<a style="margin:5px">Cost Power ${scfg.map_power}</a>`)
+    let rg_map = bs.input_range(div_map_cost,scfg.map_power_range.max,scfg.map_power)
+    rg_map.min = scfg.map_power_range.min
+    rg_map.step = scfg.map_power_range.step
+    $(rg_map).on("input",(e)=>{
+        label_power.innerHTML = `Cost Power ${rg_map.value}`
+        vor.update({map_power:rg_map.value})
+    })
+
+    view_map_menu(false)
+}
+
+function menu_export(ecol0,ecol1){
     let btn_save_svg = bs.button(ecol0,"btn_save",`export SVG`);
 
-    //let in_export_ratio = bs.input_text(ecol0,"in_export_ratio",`${vor.export_ratio}`,"w-50");
-    //in_export_ratio.style.visibility = "hidden"
-    //if(vor.export_ratio == 1.0){
-    //    in_export_ratio.value = null
-    //    in_export_ratio.setAttribute("placeholder",`1 unit = 1 pixel`)
-    //}
     let btn_save_data = bs.button(ecol0,"btn_save",`export seeds coordinates`);
 
     html(ecol1,/*html*/`<h5 style="margin-bottom:5px;color:#1F7BFD">Export</h5>`)
-    //html(ecol1,/*html*/`<p align="center">Export</p>`)
     const lst = vor.export_svg
     const export_states = [lst.cells,lst.edges,lst.seeds]
     bs.checkbox_group(ecol1,"cbx_export",["cells","edges","seeds"],export_states,(e)=>{
@@ -44,30 +116,6 @@ function menu_export(ecol0,ecol1,ecol2,ecol3,ecol4){
                         })
 
 
-    html(ecol2,/*html*/`<h5 style="margin-bottom:5px;color:#1F7BFD">Shape</h5>`)
-    //html(ecol2,/*html*/`<p align="center">Shape cells view</p>`)
-    let rg_list = vor.shape.cells_action_list
-    let sact_index = rg_list.findIndex((shape)=>{return (shape == vor.shape.config.cells_action)})
-    let rg_cells = bs.radio_group(ecol2,"rgg_shape_cells",rg_list,sact_index)
-    rg_cells.forEach((el)=>{$(el).change((e)=>{vor.update({shape_cells:e.target.getAttribute("data-label")})})})
-
-    html(ecol3,/*html*/`<h5 style="margin-bottom:5px;color:#1F7BFD">Map</h5>`)
-    //html(ecol3,/*html*/`<p align="center">Shape seeds sample</p>`)
-    rg_list = vor.shape.seeds_action_list
-    sact_index = rg_list.findIndex((shape)=>{return (shape == vor.shape.config.seeds_action)})
-    let rg_seeds = bs.radio_group(ecol3,"rgg_shpae_seeds",rg_list,sact_index)
-    rg_seeds.forEach((el)=>{$(el).change((e)=>{vor.update({shape_seeds:e.target.getAttribute("data-label")})})})
-
-
-
-    html(ecol4,/*html*/`<a>
-        <p align="center">
-            <a href="https://github.com/WebSVG/voronoi" target="_blank">
-            <img src=./media/github.png width=40 href="https://github.com/WebSVG/voronoi">
-            <p align="center">User Guide and Source Code</p>
-        </p>
-    </a>`)
-    html(ecol4,/*html*/`<p align="center">v26.04.2020</p>`)
 
     $(btn_save_svg).click(()=>{
         vor.save_svg("voronoi_svg_export.svg")
@@ -76,17 +124,17 @@ function menu_export(ecol0,ecol1,ecol2,ecol3,ecol4){
     $(btn_save_data).click(()=>{
         vor.save_seeds("seeds.json")
     })
-    //$(in_export_ratio).change((e)=>{
-    //    vor.export_ratio = in_export_ratio.value
-    //    if(vor.export_ratio == 1.0){
-    //        in_export_ratio.value = null
-    //        in_export_ratio.setAttribute("placeholder",`1 unit = 1 pixel`)
-    //    }
-    //})
-    //$(in_export_ratio).dblclick((e)=>{
-    //    vor.export_ratio = (1425.0 / 377.031)
-    //    in_export_ratio.value = vor.export_ratio
-    //})
+}
+
+function menu_github_version(parent){
+    html(parent,/*html*/`<a>
+        <p align="center">
+            <a href="https://github.com/WebSVG/voronoi" target="_blank">
+            <img src=./media/github.png width=40 href="https://github.com/WebSVG/voronoi">
+            <p align="center">User Guide and Source Code</p>
+        </p>
+    </a>`)
+    html(parent,/*html*/`<p align="center">v26.04.2020</p>`)
 }
 
 function menu_shape_space_min(parent){
@@ -148,7 +196,7 @@ function menu_shape_space_min(parent){
 }
 
 function menu_generate_view(parent){
-    let btn_seeds = bs.button(parent,"btn_seed",`generate seeds`);
+    let btn_seeds = bs.button(parent,"btn_seed",`generate`);
     const lst = vor.view_svg
     const view_states = [lst.cells,lst.edges,lst.seeds]
     bs.checkbox_group(parent,"cbx_view",["cells","edges","seeds"],view_states,(e)=>{
@@ -159,30 +207,16 @@ function menu_generate_view(parent){
         vor.update_seeds({clear:true})//clear = true
     })
 
-    let list = ["circle","cell","clear"]
-    bs.dropdown(parent,"Select Shape",list,list,(e)=>{
-        vor.update({path_file:e.target.getAttribute("data-label")})
-    })
-
-    list = ["grad_hor","center","grad_vert_up_down","spiral_1","spiral_2","conical","clear"]
-    bs.dropdown(parent,"Select Map",list,list,(e)=>{
-        vor.update({map:e.target.getAttribute("data-label"),w:vor.width,h:vor.height})
-    })
-
 }
 
 function menu_nb_seeds(parent){
     let scfg = vor.seeds.config
-    html(parent,/*html*/`<h5 style="margin-bottom:5px;color:#1F7BFD">Seeds number</h5>`)
+    html(parent,/*html*/`<h5 style="margin-bottom:5px;color:#1F7BFD">Seeds</h5>`)
     //html(parent,/*html*/`<a style="margin:10px">Seeds Number</a>`)
     let in_nb_seeds = bs.input_text(parent,"in_nb_seed",`${scfg.nb_seeds} seeds`,"w-100");
     let rg_nb_seeds = bs.input_range(parent,scfg.max_seeds)
     rg_nb_seeds.value = scfg.nb_seeds
     let in_max_seeds = bs.input_text(parent,"in_max_seed",`set to increase max seeds, ${scfg.max_seeds}`,"w-100");
-
-    let toggle_walls = bs.toggle(parent,"walls away","walls stick")
-    toggle_walls.checked = scfg.walls_dist
-    let in_sampling  = bs.input_text(parent,"in_nb_samples",`${scfg.nb_samples} samples`,"w-50");
 
     $(rg_nb_seeds).on("input",(e)=>{
         in_nb_seeds.value = rg_nb_seeds.value
@@ -207,6 +241,15 @@ function menu_nb_seeds(parent){
         vor.update_seeds({max_seeds:in_max_seeds.value})
     })
 
+}
+
+function menu_sampling(parent){
+    let scfg = vor.seeds.config
+    html(parent,/*html*/`<h5 style="margin-bottom:5px;color:#1F7BFD">Sampling</h5>`)
+    let toggle_walls = bs.toggle(parent,"walls away","walls stick")
+    toggle_walls.checked = scfg.walls_dist
+    let in_sampling  = bs.input_text(parent,"in_nb_samples",`${scfg.nb_samples} samples`,"w-100");
+
     $(toggle_walls).change(()=>{
         vor.update_seeds({clear:true,walls_dist:toggle_walls.checked})
     })
@@ -216,7 +259,33 @@ function menu_nb_seeds(parent){
 
 }
 
-function menu_svg_size(parent){
+function menu_scale(parent){
+    let main_cb_update = (e)=>{}
+    bs.checkbox_group(parent,"cbx_scale",["show_unit"],[vor.use_unit],(e)=>{main_cb_update(e)})
+    let in_ratio = bs.input_text(parent,"in_ratio","Enter unit ratio","w-100");
+    
+    in_ratio.value = vor.unit_ratio
+    function set_visibility(vis){
+        in_ratio.style.visibility = vis?"visible":"hidden"
+        show_unit()
+    }
+    set_visibility(vor.use_unit)
+    main_cb_update = (e)=>{
+        vor.use_unit = e.target.checked
+        vor.store()
+        set_visibility(e.target.checked)
+    }
+    $(in_ratio).change((e)=>{
+        if(in_ratio.value == ""){
+            in_ratio.value = vor.unit_ratio_default
+        }
+        vor.unit_ratio = in_ratio.value
+        vor.store()
+        show_unit()
+    })
+}
+
+function menu_size(parent){
     html(parent,/*html*/`<h5 style="margin-bottom:5px;color:#1F7BFD">Size</h5>`)
     let scfg = vor.seeds.config
     html(parent,/*html*/`<a id="l_width" style="margin-bottom:5px">View width</a>`)
@@ -226,35 +295,21 @@ function menu_svg_size(parent){
     let in_height = bs.input_text(parent,"in_height",`height`,"w-100");
     in_height.value = vor.height
 
-    let label_cost = html(parent,/*html*/`<a style="margin:5px">Map Cost Vs Dist ${scfg.map_vs_dist}</a>`)
-    let rg_cost = bs.input_range(parent,scfg.map_vs_dist_max,scfg.map_vs_dist)
-    $(rg_cost).on("input",(e)=>{
-        label_cost.innerHTML = `Map Cost Vs Dist ${rg_cost.value}`
-        vor.update({map_vs_dist:rg_cost.value})
-    })
-    let rg_map = bs.input_range(parent,scfg.map_power_range.max,scfg.map_power)
-    rg_map.min = scfg.map_power_range.min
-    rg_map.step = scfg.map_power_range.step
-    $(rg_map).on("input",(e)=>{
-        console.log(`Map Power ${rg_map.value}`)
-        vor.update({map_power:rg_map.value})
-    })
-
-
     $(in_width).change(()=>{
         vor.resize(in_width.value,in_height.value)
-        grid.resize(col_svg,in_width.value,in_height.value)
+        grid.resize(menu.svg_grid_div,in_width.value,in_height.value)
         show_unit()
     })
 
     $(in_height).change(()=>{
         vor.resize(in_width.value,in_height.value)
-        grid.resize(col_svg,in_width.value,in_height.value)
+        grid.resize(menu.svg_grid_div,in_width.value,in_height.value)
         show_unit()
     })
 
-    menus.in_width = in_width
-    menus.in_height = in_height
+    menu.in_width = in_width
+    menu.in_height = in_height
+    menu_scale(parent)
 }
 
 function menu_mouse(parent){
@@ -267,17 +322,6 @@ function menu_mouse(parent){
         vor.store()
     })
 
-    html(parent,/*html*/`<a style="margin:10px">View</a>`)
-    bs.checkbox_group(parent,"cbx_shape",["view_shape"],[vor.shape.config.view_shape],(e)=>{
-        let msg = {}
-        msg[e.target.getAttribute("data-name")] = e.target.checked
-        vor.update(msg)
-    })
-    bs.checkbox_group(parent,"cbx_map",["view_map"],[vor.shape.config.view_map],(e)=>{
-        let msg = {}
-        msg[e.target.getAttribute("data-name")] = e.target.checked
-        vor.update(msg)
-    })
 }
 
 function menu_filters(parent){
@@ -313,63 +357,29 @@ function menu_filters(parent){
     }
 }
 
-function menu_scale(parent){
-    let main_cb_update = (e)=>{}
-    bs.checkbox_group(parent,"cbx_scale",["show_unit"],[vor.use_unit],(e)=>{main_cb_update(e)})
-    let in_ratio = bs.input_text(parent,"in_ratio","Enter unit ratio","w-100");
-    
-    in_ratio.value = vor.unit_ratio
-    function set_visibility(vis){
-        in_ratio.style.visibility = vis?"visible":"hidden"
-        show_unit()
-    }
-    set_visibility(vor.use_unit)
-    main_cb_update = (e)=>{
-        vor.use_unit = e.target.checked
-        vor.store()
-        set_visibility(e.target.checked)
-    }
-    $(in_ratio).change((e)=>{
-        if(in_ratio.value == ""){
-            in_ratio.value = vor.unit_ratio_default
-        }
-        vor.unit_ratio = in_ratio.value
-        vor.store()
-        show_unit()
-    })
-}
-
 function main(){
 
-    col_svg = grid.get_div({width:vor.width,height:vor.height})
-    let col0 = grid.get_div({width:160,height:220})
-    let col1 = grid.get_div({width:360,height:200})
-    let col2 = grid.get_div({width:120,height:200})
-    let col3 = grid.get_div({width:160,height:200})
-    let col4 = grid.get_div({width:240,height:200})
+    menu.svg_grid_div = grid.get_div({width:vor.width,height:vor.height})
+    vor.set_parent_only(menu.svg_grid_div)
+    menu_generate_view(  grid.get_div({width:120,height:120}))
+    menu_nb_seeds(       grid.get_div({width:240,height:120}))
+    menu_sampling(       grid.get_div({width:120,height:120}))
+    menu_mouse(          grid.get_div({width:120,height:240}))
+    menu_size(          grid.get_div({width:180,height:240}))
+    menu_shape_space_min(grid.get_div({width:240,height:240}))
 
-    let col5 = grid.get_div({width:240,height:120})
-    let col6 = grid.get_div({width:120,height:120})
-    let col7 = grid.get_div({width:120,height:120})
-    let col8 = grid.get_div({width:240,height:120})
-    let col9 = grid.get_div({width:240,height:120})
-    let col10 = grid.get_div({width:240,height:120})
-    let col11 = grid.get_div({width:240,height:120})
+    let col_exp_buttons = grid.get_div({width:240,height:120})
+    let col_exp_select = grid.get_div({width:120,height:120})
+    menu_export(col_exp_buttons,col_exp_select)
+
+    menu_shape(grid.get_div({width:120,height:240}))
+    menu_map(grid.get_div({width:120,height:240}))
+
+    menu_filters(grid.get_div({width:240,height:120}))
+    menu_github_version(grid.get_div({width:240,height:120}))
 
     grid.apply()
 
-    menu_generate_view(col0)
-    menu_nb_seeds(col1)
-    menu_mouse(col2)
-    menu_svg_size(col3)
-    menu_shape_space_min(col4)
-
-    menu_export(col5,col6,col7,col8,col9)
-    menu_filters(col10)
-
-    menu_scale(col11)//after menu_svg_size
-
-    vor.set_parent_only(col_svg)
     vor.update_seeds({clear:true,width:vor.width,height:vor.height})
 
     window.addEventListener("main_window",onMainWindow,false)
@@ -378,8 +388,8 @@ function main(){
 function onMainWindow(e){
     const width = e.detail.width
     const height = e.detail.height
-    menus.in_width.value = width
-    menus.in_height.value = height
+    menu.in_width.value = width
+    menu.in_height.value = height
     vor.resize(width,height,{clear:false})
     grid.resize(col_svg,width,height)
 }

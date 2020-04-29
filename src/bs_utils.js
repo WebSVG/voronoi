@@ -49,7 +49,7 @@ class Bootstrap{
     dropdown(parent,dropdown_label,droplist,dropitems,callback){
         let dropdown = html(parent,/*html*/`<div class="dropdown"></div>`)
         let button = html(dropdown,/*html*/`
-            <button class="btn btn-primary dropdown-toggle w-100 m-1" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <button class="btn btn-primary dropdown-toggle w-100" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 ${dropdown_label}
             </button>`)
         let dropdown_menu = html(dropdown,/*html*/`<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
@@ -70,9 +70,10 @@ class Bootstrap{
     
     radio_group(parent,name,labels_list,nb_checked,callback=null){
         let res = []
+        let p_div = html(parent,/*html*/`<div id="${name}"></div>`)
         for(let i=0;i<labels_list.length;i++){
             const label = labels_list[i]
-            let element = html(parent,
+            let element = html(p_div,
             /*html*/`<div class="custom-control custom-radio">
                         <input type="radio" data-label="${label}" class="custom-control-input" id="rg_${label}" name="rg_${name}" ${(i==nb_checked)?"checked":""} >
                         <label class="custom-control-label" for="rg_${label}">${label}</label>
@@ -87,9 +88,10 @@ class Bootstrap{
     }
     
     checkbox_group(parent,name,labels_list,checked_list,callback){
+        let p_div = html(parent,/*html*/`<div id="${name}"></div>`)
         for(let i=0;i<labels_list.length;i++){
             const label = labels_list[i]
-            let element = html(parent,
+            let element = html(p_div,
             /*html*/`<div class="custom-control custom-checkbox">
                         <input type="checkbox" data-name="${label}" class="custom-control-input" id="cb_${name}_${label}" name="${name}" ${(checked_list[i])?"checked":""}>
                         <label class="custom-control-label" for="cb_${name}_${label}">${label}</label>
