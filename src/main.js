@@ -130,7 +130,7 @@ function menu_github_version(parent){
     html(parent,/*html*/`<a>
         <p align="center">
             <a href="https://github.com/WebSVG/voronoi" target="_blank">
-            <img src=./media/github.png width=40 href="https://github.com/WebSVG/voronoi">
+            <img src=./github.png width=40 href="https://github.com/WebSVG/voronoi">
             <p align="center">User Guide and Source Code</p>
         </p>
     </a>`)

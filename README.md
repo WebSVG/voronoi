@@ -2,7 +2,9 @@
 Parametric Voronoi generator with real time editing and SVG export
 
 # Voronoi editor webiste
-Live demo of this repository https://websvg.github.io/voronoi/
+Live demo 
+* https://voronoi-editor.web.app/
+* https://websvg.github.io/voronoi/
 
 # User Guide
 
