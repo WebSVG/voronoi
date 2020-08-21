@@ -3,6 +3,8 @@ Parametric Voronoi generator with real time editing and SVG export
 
 # Voronoi editor webiste
 Live demo 
+## Chrome as web browser
+ Chrome is tested as web browser, Edge might work but  Firefox might show  white page only
 * https://voronoi-editor.web.app/
 * https://websvg.github.io/voronoi/
 

@@ -20,6 +20,7 @@ class Geometry{
         return ({x:(va.x+vb.x)/2,y:(va.y+vb.y)/2})
     }
     
+    //refactor name to intersection()
     intersect(e1,e2){
         const x1 = e1.v1.x
         const y1 = e1.v1.y
