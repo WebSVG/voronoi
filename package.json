@@ -27,6 +27,7 @@
     "matter-js": "^0.14.2",
     "popper": "^1.0.1",
     "scale-grid": "^1.1.0",
-    "web-js-utils": "^2.1.0"
+    "web-js-utils": "^2.1.0",
+    "bl": ">=4.0.3"
   }
 }
