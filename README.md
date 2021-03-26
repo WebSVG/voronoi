@@ -8,6 +8,11 @@ Live demo
 * https://voronoi-editor.web.app/
 * https://websvg.github.io/voronoi/
 
+# community discussion
+<img src ="./media/discord.png" width="100">
+
+Do you have a question or an idea related to this project ? Feel free to join the [discord](https://discord.gg/wCxpAX8TQk) to chat live, make suggestions and give feedback
+
 # User Guide
 
 ## Overview
