@@ -8,6 +8,8 @@ Live demo
 * https://voronoi-editor.web.app/
 * https://websvg.github.io/voronoi/
 
+# documentation website
+https://www.homesmartmesh.com/docs/applications/voronoi/
 # community discussion
 <img src ="./media/discord.png" href="https://discord.gg/wCxpAX8TQk" width="100">
 
