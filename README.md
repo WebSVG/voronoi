@@ -9,7 +9,7 @@ Live demo
 * https://websvg.github.io/voronoi/
 
 # community discussion
-<img src ="./media/discord.png" width="100">
+<img src ="./media/discord.png" href="https://discord.gg/wCxpAX8TQk" width="100">
 
 Do you have a question or an idea related to this project ? Feel free to join the [discord](https://discord.gg/wCxpAX8TQk) to chat live, make suggestions and give feedback
 
