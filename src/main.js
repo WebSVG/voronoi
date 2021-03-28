@@ -312,6 +312,20 @@ function menu_size(parent){
     menu_scale(parent)
 }
 
+function menu_color(parent){
+    html(parent,/*html*/`<h5 style="margin-bottom:5px;color:#1F7BFD">Color</h5>`)
+    let btn_color = bs.button(parent,"btn_color",`randomize colors`);
+
+    $(btn_color).click(()=>{
+        document.querySelectorAll("path").forEach(function(userPath) {
+            userPath.setAttribute("fill", "hsl("+ Math.floor(Math.random() * Math.floor(255)) + ",90%,60%)");
+            userPath.setAttribute("fill-opacity", "40%");
+        })  
+        
+    })
+    
+}
+
 function menu_mouse(parent){
     html(parent,/*html*/`<h5 style="margin-bottom:5px;color:#1F7BFD">Mouse</h5>`)
     //html(parent,/*html*/`<a style="margin:10px">Mouse</a>`)
