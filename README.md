@@ -1,19 +1,22 @@
-# Description
+# Overview
 Parametric Voronoi generator with real time editing and SVG export
 
-# Voronoi editor webiste
-Live demo 
-## Chrome as web browser
+## Discourse forum
+get support, give feedback or simply chat to brainstorm about ideas on the forum
+
+[![discourse](./media/discourse.svg)](https://homesmartmesh.discourse.group/c/webapps/14)
+
+[forum category : webapps ](https://homesmartmesh.discourse.group/c/webapps/14)
+
+## Documentation website
+
+https://www.homesmartmesh.com/docs/applications/voronoi/
+
+
+## Live demo 
  Chrome is tested as web browser, Edge might work but  Firefox might show  white page only
 * https://voronoi-editor.web.app/
 * https://websvg.github.io/voronoi/
-
-# documentation website
-https://www.homesmartmesh.com/docs/applications/voronoi/
-# community discussion
-[<img src ="./media/discord.png" width="100">](https://discord.gg/wCxpAX8TQk)
-
-Do you have a question or an idea related to this project ? Feel free to join the [discord](https://discord.gg/wCxpAX8TQk) to chat live, make suggestions and give feedback
 
 # User Guide
 
