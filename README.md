@@ -1,12 +1,10 @@
 # Overview
 Parametric Voronoi generator with real time editing and SVG export
 
-## Discourse forum
-get support, give feedback or simply chat to brainstorm about ideas on the forum
+## Discussions
+get support, give feedback or simply chat to brainstorm about ideas right here on Github dedicated Discussions Forum
 
-[![discourse](./media/discourse.svg)](https://homesmartmesh.discourse.group/c/webapps/14)
-
-[forum category : webapps ](https://homesmartmesh.discourse.group/c/webapps/14)
+https://github.com/WebSVG/voronoi/discussions
 
 ## Documentation website
 
