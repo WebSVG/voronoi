@@ -148,6 +148,12 @@ class Seeds{
             let samples
             if(inside_path){
                 samples = this.samples_in_path(box)
+                // Convert from viewport to SVG-relative coordinates
+                const parentRect = this.shape.parent.getBoundingClientRect()
+                for (let j=0;j<samples.length;j++){
+                    samples[j].x -= parentRect.x;
+                    samples[j].y -= parentRect.y;
+                }
             }else{
                 samples = samples_in_rect(this.config.nb_samples,w,h)
             }
@@ -265,7 +271,9 @@ class Seeds{
                 this.shape.append_path()
                 for(let i=0;i<this.array.length;i++){
                     const s = this.array[i]
-                    if(geom.inside_id(s.x, s.y, this.shape.svg_path.id)){
+                    const parentRect = this.shape.parent.getBoundingClientRect()
+                    // Convert to viewport coordinates for hit testing
+                    if(geom.inside_id(s.x + parentRect.x, s.y + parentRect.y, this.shape.svg_path.id)){
                         svg.circle_p_id(group,s.x,s.y,`c_${s.id}`)
                     }
                 }
