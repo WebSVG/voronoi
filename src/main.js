@@ -134,7 +134,7 @@ function menu_github_version(parent){
             <p align="center">User Guide and Source Code</p>
         </p>
     </a>`)
-    html(parent,/*html*/`<p align="center">v26.04.2020</p>`)
+    html(parent,/*html*/`<p align="center">v10.08.2022</p>`)
 }
 
 function menu_shape_space_min(parent){
