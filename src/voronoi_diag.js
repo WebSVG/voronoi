@@ -380,12 +380,13 @@ class voronoi_diag{
             let group = html(params.svg,/*html*/`<g id="svg_g_bezier_cells" ${conditional_clip_path}/>`)
             if(cfg.use_filters){svg.filter_turb_disp(group,{id:"f_turb_disp",disp_scale:cfg.disp_scale,turb_freq:cfg.turb_freq})}
             this.shape.append_path()
+            const parentRect = this.shape.parent.getBoundingClientRect()
             for(let i=0;i<this.cells.length;i++){
                 const c = this.cells[i]
                 //here you can retract or detract small edges before either drawing technique
                 let draw_cell = true
                 if(this.shape.show_inside_path()){
-                    draw_cell = geom.inside_id(c.seed.x, c.seed.y,this.shape.svg_path.id)
+                    draw_cell = geom.inside_id(parentRect.x + c.seed.x, parentRect.y + c.seed.y,this.shape.svg_path.id)
                 }
                 if(draw_cell){
                     let d
