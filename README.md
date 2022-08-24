@@ -195,6 +195,7 @@ node dependencies are not required to serve the project locally, but only to ref
 * https://getbootstrap.com/docs/4.4/getting-started/introduction/
 * https://gitbrent.github.io/bootstrap4-toggle/
 * issue with bootstrap toggle adding event listeners with js not possible
+* https://www.scaler.com/topics/css/bootstrap/
 
 ## Export / Download
 * Filesaver
