@@ -312,6 +312,7 @@ class voronoi_diag{
         this.cells = []
         this.org_cells = []
         this.edges = []
+        this.edge_style_list = []
         this.config = {}
         let cfg = this.config
         cfg.cell_debug = 0
@@ -321,6 +322,9 @@ class voronoi_diag{
         cfg.turb_freq = 0.05
         cfg.turb_freq_max = 0.2
         cfg.turb_freq_step = 0.002
+        cfg.edit_edgess = false
+        cfg.edge_style = 0
+        cfg.edge_style_max = 5
     }
 
     from_rhill_diagram(diag){
@@ -342,13 +346,14 @@ class voronoi_diag{
     }
 
     compute(seeds,params){
-        console.time("voronoi")
+        //console.time("voronoi")
         let vor_result = vor_rhill.compute(seeds,params)
-        console.timeEnd("voronoi")
+        //console.timeEnd("voronoi")
         this.edges = vor_result.edges
-        console.time("post proc")
+        this.edge_style_list = new Array(this.edges.length).fill(0);
+        //console.time("post proc")
         this.from_rhill_diagram(vor_result)
-        console.timeEnd("post proc")
+        //console.timeEnd("post proc")
     }
 
     update(params){
@@ -366,6 +371,14 @@ class voronoi_diag{
         }
         if(defined(params.turbulence)){
             this.config.turb_freq = params.turbulence
+            send("vor_app",{type:"draw",context:params.context})
+        }
+        if(defined(params.edit_edges)){
+            this.config.edit_edges = params.edit_edges
+            send("vor_app",{type:"draw",context:params.context})
+        }
+        if(defined(params.edge_style)){
+            this.config.edge_style = params.edge_style
             send("vor_app",{type:"draw",context:params.context})
         }
     }
@@ -407,6 +420,7 @@ class voronoi_diag{
     }
 
     draw_edges(params){
+        //if edit_edges then follow list
         svg.set_parent(params.svg)
         let conditional_clip_path = (this.shape.config.cells_action == "cut_off")?'clip-path="url(#cut-off-cells)"':''
         let group = html(params.svg,/*html*/`<g id="svg_g_edges" ${conditional_clip_path} />`)

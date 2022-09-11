@@ -274,15 +274,23 @@ class voronoi_app{
 
     init_events(){
         $(this.svg.main).click((e)=>{
-            if(this.mouse_action == "add"){
-                this.seeds.add({x:e.offsetX, y:e.offsetY})
-                this.compute_voronoi()
-            }else if(this.mouse_action == "remove"){
-                this.seeds.remove({x:e.offsetX, y:e.offsetY})
-                this.compute_voronoi()
+            console.log(this.diagram.config.edit_edges)
+            if(this.diagram.config.edit_edges){
+                //TODO cycle closest edge
+            }else{
+                if(this.mouse_action == "add"){
+                    this.seeds.add({x:e.offsetX, y:e.offsetY})
+                    this.compute_voronoi()
+                }else if(this.mouse_action == "remove"){
+                    this.seeds.remove({x:e.offsetX, y:e.offsetY})
+                    this.compute_voronoi()
+                }
             }
+
         })
         $(this.svg.main).mousemove((e)=>{
+            if(this.diagram.config.edit_edges)
+                return
             if(this.mouse_action == "move"){
                 if(e.buttons == 1){
                     this.seeds.move({x:e.offsetX, y:e.offsetY})
@@ -291,6 +299,8 @@ class voronoi_app{
             }
         })
         $(this.svg.main).on("touchmove",(e)=>{
+            if(this.diagram.config.edit_edges)
+                return
             console.log(e.target.tagName)
             if(this.mouse_action == "move"){
                 this.seeds.move({x:e.touches[0].offsetX, y:e.touches[0].offsetY})
@@ -298,6 +308,8 @@ class voronoi_app{
             }
         })
         $(this.svg.main).mousedown((e)=>{
+            if(this.diagram.config.edit_edges)
+                return
             console.log("mouse down")
             if(this.mouse_action == "move"){
                 this.seeds.move({x:e.offsetX, y:e.offsetY})
@@ -305,7 +317,8 @@ class voronoi_app{
             }
         })
         $(this.svg.main).on("touchstart",(e)=>{
-            console.log()
+            if(this.diagram.config.edit_edges)
+                return
             const [x,y] = [e.touches[0].offsetX,e.touches[0].offsetY]
             if(this.mouse_action == "add"){
                 this.seeds.add({x:x, y:y})

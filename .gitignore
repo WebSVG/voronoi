@@ -2,3 +2,4 @@ node_modules
 exports
 template
 .firebase
+data/lines

@@ -149,11 +149,15 @@ warning ! The svg filters effect, though part of the standard and viewable in br
 * display / hide cost map
 * slider to weight cost map vs distance
 
+# Randomize colors
+contribution from https://github.com/neuroradiology
+# Victorian Cells Edges
+
 # Planned features
+* Victorian Cells Edges
 * edges cells filet effect
 * add irregularities to the edges thickness (randomize retraction)
 * improve error alerts by using boostrap auto vanishing alerts
-* random colors for cells
 
 ## discarded features
 * export scale with a ratio (adjusting to a given unit)

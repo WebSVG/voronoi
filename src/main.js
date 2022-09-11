@@ -371,6 +371,30 @@ function menu_filters(parent){
     }
 }
 
+function menu_edges(parent){
+    let diag_cfg = vor.diagram.config
+    let main_cb_update = (e)=>{}
+    bs.checkbox_group(parent,"cbx_filters",["Edit Edges"],[diag_cfg.edit_edges],(e)=>{main_cb_update(e)})
+    let label_edge_style = html(parent,/*html*/`<a style="margin:5px">Edge Style ${diag_cfg.edge_style}</a>`)
+    let rg_edges = bs.input_range(parent,diag_cfg.edge_style_max,diag_cfg.edge_style)
+    $(rg_edges).on("input",(e)=>{
+        label_edge_style.innerHTML = `Edge Style ${rg_edges.value}`
+        vor.update({edge_style:rg_edges.value})
+    })
+
+    function set_visibility(vis){
+        label_edge_style.style.visibility = vis?"visible":"hidden"
+        rg_edges.style.visibility = vis?"visible":"hidden"
+    }
+
+    set_visibility(diag_cfg.edit_edges)
+    main_cb_update = (e)=>{
+        vor.update({edit_edges:e.target.checked})
+        set_visibility(e.target.checked)
+    }
+}
+
+
 function main(){
 
     menu.svg_grid_div = grid.get_div({width:vor.width,height:vor.height})
@@ -391,6 +415,7 @@ function main(){
     menu_map(grid.get_div({width:120,height:240}))
 
     menu_filters(grid.get_div({width:240,height:120}))
+    menu_edges(grid.get_div({width:240,height:120}))
     menu_github_version(grid.get_div({width:240,height:120}))
 
     grid.apply()
