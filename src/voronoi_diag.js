@@ -2,11 +2,13 @@ import {defined,html,rand_col, send} from "./web-js-utils.js"
 import {Vector} from "../libs/Vector.js"
 import {Geometry} from "./geometry.js"
 import {Svg} from "./svg_utils.js"
+import {EdgeStyle} from "./edge-style.js"
 import * as vor_core from "../libs/rhill-voronoi-core.js"
 
 let geom = new Geometry()
 let svg = new Svg()
 let vor_rhill = new vor_core.Voronoi()
+let estyle = new EdgeStyle()
 
 function he_length(he){
     const dx = he.edge.va.x-he.edge.vb.x
@@ -420,15 +422,22 @@ class voronoi_diag{
     }
 
     draw_edges(params){
-        //if edit_edges then follow list
+        let cfg = this.config
         svg.set_parent(params.svg)
         let conditional_clip_path = (this.shape.config.cells_action == "cut_off")?'clip-path="url(#cut-off-cells)"':''
         let group = html(params.svg,/*html*/`<g id="svg_g_edges" ${conditional_clip_path} />`)
         let d = ""
-        this.edges.forEach((e)=>{
-            d = d + `M ${e.va.x} ${e.va.y} L ${e.vb.x} ${e.vb.y} `
-        })
-        return html(group,/*html*/`<path id="svg_path_edges" d="${d}" stroke="black" stroke-width="2" />`)
+        if(cfg.edit_edges){
+            this.edges.forEach((e)=>{
+                    d = d + estyle.curved_line(e)
+            })
+        }
+        else{
+            this.edges.forEach((e)=>{
+                d = d + `M ${e.va.x} ${e.va.y} L ${e.vb.x} ${e.vb.y} `
+            })
+        }
+        return html(group,/*html*/`<path id="svg_path_edges" d="${d}" stroke="black" stroke-width="2" fill="none"/>`)
     }
 }
 

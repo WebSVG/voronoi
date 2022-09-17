@@ -152,7 +152,7 @@ warning ! The svg filters effect, though part of the standard and viewable in br
 # Randomize colors
 contribution from https://github.com/neuroradiology
 # Victorian Cells Edges
-
+11/09/2022 (1h30) Edit edges checkbox,use_edges config and edges_list.
 # Planned features
 * Victorian Cells Edges
 * edges cells filet effect
