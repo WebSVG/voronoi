@@ -33,6 +33,22 @@ function ccw_vertices(he){
     }
 }
 
+function get_closest_center(edges,point){
+    let distances = []
+    edges.forEach((e,i)=>{
+        distances[i] = geom.distance(point,e.c)
+    })
+    let min_distance = 1000
+    let min_index = 0
+    for(let i=0;i<edges.length;i++){
+        if(distances[i]<min_distance){
+            min_distance = distances[i]
+            min_index = i
+        }
+    }
+    return min_index
+}
+
 class cell{
     constructor(create){
         if(defined(create.site)){
@@ -352,6 +368,10 @@ class voronoi_diag{
         let vor_result = vor_rhill.compute(seeds,params)
         //console.timeEnd("voronoi")
         this.edges = vor_result.edges
+        //precalculate for edit edges click find nearest
+        this.edges.forEach(e=>{
+            e.c = geom.center(e.va,e.vb)
+        })
         this.edge_style_list = new Array(this.edges.length).fill(0);
         //console.time("post proc")
         this.from_rhill_diagram(vor_result)
@@ -421,6 +441,14 @@ class voronoi_diag{
         }
     }
 
+    edit_edges(params){
+        let click_index = get_closest_center(this.edges,params)
+        this.edge_style_list[click_index] += 1
+        if(this.edge_style_list[click_index]>estyle.get_nb_styles()){
+            this.edge_style_list[click_index] = 0
+        }
+    }
+
     draw_edges(params){
         let cfg = this.config
         svg.set_parent(params.svg)
@@ -428,13 +456,13 @@ class voronoi_diag{
         let group = html(params.svg,/*html*/`<g id="svg_g_edges" ${conditional_clip_path} />`)
         let d = ""
         if(cfg.edit_edges){
-            this.edges.forEach((e)=>{
-                    d = d + estyle.curved_line(e)
+            this.edges.forEach((e,i)=>{
+                    d = d + estyle.curved_line(e,this.edge_style_list[i])
             })
         }
         else{
             this.edges.forEach((e)=>{
-                d = d + `M ${e.va.x} ${e.va.y} L ${e.vb.x} ${e.vb.y} `
+                d = d + estyle.straight_line(e)
             })
         }
         return html(group,/*html*/`<path id="svg_path_edges" d="${d}" stroke="black" stroke-width="2" fill="none"/>`)

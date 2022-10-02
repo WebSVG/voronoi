@@ -276,7 +276,8 @@ class voronoi_app{
         $(this.svg.main).click((e)=>{
             console.log(this.diagram.config.edit_edges)
             if(this.diagram.config.edit_edges){
-                //TODO cycle closest edge
+                this.diagram.edit_edges({x:e.offsetX, y:e.offsetY})
+                this.draw()
             }else{
                 if(this.mouse_action == "add"){
                     this.seeds.add({x:e.offsetX, y:e.offsetY})
