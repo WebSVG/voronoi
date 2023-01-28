@@ -34,7 +34,7 @@ function menu_shape(parent){
         grid.resize(parent,visible?240:120,240)
     }
 
-    let list = ["circle","cell","clear"]
+    let list = ["circle","cell","giraffe","clear"]
     bs.dropdown(col_sampling,"Select",list,list,(e)=>{
         const selected = e.target.getAttribute("data-label")
         vor.update({path_file:e.target.getAttribute("data-label")})
