@@ -1,12 +1,12 @@
-# Voronoi Editor Project Funding
+# Micro Web Stacks Project Funding
 
-_Last Updated: 28-01-2023_
+_Last Updated: 29-01-2023_
 
 ## Raising Funds
 
-Voronoi Editor is a Free Open Source project under the MIT license. However a financial backing can help taking it to the next level by investing on marketing to make it reach people who need it and reward contributors who maintain, improve and port it to different frameworks.
+Voronoi Editor is a Free Open Source project under the MIT license hosted under the Micro Web Stacks Oganization. A financial backing can help taking it to the next level by investing on marketing to make it reach people who need it and reward contributors who maintain, improve and port it to different frameworks.
 
-Learn more about sponsorship on our [Open Collective.](https://opencollective.com/voronoi).
+Learn more about sponsorship on [Open Collective.](https://opencollective.com/micro-web-stacks).
 
 ### Why Open Collective?
 
@@ -32,4 +32,4 @@ Below is a (non-exhaustive) list of how we plan to distribute raised funds:
 
 ## Eligibility
 
-**The author** and owner of the "Voronoi Editor" will not reveice any expense from the contributed funds
+**The author** and owner of the "Voronoi Editor" Project will not reveice any expense from the contributed funds
