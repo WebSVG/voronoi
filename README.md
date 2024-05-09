@@ -1,20 +1,20 @@
 # Overview
 Parametric Voronoi generator with real time editing and SVG export
 
-## Discussions
-get support, give feedback or simply chat to brainstorm about ideas right here on Github dedicated Discussions Forum
-
-https://github.com/WebSVG/voronoi/discussions
-
-## Documentation website
-
-https://www.homesmartmesh.com/docs/applications/voronoi/
-
-
 ## Live demo 
  Chrome is tested as web browser, Edge might work but  Firefox might show  white page only
 * https://voronoi-editor.web.app/
 * https://websvg.github.io/voronoi/
+
+## Discussions
+get support, give feedback or simply chat to brainstorm about new ideas
+
+https://github.com/WebSVG/voronoi/discussions
+
+## 3D Printed Voronoi Shapes
+Photos and 3D Models available 
+
+https://www.homesmartmesh.com/3dprinting/voronoi-shapes/
 
 # User Guide
 
