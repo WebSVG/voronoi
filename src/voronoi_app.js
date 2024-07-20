@@ -322,6 +322,9 @@ class voronoi_app{
 
         let that = this
         let onDragEvents = function(event){
+            if(!event.dataTransfer){
+                alert("Browser support issue, 'event.dataTransfer' does not exist")
+            }
             event.stopPropagation();
             event.preventDefault();
             if(event.type == "dragenter"){
